@@ -24,6 +24,12 @@ artifacts/
 ## Installer output
 Output/
 
+## Whisper binaries (provided externally, not built from source)
+whisper-bin/
+
+## Whisper source (cloned separately, built locally)
+whisper.cpp/
+
 ## Claude Code
 .claude/
 

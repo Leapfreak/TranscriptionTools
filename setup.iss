@@ -1,5 +1,5 @@
 ; Transcription Tools - Inno Setup Script
-; Lightweight installer - tools are downloaded on first launch
+; Installer bundles whisper.cpp CUDA binaries from whisper-bin/
 
 #define MyAppName "Transcription Tools"
 #define MyAppVersion "1.0.2"
@@ -9,6 +9,8 @@
 
 ; Source directory for published app files
 #define AppPublishDir "TranscriptionTools\bin\Publish"
+; Whisper CUDA binaries (place whisper-cli.exe, whisper-stream.exe, DLLs here)
+#define WhisperBinDir "whisper-bin"
 
 [Setup]
 AppId={{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}
@@ -50,6 +52,10 @@ Source: "{#AppPublishDir}\TranscriptionTools.deps.json"; DestDir: "{app}"; Flags
 Source: "{#AppPublishDir}\TranscriptionTools.runtimeconfig.json"; DestDir: "{app}"; Flags: ignoreversion
 ; Help files
 Source: "{#AppPublishDir}\Help\*"; DestDir: "{app}\Help"; Flags: ignoreversion recursesubdirs
+; --- Whisper CUDA binaries ---
+Source: "{#WhisperBinDir}\whisper-cli.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#WhisperBinDir}\whisper-stream.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#WhisperBinDir}\*.dll"; DestDir: "{app}"; Flags: ignoreversion
 ; Locale satellite assemblies
 Source: "{#AppPublishDir}\ca\*"; DestDir: "{app}\ca"; Flags: ignoreversion
 Source: "{#AppPublishDir}\de\*"; DestDir: "{app}\de"; Flags: ignoreversion

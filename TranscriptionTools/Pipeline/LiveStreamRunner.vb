@@ -115,12 +115,12 @@ Namespace Pipeline
                 args.Add("-tr")
             End If
 
+            If config.NoGpu Then args.Add("-ng")
+            If config.FlashAttn Then args.Add("-fa")
+
             If Not String.IsNullOrWhiteSpace(config.InitialPrompt) Then
                 args.Add($"--prompt ""{config.InitialPrompt}""")
             End If
-
-            If config.NoGpu Then args.Add("-ng")
-            If config.FlashAttn Then args.Add("-fa")
 
             Return String.Join(" ", args)
         End Function

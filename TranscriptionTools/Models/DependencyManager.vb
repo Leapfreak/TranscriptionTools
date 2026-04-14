@@ -97,7 +97,6 @@ Namespace Models
             Dim tasks As New List(Of Task(Of ToolState)) From {
                 CheckYtDlpAsync(),
                 CheckFfmpegAsync(),
-                CheckWhisperAsync(),
                 CheckModelAsync(),
                 CheckSubtitleEditAsync()
             }
@@ -221,62 +220,6 @@ Namespace Models
         End Function
 
         ' ──────────────────────────────────────────
-        '  whisper.cpp (whisper-cli + whisper-stream + DLLs)
-        ' ──────────────────────────────────────────
-
-        Private Function WhisperInstalledPath() As String
-            Return ResolveConfigPath(_config.PathWhisper)
-        End Function
-
-        Public Async Function CheckWhisperAsync() As Task(Of ToolState)
-            Dim state As New ToolState With {.Name = "whisper.cpp"}
-            Try
-                Dim whisperPath = WhisperInstalledPath()
-                If File.Exists(whisperPath) Then
-                    state.InstalledVersion = GetSavedVersion("whisper.cpp")
-                    state.Status = ToolStatus.Installed
-                End If
-
-                Dim release = Await GetLatestReleaseAsync("ggml-org/whisper.cpp")
-                If release IsNot Nothing Then
-                    state.LatestVersion = release.Value.TagName
-                    ' Prefer CUDA build for GPU acceleration, fall back to CPU-only
-                    state.DownloadUrl = FindAsset(release.Value.Assets, "whisper-cublas-12\.4\.0-bin-x64\.zip$")
-                    If String.IsNullOrEmpty(state.DownloadUrl) Then
-                        state.DownloadUrl = FindAsset(release.Value.Assets, "whisper-cublas-.*-bin-x64\.zip$")
-                    End If
-                    If String.IsNullOrEmpty(state.DownloadUrl) Then
-                        state.DownloadUrl = FindAsset(release.Value.Assets, "whisper-bin-x64\.zip$")
-                    End If
-
-                    If state.Status = ToolStatus.Installed Then
-                        If String.IsNullOrEmpty(state.InstalledVersion) Then
-                            ' No saved version but exe exists — assume current, save latest
-                            SaveVersion("whisper.cpp", state.LatestVersion)
-                            state.InstalledVersion = state.LatestVersion
-                            state.Status = ToolStatus.UpToDate
-                        Else
-                            state.Status = CompareVersionTags(state.InstalledVersion, state.LatestVersion)
-                        End If
-                    End If
-                End If
-            Catch
-                If state.Status = ToolStatus.Missing Then state.Status = ToolStatus.CheckFailed
-            End Try
-            Return state
-        End Function
-
-        Public Async Function DownloadWhisperAsync(url As String, progress As IProgress(Of (downloaded As Long, total As Long))) As Task
-            Dim zipPath = Path.Combine(_toolsDir, "whisper-temp.zip")
-            Try
-                Await DownloadFileAsync(url, zipPath, progress)
-                ExtractAllFromZip(zipPath, _toolsDir)
-            Finally
-                If File.Exists(zipPath) Then File.Delete(zipPath)
-            End Try
-        End Function
-
-        ' ──────────────────────────────────────────
         '  GGML Model
         ' ──────────────────────────────────────────
 
@@ -371,8 +314,6 @@ Namespace Models
                     Await DownloadYtDlpAsync(state.DownloadUrl, progress)
                 Case "FFmpeg"
                     Await DownloadFfmpegAsync(state.DownloadUrl, progress)
-                Case "whisper.cpp"
-                    Await DownloadWhisperAsync(state.DownloadUrl, progress)
                 Case "Whisper Model (ggml-large-v3)"
                     Await DownloadModelAsync(state.DownloadUrl, progress)
                 Case "Subtitle Edit"
