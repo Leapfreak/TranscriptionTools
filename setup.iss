@@ -2,7 +2,7 @@
 ; Installer bundles whisper.cpp CUDA binaries from whisper-bin/
 
 #define MyAppName "Transcription Tools"
-#define MyAppVersion "1.0.2"
+#define MyAppVersion "1.0.3"
 #define MyAppPublisher "Leapfreak"
 #define MyAppExeName "TranscriptionTools.exe"
 #define MyAppURL "https://github.com/Leapfreak/TranscriptionTools"

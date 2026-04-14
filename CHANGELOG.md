@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.0.3 - 2026-04-15
+
+### Added
+- Custom whisper-stream build with `--prompt` support for live transcription
+- `--no-carry-prompt` flag to control prompt persistence across decode windows
+- Initial prompt now passed to live stream mode from config
+- CI/CD builds whisper.cpp from source with CUDA support (with build caching)
+
+### Changed
+- Whisper binaries now built from source instead of downloaded from upstream releases
+- Whisper.cpp no longer managed by Dependency Manager (bundled with installer)
+
 ## v1.0.2 - 2026-04-14
 
 ### Added
