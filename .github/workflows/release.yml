@@ -25,13 +25,14 @@ jobs:
         run: dotnet publish TranscriptionTools/TranscriptionTools.vbproj -c Release -o TranscriptionTools/bin/Publish
 
       - name: Install CUDA Toolkit
-        uses: Jimver/cuda-toolkit@v0.2.25
-        with:
-          cuda: '12.4.0'
-          method: 'network'
-          sub-packages: '["nvcc", "cudart", "cublas", "cublas_dev", "visual_studio_integration"]'
-          use-github-cache: 'false'
-          use-local-cache: 'false'
+        run: |
+          $url = "https://developer.download.nvidia.com/compute/cuda/12.4.0/network_installers/cuda_12.4.0_windows_network.exe"
+          Invoke-WebRequest -Uri $url -OutFile "cuda_installer.exe"
+          Start-Process -FilePath "cuda_installer.exe" -ArgumentList "-s nvcc_12.4 cudart_12.4 cublas_12.4 cublas_dev_12.4 visual_studio_integration_12.4" -Wait -NoNewWindow
+          Remove-Item "cuda_installer.exe" -Force
+          $cudaPath = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4"
+          echo "CUDA_PATH=$cudaPath" >> $env:GITHUB_ENV
+          echo "$cudaPath\bin" >> $env:GITHUB_PATH
 
       - name: Clone whisper.cpp
         run: |
