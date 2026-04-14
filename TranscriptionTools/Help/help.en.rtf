@@ -1,0 +1,299 @@
+{\rtf1\ansi\deff0
+{\fonttbl{\f0\fswiss\fcharset0 Segoe UI;}{\f1\fmodern\fcharset0 Consolas;}}
+{\colortbl;\red0\green0\blue0;\red0\green102\blue204;\red80\green80\blue80;\red0\green128\blue0;\red139\green0\blue0;}
+\viewkind4\uc1
+
+\pard\sa200\sl276\slmult1
+\f0\fs36\b\cf2 Transcription Tools \endash  User Guide\b0\cf0\fs20\par
+
+\fs24\b Overview\b0\fs20\par
+Transcription Tools is a Windows desktop application that generates subtitle files from audio and video sources. It provides a graphical interface for the whisper.cpp speech-to-text engine and supports four batch processing modes plus an experimental real-time live translation mode.\par
+
+\b Batch Processing Modes\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b YouTube -> Subtitles\b0  \endash  Download a YouTube video (or use a local video file), optionally trim it to a time range, and generate subtitles.\par
+\bullet\tab\b Audio File -> Subtitles\b0  \endash  Directly transcribe any audio file (OGG, MP3, WAV, FLAC, M4A, etc.) into subtitles.\par
+\bullet\tab\b YouTube -> Full Video\b0  \endash  Download a YouTube video (or copy a local video) and trim it, without transcription.\par
+\bullet\tab\b YouTube -> Audio Only\b0  \endash  Download a YouTube video (or copy a local video), trim it, and extract the audio to a high-quality MP3 file, without transcription.\par
+
+\pard\sa200\sl276\slmult1
+\b Live Mode\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Live Translation (Test)\b0  \endash  Real-time speech-to-text from a microphone or audio input device using whisper-stream.exe. This feature is experimental.\par
+
+\pard\sa200\sl276\slmult1
+\fs24\b\cf2 Main / Job Tab\b0\cf0\fs20\par
+
+\b Mode Selector\b0\par
+Use the dropdown at the top to switch between modes. The default mode is \b YouTube -> Subtitles\b0 . The interface adapts to show only the controls relevant to the selected mode. Time range controls and the Resume button are only shown for YouTube-based modes. Output format checkboxes are only shown for modes that produce subtitles (YouTube -> Subtitles and Audio File -> Subtitles).\par
+
+\b YouTube -> Subtitles Mode\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b URL / File\b0  \endash  Enter a YouTube URL or click Browse to select a local video file.\par
+\bullet\tab\b Input Language\b0  \endash  The language spoken in the audio. Set to \b auto\b0  to let the engine detect it automatically, or select a specific language for better accuracy.\par
+\bullet\tab\b Output Language\b0  \endash  The language for the generated subtitles. Set to \b auto\b0  to keep the same language as the input. Set to \b en\b0  (English) to translate non-English audio into English subtitles. Whisper can only translate \i to\i0  English.\par
+\bullet\tab\b Model\b0  \endash  Choose which whisper model to use. Larger models (e.g. ggml-large-v3.bin) are more accurate but slower. Smaller models (e.g. ggml-tiny.bin, ggml-base.bin) are faster but less accurate.\par
+\bullet\tab\b Start Time / End Time\b0  \endash  Optionally specify a time range (HH:MM:SS) to trim the video before transcribing. Leave at 00:00:00 to process the entire video.\par
+\bullet\tab\b Output Directory\b0  \endash  Where all working files and the final subtitle file will be saved. Defaults to a timestamped folder under the output root.\par
+\bullet\tab\b Resume\b0  \endash  If a previous job was interrupted, click Resume to select the output folder and continue from where it left off. Already completed chunks are automatically skipped.\par
+
+\pard\sa200\sl276\slmult1
+\b Audio File -> Subtitles Mode\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Audio file\b0  \endash  Click Browse Audio to select an audio file. Supported formats include OGG, MP3, WAV, FLAC, M4A, WMA, AAC, OPUS, and more.\par
+\bullet\tab\b Output Directory\b0  \endash  Same as YouTube mode. The output SRT file is named after the input file.\par
+\bullet\tab This mode remembers its own default model separately, so you can use a large model for YouTube videos and a smaller, faster model for quick audio transcriptions.\par
+
+\pard\sa200\sl276\slmult1
+\b YouTube -> Full Video Mode\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab Downloads and trims a video without performing any transcription.\par
+\bullet\tab Output file is \b preview.mp4\b0  in the output directory.\par
+\bullet\tab Only yt-dlp and ffmpeg are required.\par
+
+\pard\sa200\sl276\slmult1
+\b YouTube -> Audio Only Mode\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab Downloads a video, trims it, and extracts the audio to a high-quality MP3 file (\b yt_audio.mp3\b0 ) without performing any transcription.\par
+\bullet\tab Audio is extracted at maximum VBR quality.\par
+\bullet\tab Only yt-dlp and ffmpeg are required.\par
+
+\pard\sa200\sl276\slmult1
+\b Output Formats\b0\par
+Available when using YouTube -> Subtitles or Audio File -> Subtitles mode. Select which formats to generate:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b SRT\b0  \endash  SubRip subtitle format (most common, enabled by default)\par
+\bullet\tab\b VTT\b0  \endash  WebVTT format (for web use)\par
+\bullet\tab\b TXT\b0  \endash  Plain text transcript\par
+\bullet\tab\b JSON\b0  \endash  Structured JSON output\par
+\bullet\tab\b CSV\b0  \endash  Comma-separated values\par
+\bullet\tab\b LRC\b0  \endash  Lyrics format\par
+
+\pard\sa200\sl276\slmult1
+\b Progress\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab The top progress bar shows overall pipeline progress across all steps.\par
+\bullet\tab A second progress bar appears during transcription and shows chunk-level progress.\par
+\bullet\tab\b Start\b0  \endash  Begin processing. The Log tab is shown automatically.\par
+\bullet\tab\b Cancel\b0  \endash  Stop the current job.\par
+\bullet\tab\b Open Output Folder\b0  \endash  Opens the output directory in Windows Explorer (available after completion).\par
+\bullet\tab\b Subtitle Edit\b0  \endash  Opens the generated SRT file directly in Subtitle Edit for review (available after completion, subtitle modes only).\par
+\bullet\tab\b Open preview.srt\b0  \endash  Opens the generated SRT file with your default application (available after completion, subtitle modes only).\par
+
+\pard\sa200\sl276\slmult1
+\fs24\b\cf2 Live Translation (Test) Tab\b0\cf0\fs20\par
+\b\i Note: This feature is experimental and intended for testing purposes only.\i0\b0\par
+The Live Translation tab provides real-time speech-to-text transcription from your microphone or other audio input device using whisper-stream.exe (from the whisper.cpp project). Transcribed text appears in a scrolling output window with a black background as you speak. The current in-progress line is shown in red and is continuously refined. Status messages appear in yellow and system information in grey.\par
+
+\b Important:\b0  How well this feature works depends heavily on your GPU type and performance. Systems with a powerful dedicated GPU will produce faster and more responsive results. On slower hardware, there may be noticeable delays or reduced accuracy.\par
+
+\b Controls\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Audio Device\b0  \endash  Select your audio input device. Devices are automatically detected via SDL on application startup. Click \b Refresh\b0  to re-scan if you connect a new device after the application has started.\par
+\bullet\tab\b Input Language\b0  \endash  The language being spoken. Set to \b auto\b0  for automatic detection, or select a specific language for better accuracy.\par
+\bullet\tab\b Output Language\b0  \endash  Set to \b auto\b0  to keep the same language as input, or \b en\b0  (English) to translate to English. Whisper can only translate \i to\i0  English, so these are the only two options available.\par
+\bullet\tab\b Model\b0  \endash  Choose a whisper model. Larger models are more accurate but require more GPU power for real-time use.\par
+\bullet\tab\b Start\b0  \endash  Begin live transcription.\par
+\bullet\tab\b Stop\b0  \endash  Stop the live transcription session.\par
+\bullet\tab\b Save\b0  \endash  Save the full transcript to a text file.\par
+\bullet\tab\b Clear\b0  \endash  Clear the output display.\par
+
+\pard\sa200\sl276\slmult1
+\b Requirements\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab The path to \b whisper-stream.exe\b0  must be configured on the \b Paths & Tools\b0  tab.\par
+\bullet\tab A whisper model file (.bin) must be available.\par
+\bullet\tab An audio input device (microphone) must be connected.\par
+
+\pard\sa200\sl276\slmult1
+\fs24\b\cf2 Subtitle Server Tab\b0\cf0\fs20\par
+The Subtitle Server provides a web-based live caption overlay that can be viewed on any device (phone, tablet, second monitor) connected to the same network. When the server is running, it serves a web page that displays live transcription text via WebSocket, with an admin panel for remote control.\par
+
+\b Server Settings\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Port\b0  \endash  The HTTP port the server listens on (default: 5080).\par
+\bullet\tab\b Start / Stop / Restart Server\b0  \endash  Control the subtitle server.\par
+\bullet\tab\b Simulate\b0  \endash  Send sample text (John 3:16-18) to test the display without a live audio source.\par
+\bullet\tab\b Stop Sim\b0  \endash  Stop the simulation.\par
+\bullet\tab\b Background / Text Color\b0  \endash  Customise the subtitle display colours. These colours apply to both the web page and the live output textbox. Click the colour swatch to open a colour picker dialog. Colours are saved to config.\par
+
+\pard\sa200\sl276\slmult1
+\b Connection Info\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab Shows the server status, URL, and number of connected clients.\par
+\bullet\tab\b Copy URL\b0  \endash  Copies the server URL to the clipboard so you can share it with other devices.\par
+
+\pard\sa200\sl276\slmult1
+\b Web Admin Panel\b0\par
+The served web page includes a gear icon button that opens an admin panel. From there you can remotely Start, Stop, Restart, or Simulate the live transcription without returning to the desktop application. The admin panel polls the server status every 3 seconds.\par
+
+\fs24\b\cf2 Whisper Parameters Tab\b0\cf0\fs20\par
+Advanced settings for the whisper-cli speech recognition engine. These parameters apply to the batch processing modes only (not Live Translation). Most users can leave these at their defaults.\par
+
+\b Language & Model\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Language\b0  \endash  Mirrors the Input Language setting from the Main tab.\par
+\bullet\tab\b Threads\b0  \endash  Number of CPU threads for processing (default: 4).\par
+\bullet\tab\b Processors\b0  \endash  Number of parallel processors (default: 1).\par
+
+\pard\sa200\sl276\slmult1
+\b Beam Search / Sampling\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Beam Size\b0  \endash  Width of beam search (default: 5). Higher values may improve accuracy but are slower.\par
+\bullet\tab\b Best Of\b0  \endash  Number of candidates to consider (default: 5).\par
+\bullet\tab\b Temperature\b0  \endash  Sampling temperature (default: 0.0). Higher values increase randomness.\par
+\bullet\tab\b Temperature Inc\b0  \endash  Temperature increment on fallback (default: 0.2).\par
+
+\pard\sa200\sl276\slmult1
+\b Quality / Filtering\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Max Context\b0  \endash  Maximum context tokens (0 = use default).\par
+\bullet\tab\b Word Threshold\b0  \endash  Word-level confidence threshold (default: 0.01).\par
+\bullet\tab\b Entropy Threshold\b0  \endash  Entropy threshold for quality filtering (default: 2.4).\par
+\bullet\tab\b Log Prob Threshold\b0  \endash  Log probability threshold (default: -1.0).\par
+\bullet\tab\b No Speech Threshold\b0  \endash  Threshold for detecting non-speech segments (default: 0.6).\par
+
+\pard\sa200\sl276\slmult1
+\b Segment Control\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Max Segment Length\b0  \endash  Maximum characters per subtitle segment (0 = unlimited).\par
+\bullet\tab\b Max Tokens\b0  \endash  Maximum tokens per segment (0 = unlimited).\par
+\bullet\tab\b Audio Context\b0  \endash  Audio context size (0 = use default).\par
+
+\pard\sa200\sl276\slmult1
+\b Prompting\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Initial Prompt\b0  \endash  Text prompt to guide the transcription. Useful for providing context, spelling of names, or domain-specific vocabulary.\par
+\bullet\tab\b Hotwords\b0  \endash  Comma-separated list of words to boost recognition for.\par
+
+\pard\sa200\sl276\slmult1
+\b Flags\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Split on Word\b0  \endash  Split segments at word boundaries (enabled by default).\par
+\bullet\tab\b No GPU\b0  \endash  Force CPU-only processing.\par
+\bullet\tab\b Flash Attention\b0  \endash  Enable flash attention for faster GPU inference.\par
+\bullet\tab\b Print Progress\b0  \endash  Show progress percentage in whisper output.\par
+\bullet\tab\b Print Colours\b0  \endash  Colour-code output by confidence level.\par
+\bullet\tab\b Print Realtime\b0  \endash  Print output in realtime as it is generated.\par
+\bullet\tab\b Diarize\b0  \endash  Enable speaker diarization (identify different speakers).\par
+\bullet\tab\b Tinydiarize\b0  \endash  Use lightweight speaker turn detection.\par
+\bullet\tab\b No Timestamps\b0  \endash  Suppress timestamp output.\par
+
+\pard\sa200\sl276\slmult1
+\b VAD (Voice Activity Detection)\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b VAD Threshold\b0  \endash  Sensitivity for detecting speech (default: 0.6).\par
+\bullet\tab\b Frequency Threshold\b0  \endash  High-pass frequency filter in Hz (default: 100).\par
+
+\pard\sa200\sl276\slmult1
+Click \b Restore Defaults\b0  to reset all whisper parameters to their default values.\par
+
+\fs24\b\cf2 Paths & Tools Tab\b0\cf0\fs20\par
+Configure the file paths to external tools and models:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b whisper-cli.exe\b0  \endash  The whisper speech recognition engine (used by batch transcription modes).\par
+\bullet\tab\b whisper-stream.exe\b0  \endash  The whisper real-time streaming engine (used by Live Translation).\par
+\bullet\tab\b yt-dlp.exe\b0  \endash  YouTube video downloader.\par
+\bullet\tab\b ffmpeg.exe\b0  \endash  Audio/video processing tool (trimming, conversion, chunking).\par
+\bullet\tab\b ffprobe.exe\b0  \endash  Audio/video analysis tool (duration detection).\par
+\bullet\tab\b YouTube Model (.bin)\b0  \endash  The whisper model file used for YouTube -> Subtitles mode.\par
+\bullet\tab\b Audio File Model (.bin)\b0  \endash  The whisper model file used for Audio File -> Subtitles mode.\par
+\bullet\tab\b Default Output Root\b0  \endash  Base directory where timestamped output folders are created.\par
+\bullet\tab\b yt-dlp Format String\b0  \endash  Download format preference for yt-dlp (default: best MP4 video + M4A audio).\par
+
+\pard\sa200\sl276\slmult1
+Click \b Verify All Paths\b0  to check that all configured tools and files exist. Use the \b Download whisper models\b0  link to obtain model files.\par
+
+\fs24\b\cf2 Log Tab\b0\cf0\fs20\par
+Displays real-time output from the processing pipeline. Each log entry is timestamped and colour-coded:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\cf5\b Dark Green\b0\cf0  \endash  Success messages and completed steps.\par
+\bullet\tab\cf1\b Black\b0\cf0  \endash  General information.\par
+\bullet\tab\cf3\b Grey\b0\cf0  \endash  Verbose/debug output (command lines, exit codes, ffprobe output).\par
+\bullet\tab\b Red\b0  \endash  Errors and warnings.\par
+
+\pard\sa200\sl276\slmult1
+The log auto-scrolls to show the latest output. If you scroll up to review earlier entries, auto-scroll pauses. It resumes when you scroll back to the bottom.\par
+Use \b Clear Log\b0  to reset the log and \b Copy to Clipboard\b0  to copy the entire log text.\par
+
+\fs24\b\cf2 Settings Tab\b0\cf0\fs20\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b UI Language\b0  \endash  Change the interface language. Available: English, Spanish, French, German, Catalan, Portuguese, Simplified Chinese, Japanese.\par
+\bullet\tab\b Parallel Transcription Jobs\b0  \endash  Number of audio chunks to transcribe simultaneously (default: 4). Higher values use more RAM and CPU but finish faster.\par
+\bullet\tab\b Chunk Size (seconds)\b0  \endash  Duration of each audio chunk (default: 300 = 5 minutes). Long audio is split into chunks for parallel processing.\par
+\bullet\tab\b Poll Interval (ms)\b0  \endash  How often to check if transcription chunks have completed (default: 2000ms).\par
+\bullet\tab\b Chunk Timeout (min)\b0  \endash  Maximum time to wait for a single chunk to finish (default: 60 minutes).\par
+\bullet\tab\b Keep Chunk Files\b0  \endash  Retain intermediate chunk WAV and SRT files after processing.\par
+\bullet\tab\b Keep Trimmed preview.mp4\b0  \endash  Keep the trimmed video file. If unchecked, preview.mp4 is deleted after audio extraction or completion.\par
+\bullet\tab\b Skip Download if File Exists\b0  \endash  Skip the yt-dlp download step if the video file already exists in the output folder.\par
+\bullet\tab\b Theme\b0  \endash  Choose System, Light, or Dark theme.\par
+
+\pard\sa200\sl276\slmult1
+Click \b Reset All Settings\b0  to restore all configuration to factory defaults.\par
+
+\fs24\b\cf2 Processing Pipeline\b0\cf0\fs20\par
+
+\b YouTube -> Subtitles Mode (8 steps):\b0\par
+\pard\fi-360\li720\sa100
+0.\tab Validate inputs and tool paths\par
+1.\tab Download video using yt-dlp (or copy local file)\par
+2.\tab Trim video to specified time range using ffmpeg\par
+3.\tab Extract audio to WAV format (16kHz mono) for whisper\par
+4.\tab Detect audio duration using ffprobe\par
+5.\tab Split audio into chunks for parallel processing\par
+6.\tab Transcribe all chunks in parallel batches using whisper-cli\par
+7.\tab Merge chunk SRT files into final subtitle file (preview.srt) with corrected timestamps\par
+
+\pard\sa200\sl276\slmult1
+\b Audio File -> Subtitles Mode (6 steps):\b0\par
+\pard\fi-360\li720\sa100
+0.\tab Validate inputs and tool paths\par
+1.\tab Convert audio to WAV format (16kHz mono) for whisper\par
+2.\tab Detect audio duration\par
+3.\tab Split audio into chunks\par
+4.\tab Transcribe all chunks in parallel batches\par
+5.\tab Merge into final SRT file (named after input file)\par
+
+\pard\sa200\sl276\slmult1
+\b YouTube -> Full Video Mode (3 steps):\b0\par
+\pard\fi-360\li720\sa100
+0.\tab Validate inputs and tool paths\par
+1.\tab Download video using yt-dlp (or copy local file)\par
+2.\tab Trim video to specified time range using ffmpeg (output: preview.mp4)\par
+
+\pard\sa200\sl276\slmult1
+\b YouTube -> Audio Only Mode (4 steps):\b0\par
+\pard\fi-360\li720\sa100
+0.\tab Validate inputs and tool paths\par
+1.\tab Download video using yt-dlp (or copy local file)\par
+2.\tab Trim video to specified time range using ffmpeg\par
+3.\tab Extract audio to high-quality MP3 (output: yt_audio.mp3)\par
+
+\pard\sa200\sl276\slmult1
+\fs24\b\cf2 Tips\b0\cf0\fs20\par
+\pard\fi-360\li720\sa100
+\bullet\tab For best subtitle quality, use the \b ggml-large-v3\b0  model. For quick results on short audio (e.g. voice messages), use \b ggml-tiny\b0  or \b ggml-base\b0 .\par
+\bullet\tab If transcription seems stuck, check the Log tab for detailed output.\par
+\bullet\tab Use \b Resume\b0  to continue an interrupted job without re-downloading or re-chunking.\par
+\bullet\tab The \b Initial Prompt\b0  field is powerful \endash  use it to provide spelling of names, technical terms, or context that helps the model produce better results.\par
+\bullet\tab When exiting the application, you will be prompted to clean up any working folders created during the current session.\par
+\bullet\tab Set \b Output Language\b0  to \b en\b0  to translate foreign-language audio directly into English subtitles.\par
+\bullet\tab Use \b YouTube -> Full Video\b0  mode when you just need the video file without subtitles.\par
+\bullet\tab Use \b YouTube -> Audio Only\b0  mode to get a high-quality MP3 audio file from a YouTube video or local video file.\par
+\bullet\tab For Live Translation, a smaller model (e.g. ggml-base or ggml-small) may give better real-time responsiveness than a large model, depending on your GPU.\par
+\bullet\tab The help file automatically loads in your selected UI language if available, otherwise it falls back to English.\par
+
+\pard\sa200\sl276\slmult1
+\fs24\b\cf2 Required External Tools\b0\cf0\fs20\par
+This application requires the following tools to be installed and configured on the Paths & Tools tab:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b whisper-cli\b0  \endash  Speech recognition engine (whisper.cpp) \endash  required for batch transcription\par
+\bullet\tab\b whisper-stream\b0  \endash  Real-time streaming engine (whisper.cpp) \endash  required for Live Translation\par
+\bullet\tab\b yt-dlp\b0  \endash  YouTube downloader (required for all YouTube-based modes)\par
+\bullet\tab\b ffmpeg\b0  \endash  Audio/video processing (required for all modes)\par
+\bullet\tab\b ffprobe\b0  \endash  Media analysis, included with ffmpeg (required for transcription modes)\par
+\bullet\tab\b Subtitle Edit\b0  (optional) \endash  For reviewing and editing generated subtitle files\par
+
+\pard\sa200\sl276\slmult1
+\par
+}

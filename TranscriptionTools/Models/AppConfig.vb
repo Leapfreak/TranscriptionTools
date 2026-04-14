@@ -1,0 +1,138 @@
+Imports System.Text.Json.Serialization
+
+Namespace Models
+    Public Class AppConfig
+
+        ' --- Paths & Tools ---
+
+        Public Property PathWhisper As String = ".\whisper-cli.exe"
+
+        Public Property PathYtdlp As String = ".\yt-dlp.exe"
+
+        Public Property PathFfmpeg As String = ".\ffmpeg.exe"
+
+        Public Property PathFfprobe As String = ".\ffprobe.exe"
+
+        Public Property PathModel As String = ".\ggml-large-v3.bin"
+
+        Public Property PathModelAudio As String = ".\ggml-large-v3.bin"
+
+        Public Property PathStream As String = ".\whisper-stream.exe"
+
+        Public Property PathSubtitleEdit As String = ".\SubtitleEdit\SubtitleEdit.exe"
+
+        Public Property PathOutputRoot As String = "."
+
+        Public Property YtdlpFormat As String = "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]"
+
+        ' --- Settings tab ---
+
+        Public Property UiLanguage As String = "en"
+
+        Public Property ParallelJobs As Integer = 4
+
+        Public Property ChunkSizeSec As Integer = 300
+
+        Public Property PollIntervalMs As Integer = 2000
+
+        Public Property ChunkTimeoutMin As Integer = 60
+
+        Public Property KeepChunkFiles As Boolean = False
+
+        Public Property KeepPreview As Boolean = True
+
+        Public Property SkipDownloadIfExists As Boolean = False
+
+        Public Property Theme As String = "System"
+
+        Public Property LastLiveDeviceId As String = ""
+
+        ' --- Output formats (Main tab) ---
+
+        Public Property OutputSrt As Boolean = True
+
+        Public Property OutputVtt As Boolean = False
+
+        Public Property OutputTxt As Boolean = False
+
+        Public Property OutputJson As Boolean = False
+
+        Public Property OutputCsv As Boolean = False
+
+        Public Property OutputLrc As Boolean = False
+
+        ' --- Whisper Parameters ---
+
+        Public Property Language As String = "auto"
+
+        Public Property OutputLanguage As String = "auto"
+
+        Public Property Threads As Integer = 4
+
+        Public Property Processors As Integer = 1
+
+        Public Property BeamSize As Integer = 5
+
+        Public Property BestOf As Integer = 5
+
+        Public Property Temperature As Single = 0.0F
+
+        Public Property TemperatureInc As Single = 0.2F
+
+        Public Property MaxContext As Integer = 0
+
+        Public Property WordThreshold As Single = 0.01F
+
+        Public Property EntropyThreshold As Single = 2.4F
+
+        Public Property LogProbThreshold As Single = -1.0F
+
+        Public Property NoSpeechThreshold As Single = 0.6F
+
+        Public Property SplitOnWord As Boolean = True
+
+        Public Property NoGpu As Boolean = False
+
+        Public Property FlashAttn As Boolean = False
+
+        Public Property PrintProgress As Boolean = False
+
+        Public Property PrintColours As Boolean = False
+
+        Public Property PrintRealtime As Boolean = False
+
+        Public Property Diarize As Boolean = False
+
+        Public Property Tinydiarize As Boolean = False
+
+        Public Property NoTimestamps As Boolean = False
+
+        Public Property MaxSegmentLength As Integer = 0
+
+        Public Property MaxTokens As Integer = 0
+
+        Public Property AudioContext As Integer = 0
+
+        Public Property InitialPrompt As String = "A sermon preached at an Evangelical Baptist Church. Includes Bible references, scripture readings, and Christian theological terminology."
+
+        Public Property Hotwords As String = ""
+
+        Public Property TranslateToEnglish As Boolean = False
+
+        Public Property VadThreshold As Single = 0.6F
+
+        Public Property FreqThreshold As Single = 100.0F
+
+        ' --- Subtitle Server ---
+
+        Public Property SubtitleServerPort As Integer = 5080
+
+        Public Property SubtitleBgColor As String = "#000000"
+
+        Public Property SubtitleFgColor As String = "#FFFFFF"
+
+        Public Shared Function CreateDefault() As AppConfig
+            Return New AppConfig()
+        End Function
+    End Class
+End Namespace

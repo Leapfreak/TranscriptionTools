@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+
+  <!-- Tab labels -->
+  <data name="Tab_Main"><value>&#20027;&#39029; / &#20219;&#21153;</value></data>
+  <data name="Tab_WhisperParams"><value>Whisper &#21442;&#25968;</value></data>
+  <data name="Tab_Paths"><value>&#36335;&#24452;&#21644;&#24037;&#20855;</value></data>
+  <data name="Tab_Log"><value>&#26085;&#24535;</value></data>
+  <data name="Tab_Help"><value>&#24110;&#21161;</value></data>
+  <data name="Tab_Live"><value>实时翻译 (Test)</value></data>
+  <data name="Tab_Settings"><value>&#35774;&#32622;</value></data>
+
+  <!-- Main tab - Input group -->
+  <data name="Grp_Input"><value>&#36755;&#20837;</value></data>
+  <data name="Lbl_Url"><value>YouTube &#32593;&#22336;&#25110;&#26412;&#22320;&#25991;&#20214;&#65306;</value></data>
+  <data name="Btn_BrowseFile"><value>&#27983;&#35272;...</value></data>
+  <data name="Lbl_StartTime"><value>&#24320;&#22987;&#26102;&#38388; (HH:MM:SS)&#65306;</value></data>
+  <data name="Lbl_EndTime"><value>&#32467;&#26463;&#26102;&#38388; (HH:MM:SS)&#65306;</value></data>
+  <data name="Lbl_OutputDir"><value>&#36755;&#20986;&#25991;&#20214;&#22841;&#65306;</value></data>
+  <data name="Btn_BrowseOutput"><value>&#27983;&#35272;...</value></data>
+  <data name="Lbl_Language"><value>&#35821;&#35328;&#65306;</value></data>
+
+  <!-- Main tab - Output formats group -->
+  <data name="Grp_OutputFormats"><value>&#36755;&#20986;&#26684;&#24335;</value></data>
+
+  <!-- Main tab - Progress group -->
+  <data name="Grp_Progress"><value>&#36827;&#24230;</value></data>
+  <data name="Btn_Start"><value>&#24320;&#22987;</value></data>
+  <data name="Btn_Cancel"><value>&#21462;&#28040;</value></data>
+  <data name="Btn_SubtitleEdit"><value>Subtitle Edit</value></data>
+  <data name="Btn_OpenOutputFolder"><value>&#25171;&#24320;&#36755;&#20986;&#25991;&#20214;&#22841;</value></data>
+  <data name="Lnk_PreviewSrt"><value>&#25171;&#24320; preview.srt</value></data>
+
+  <!-- Whisper Params tab -->
+  <data name="Grp_LanguageModel"><value>&#35821;&#35328;&#21644;&#27169;&#22411;</value></data>
+  <data name="Grp_BeamSampling"><value>&#26463;&#25628;&#32034; / &#37319;&#26679;</value></data>
+  <data name="Grp_QualityFiltering"><value>&#36136;&#37327; / &#36807;&#28388;</value></data>
+  <data name="Grp_SegmentControl"><value>&#27573;&#33853;&#25511;&#21046;</value></data>
+  <data name="Grp_Prompting"><value>&#25552;&#31034;&#35789;</value></data>
+  <data name="Grp_Flags"><value>&#36873;&#39033;</value></data>
+  <data name="Grp_Vad"><value>VAD&#65288;&#35821;&#38899;&#27963;&#21160;&#26816;&#27979;&#65289;</value></data>
+
+  <data name="Lbl_Threads"><value>&#32447;&#31243;&#65306;</value></data>
+  <data name="Lbl_Processors"><value>&#22788;&#29702;&#22120;&#65306;</value></data>
+  <data name="Lbl_BeamSize"><value>&#26463;&#23485;&#65306;</value></data>
+  <data name="Lbl_BestOf"><value>&#26368;&#20339;&#20505;&#36873;&#65306;</value></data>
+  <data name="Lbl_Temperature"><value>&#28201;&#24230;&#65306;</value></data>
+  <data name="Lbl_TemperatureInc"><value>&#28201;&#24230;&#22686;&#37327;&#65306;</value></data>
+  <data name="Lbl_MaxContext"><value>&#26368;&#22823;&#19978;&#19979;&#25991;&#65306;</value></data>
+  <data name="Lbl_WordThreshold"><value>&#35789;&#35821;&#38408;&#20540;&#65306;</value></data>
+  <data name="Lbl_EntropyThreshold"><value>&#29109;&#38408;&#20540;&#65306;</value></data>
+  <data name="Lbl_LogProbThreshold"><value>&#23545;&#25968;&#27010;&#29575;&#38408;&#20540;&#65306;</value></data>
+  <data name="Lbl_NoSpeechThreshold"><value>&#38745;&#38899;&#38408;&#20540;&#65306;</value></data>
+  <data name="Lbl_MaxSegmentLength"><value>&#26368;&#22823;&#27573;&#33853;&#38271;&#24230;&#65306;</value></data>
+  <data name="Lbl_MaxTokens"><value>&#26368;&#22823; token &#25968;&#65306;</value></data>
+  <data name="Lbl_AudioContext"><value>&#38899;&#39057;&#19978;&#19979;&#25991;&#65306;</value></data>
+  <data name="Lbl_InitialPrompt"><value>&#21021;&#22987;&#25552;&#31034;&#35789;&#65306;</value></data>
+  <data name="Lbl_Hotwords"><value>&#28909;&#35789;&#65306;</value></data>
+  <data name="Lbl_VadThreshold"><value>VAD &#38408;&#20540;&#65306;</value></data>
+  <data name="Lbl_FreqThreshold"><value>&#39057;&#29575;&#38408;&#20540;&#65306;</value></data>
+
+  <data name="Chk_SplitOnWord"><value>&#25353;&#35789;&#35821;&#20998;&#21106;</value></data>
+  <data name="Chk_NoGpu"><value>&#19981;&#20351;&#29992; GPU</value></data>
+  <data name="Chk_FlashAttn"><value>Flash &#27880;&#24847;&#21147;</value></data>
+  <data name="Chk_PrintProgress"><value>&#25171;&#21360;&#36827;&#24230;</value></data>
+  <data name="Chk_PrintColours"><value>&#25171;&#21360;&#33394;&#24425;</value></data>
+  <data name="Chk_PrintRealtime"><value>&#23454;&#26102;&#25171;&#21360;</value></data>
+  <data name="Chk_Diarize"><value>&#35828;&#35805;&#20154;&#20998;&#31163;</value></data>
+  <data name="Chk_Tinydiarize"><value>&#36731;&#37327;&#35828;&#35805;&#20154;&#20998;&#31163;</value></data>
+  <data name="Chk_NoTimestamps"><value>&#19981;&#36755;&#20986;&#26102;&#38388;&#25139;</value></data>
+  <data name="Chk_Translate"><value>&#32763;&#35793;&#20026;&#33521;&#35821;</value></data>
+
+  <data name="Btn_RestoreDefaults"><value>&#24674;&#22797;&#40664;&#35748;&#20540;</value></data>
+
+  <!-- Paths tab -->
+  <data name="Lbl_PathWhisper"><value>whisper-cli.exe&#65306;</value></data>
+  <data name="Lbl_PathStream"><value>whisper-stream.exe:</value></data>
+  <data name="Lbl_PathYtdlp"><value>yt-dlp.exe&#65306;</value></data>
+  <data name="Lbl_PathFfmpeg"><value>ffmpeg.exe&#65306;</value></data>
+  <data name="Lbl_PathFfprobe"><value>ffprobe.exe&#65306;</value></data>
+  <data name="Lbl_PathModel"><value>YouTube &#27169;&#22411; (.bin)&#65306;</value></data>
+  <data name="Lbl_PathModelAudio"><value>&#38899;&#39057;&#25991;&#20214;&#27169;&#22411; (.bin)&#65306;</value></data>
+  <data name="Lbl_PathOutputRoot"><value>&#40664;&#35748;&#36755;&#20986;&#26681;&#30446;&#24405;&#65306;</value></data>
+  <data name="Lbl_YtdlpFormat"><value>yt-dlp &#26684;&#24335;&#23383;&#31526;&#20018;&#65306;</value></data>
+  <data name="Btn_VerifyPaths"><value>&#39564;&#35777;&#25152;&#26377;&#36335;&#24452;</value></data>
+  <data name="Lnk_DownloadModels"><value>&#19979;&#36733; whisper &#27169;&#22411;...</value></data>
+  <data name="Btn_Browse"><value>&#27983;&#35272;...</value></data>
+
+  <!-- Log tab -->
+  <data name="Btn_ClearLog"><value>&#28165;&#38500;&#26085;&#24535;</value></data>
+  <data name="Btn_CopyLog"><value>&#22797;&#21046;&#21040;&#21098;&#36148;&#26495;</value></data>
+
+  <!-- Settings tab -->
+  <data name="Lbl_UiLanguage"><value>&#30028;&#38754;&#35821;&#35328;&#65306;</value></data>
+  <data name="Lbl_ParallelJobs"><value>&#24182;&#34892;&#36716;&#24405;&#20219;&#21153;&#65306;</value></data>
+  <data name="Lbl_ChunkSize"><value>&#20998;&#22359;&#22823;&#23567;&#65288;&#31186;&#65289;&#65306;</value></data>
+  <data name="Lbl_PollInterval"><value>&#36718;&#35810;&#38388;&#38548;&#65288;&#27627;&#31186;&#65289;&#65306;</value></data>
+  <data name="Lbl_ChunkTimeout"><value>&#20998;&#22359;&#36229;&#26102;&#65288;&#20998;&#38047;&#65289;&#65306;</value></data>
+  <data name="Chk_KeepChunks"><value>&#20445;&#30041;&#20998;&#22359;&#25991;&#20214;</value></data>
+  <data name="Chk_KeepPreview"><value>&#20445;&#30041;&#35009;&#21098;&#30340; preview.mp4</value></data>
+  <data name="Chk_SkipDownload"><value>&#25991;&#20214;&#24050;&#23384;&#22312;&#26102;&#36339;&#36807;&#19979;&#36733;</value></data>
+  <data name="Lbl_Theme"><value>&#20027;&#39064;&#65306;</value></data>
+  <data name="Btn_ResetSettings"><value>&#37325;&#32622;&#25152;&#26377;&#35774;&#32622;</value></data>
+
+  <!-- Status messages -->
+  <data name="Msg_Validating"><value>&#27491;&#22312;&#39564;&#35777;&#36755;&#20837;...</value></data>
+  <data name="Msg_Downloading"><value>&#27491;&#22312;&#19979;&#36733;&#35270;&#39057;...</value></data>
+  <data name="Msg_Trimming"><value>&#27491;&#22312;&#35009;&#21098;&#35270;&#39057;...</value></data>
+  <data name="Msg_ExtractingAudio"><value>&#27491;&#22312;&#25552;&#21462;&#38899;&#39057;...</value></data>
+  <data name="Msg_GettingDuration"><value>&#27491;&#22312;&#33719;&#21462;&#26102;&#38271;...</value></data>
+  <data name="Msg_Splitting"><value>&#27491;&#22312;&#23558;&#38899;&#39057;&#20998;&#22359;...</value></data>
+  <data name="Msg_Transcribing"><value>&#27491;&#22312;&#36716;&#24405;...</value></data>
+  <data name="Msg_Merging"><value>&#27491;&#22312;&#21512;&#24182;&#23383;&#24149;...</value></data>
+  <data name="Msg_Done"><value>&#23436;&#25104;&#65281;</value></data>
+  <data name="Msg_Cancelled"><value>&#24050;&#21462;&#28040;&#12290;</value></data>
+  <data name="Msg_Ready"><value>&#23601;&#32490;</value></data>
+
+  <!-- Error messages -->
+  <data name="Err_ToolNotFound"><value>&#22312;&#25351;&#23450;&#36335;&#24452;&#26410;&#25214;&#21040;&#24037;&#20855;&#12290;&#35831;&#26816;&#26597;&#36335;&#24452;&#36873;&#39033;&#21345;&#12290;</value></data>
+  <data name="Err_DownloadFailed"><value>&#35270;&#39057;&#19979;&#36733;&#22833;&#36133;&#12290;</value></data>
+  <data name="Err_TrimFailed"><value>&#35270;&#39057;&#35009;&#21098;&#22833;&#36133;&#12290;</value></data>
+  <data name="Err_AudioExtractFailed"><value>&#38899;&#39057;&#25552;&#21462;&#22833;&#36133;&#12290;</value></data>
+  <data name="Err_DurationFailed"><value>&#26080;&#27861;&#30830;&#23450;&#38899;&#39057;&#26102;&#38271;&#12290;</value></data>
+  <data name="Err_ChunkFailed"><value>&#38899;&#39057;&#20998;&#22359;&#22833;&#36133;&#12290;</value></data>
+  <data name="Err_WhisperFailed"><value>Whisper &#36716;&#24405;&#22833;&#36133;&#12290;</value></data>
+  <data name="Err_MergeFailed"><value>SRT &#21512;&#24182;&#22833;&#36133;&#12290;</value></data>
+  <data name="Err_NoInput"><value>&#35831;&#36755;&#20837; YouTube &#32593;&#22336;&#25110;&#27983;&#35272;&#26412;&#22320;&#25991;&#20214;&#12290;</value></data>
+
+  <!-- Tooltips -->
+  <data name="Tip_Url"><value>&#36755;&#20837; YouTube &#32593;&#22336;&#25110;&#26412;&#22320;&#35270;&#39057;/&#38899;&#39057;&#25991;&#20214;&#36335;&#24452;</value></data>
+  <data name="Tip_BeamSize"><value>&#26463;&#25628;&#32034;&#23485;&#24230;&#12290;-1 &#20351;&#29992;&#36138;&#23146;&#35299;&#30721;&#12290;&#20540;&#36234;&#22823;&#36234;&#24930;&#20294;&#36234;&#20934;&#30830;&#12290;</value></data>
+  <data name="Tip_BestOf"><value>&#35201;&#32771;&#34385;&#30340;&#20505;&#36873;&#36716;&#24405;&#25968;&#12290;&#36234;&#22823; = &#36234;&#24930;&#20294;&#36136;&#37327;&#36234;&#22909;&#12290;</value></data>
+  <data name="Tip_Temperature"><value>&#37319;&#26679;&#28201;&#24230;&#12290;0 = &#30830;&#23450;&#24615;&#65288;&#26368;&#21487;&#33021;&#30340; token&#65289;&#12290;&#36234;&#39640; = &#36234;&#38543;&#26426;&#12290;</value></data>
+  <data name="Tip_TemperatureInc"><value>&#35299;&#30721;&#22833;&#36133;&#26102;&#30340;&#28201;&#24230;&#22686;&#37327;&#12290;&#22312;&#37325;&#35797;&#26102;&#22686;&#21152;&#38543;&#26426;&#24615;&#12290;</value></data>
+  <data name="Tip_MaxContext"><value>&#21069;&#19968;&#27573;&#33853;&#20013;&#29992;&#20316;&#19978;&#19979;&#25991;&#30340;&#26368;&#22823; token &#25968;&#12290;-1 = &#20351;&#29992;&#20840;&#37096;&#12290;0 = &#19981;&#20351;&#29992;&#12290;</value></data>
+  <data name="Tip_WordThreshold"><value>&#35789;&#35821;&#27010;&#29575;&#38408;&#20540;&#12290;&#20302;&#20110;&#27492;&#32622;&#20449;&#24230;&#30340;&#35789;&#35821;&#23558;&#34987;&#36807;&#28388;&#12290;</value></data>
+  <data name="Tip_EntropyThreshold"><value>&#35299;&#30721;&#22120;&#22238;&#36864;&#30340;&#29109;&#38408;&#20540;&#12290;&#36234;&#39640; = &#23545;&#19981;&#30830;&#23450;&#36755;&#20986;&#36234;&#23485;&#23481;&#12290;</value></data>
+  <data name="Tip_LogProbThreshold"><value>&#35299;&#30721;&#22120;&#22238;&#36864;&#30340;&#23545;&#25968;&#27010;&#29575;&#38408;&#20540;&#12290;</value></data>
+  <data name="Tip_NoSpeechThreshold"><value>&#26816;&#27979;&#38745;&#38899;/&#26080;&#35821;&#38899;&#30340;&#27010;&#29575;&#38408;&#20540;&#12290;</value></data>
+  <data name="Tip_SplitOnWord"><value>&#22312;&#35789;&#35821;&#36793;&#30028;&#22788;&#20998;&#21106;&#23383;&#24149;&#27573;&#33853;&#65292;&#32780;&#19981;&#26159;&#22312;&#35789;&#35821;&#20013;&#38388;&#12290;</value></data>
+  <data name="Tip_NoGpu"><value>&#31105;&#29992; GPU &#21152;&#36895;&#12290;&#20165;&#20351;&#29992; CPU&#12290;</value></data>
+  <data name="Tip_FlashAttn"><value>&#22312;&#25903;&#25345;&#30340; GPU &#19978;&#21551;&#29992; Flash &#27880;&#24847;&#21147;&#20197;&#21152;&#24555;&#25512;&#29702;&#36895;&#24230;&#12290;</value></data>
+  <data name="Tip_Diarize"><value>&#21551;&#29992;&#35828;&#35805;&#20154;&#20998;&#31163;&#12290;&#38656;&#35201;&#31435;&#20307;&#22768;&#38899;&#39057;&#36755;&#20837;&#12290;</value></data>
+  <data name="Tip_Tinydiarize"><value>&#20351;&#29992;&#36731;&#37327;&#32423;&#35828;&#35805;&#20154;&#36716;&#25442;&#26816;&#27979;&#12290;</value></data>
+  <data name="Tip_Translate"><value>&#23558;&#38750;&#33521;&#35821;&#35821;&#38899;&#32763;&#35793;&#20026;&#33521;&#35821;&#12290;</value></data>
+  <data name="Tip_MaxSegmentLength"><value>&#27599;&#20010;&#23383;&#24149;&#27573;&#33853;&#30340;&#26368;&#22823;&#23383;&#31526;&#25968;&#12290;0 = &#26080;&#38480;&#21046;&#12290;</value></data>
+  <data name="Tip_MaxTokens"><value>&#27599;&#20010;&#27573;&#33853;&#30340;&#26368;&#22823; token &#25968;&#12290;0 = &#26080;&#38480;&#21046;&#12290;</value></data>
+  <data name="Tip_AudioContext"><value>&#38899;&#39057;&#19978;&#19979;&#25991;&#22823;&#23567;&#65288;token &#25968;&#65289;&#12290;0 = &#20351;&#29992;&#23436;&#25972;&#19978;&#19979;&#25991;&#12290;</value></data>
+  <data name="Tip_InitialPrompt"><value>&#29992;&#20110;&#24341;&#23548;&#36716;&#24405;&#39118;&#26684;&#12289;&#35789;&#27719;&#25110;&#26684;&#24335;&#30340;&#25991;&#26412;&#25552;&#31034;&#35789;&#12290;</value></data>
+  <data name="Tip_Hotwords"><value>&#20197;&#36887;&#21495;&#20998;&#38548;&#30340;&#35789;&#35821;&#21015;&#34920;&#65292;&#29992;&#20110;&#22312;&#36716;&#24405;&#20013;&#22686;&#24378;&#12290;</value></data>
+  <data name="Tip_VadThreshold"><value>&#35821;&#38899;&#27963;&#21160;&#26816;&#27979;&#38408;&#20540;&#12290;&#36234;&#39640; = &#38745;&#38899;&#26816;&#27979;&#36234;&#20005;&#26684;&#12290;</value></data>
+  <data name="Tip_FreqThreshold"><value>VAD &#39640;&#36890;&#28388;&#27874;&#22120;&#30340;&#39057;&#29575;&#38408;&#20540;&#65288;Hz&#65289;&#12290;</value></data>
+  <data name="Tip_Language"><value>&#38899;&#39057;&#35821;&#35328;&#20195;&#30721;&#65288;en&#12289;es&#12289;fr &#31561;&#65289;&#25110; 'auto' &#34920;&#31034;&#33258;&#21160;&#26816;&#27979;&#12290;</value></data>
+  <data name="Tip_Threads"><value>&#29992;&#20110;&#36716;&#24405;&#30340; CPU &#32447;&#31243;&#25968;&#12290;</value></data>
+  <data name="Tip_Processors"><value>&#29992;&#20110;&#36716;&#24405;&#30340;&#24182;&#34892;&#22788;&#29702;&#22120;&#25968;&#12290;</value></data>
+  <data name="Tip_PrintProgress"><value>&#23558;&#36716;&#24405;&#36827;&#24230;&#30334;&#20998;&#27604;&#25171;&#21360;&#21040; stdout&#12290;</value></data>
+  <data name="Tip_PrintColours"><value>&#25353;&#32622;&#20449;&#24230;&#32423;&#21035;&#23545;&#36716;&#24405;&#36755;&#20986;&#36827;&#34892;&#33394;&#24425;&#32534;&#30721;&#12290;</value></data>
+  <data name="Tip_PrintRealtime"><value>&#22312;&#29983;&#25104;&#26102;&#23454;&#26102;&#25171;&#21360;&#36716;&#24405;&#36755;&#20986;&#12290;</value></data>
+  <data name="Tip_NoTimestamps"><value>&#22312;&#36716;&#24405;&#36755;&#20986;&#20013;&#25233;&#21046;&#26102;&#38388;&#25139;&#12290;</value></data>
+  <data name="Lbl_Mode"><value>&#27169;&#24335;&#65306;</value></data>
+  <data name="Lbl_AudioFile"><value>&#38899;&#39057;&#25991;&#20214;&#65306;</value></data>
+  <data name="Btn_BrowseAudio"><value>&#27983;&#35272;&#38899;&#39057;...</value></data>
+  <data name="Lbl_InputLanguage"><value>&#36755;&#20837;&#35821;&#35328;&#65306;</value></data>
+  <data name="Lbl_OutputLanguage"><value>&#36755;&#20986;&#35821;&#35328;&#65306;</value></data>
+  <data name="Tip_InputLanguage"><value>&#38899;&#39057;&#20013;&#35828;&#30340;&#35821;&#35328;&#65288;auto &#33258;&#21160;&#26816;&#27979;&#65289;&#12290;</value></data>
+  <data name="Tip_OutputLanguage"><value>&#23383;&#24149;&#35821;&#35328;&#65288;auto = &#19982;&#36755;&#20837;&#30456;&#21516;&#65292;en = &#32763;&#35793;&#20026;&#33521;&#35821;&#65289;&#12290;</value></data>
+  <data name="Lbl_Model"><value>Model:</value></data>
+
+  <!-- Paths tab - group -->
+  <data name="Grp_Paths"><value>&#24037;&#20855;&#36335;&#24452;</value></data>
+
+  <!-- Settings tab - group -->
+  <data name="Grp_AppSettings"><value>&#24212;&#29992;&#31243;&#24207;&#35774;&#32622;</value></data>
+  <data name="Btn_CheckToolUpdates"><value>&#26816;&#26597;&#26356;&#26032;</value></data>
+
+  <!-- Live tab -->
+  <data name="Grp_LiveInput"><value>&#23454;&#26102;&#32763;&#35793;&#35774;&#32622;</value></data>
+  <data name="Lbl_LiveDevice"><value>&#38899;&#39057;&#35774;&#22791;&#65306;</value></data>
+  <data name="Btn_RefreshDevices"><value>&#21047;&#26032;</value></data>
+  <data name="Lbl_LiveInputLang"><value>&#36755;&#20837;&#35821;&#35328;&#65306;</value></data>
+  <data name="Lbl_LiveOutputLang"><value>&#36755;&#20986;&#35821;&#35328;&#65306;</value></data>
+  <data name="Lbl_LiveModel"><value>&#27169;&#22411;&#65306;</value></data>
+  <data name="Btn_LiveStart"><value>&#24320;&#22987;</value></data>
+  <data name="Btn_LiveStop"><value>&#20572;&#27490;</value></data>
+  <data name="Btn_LiveSave"><value>&#20445;&#23384;&#36716;&#24405;...</value></data>
+  <data name="Btn_LiveClear"><value>&#28165;&#38500;</value></data>
+
+  <!-- Subtitle Server tab -->
+  <data name="Tab_Server"><value>&#23383;&#24149;&#26381;&#21153;&#22120;</value></data>
+  <data name="Grp_ServerSettings"><value>&#26381;&#21153;&#22120;&#35774;&#32622;</value></data>
+  <data name="Lbl_ServerPort"><value>&#31471;&#21475;&#65306;</value></data>
+  <data name="Btn_ServerStart"><value>&#21551;&#21160;&#26381;&#21153;&#22120;</value></data>
+  <data name="Btn_ServerStop"><value>&#20572;&#27490;&#26381;&#21153;&#22120;</value></data>
+  <data name="Btn_ServerRestart"><value>&#37325;&#21551;&#26381;&#21153;&#22120;</value></data>
+  <data name="Btn_Simulate"><value>&#27169;&#25311;</value></data>
+  <data name="Btn_SimStop"><value>&#20572;&#27490;&#27169;&#25311;</value></data>
+  <data name="Lbl_SubtitleBg"><value>&#32972;&#26223;&#65306;</value></data>
+  <data name="Lbl_SubtitleFg"><value>&#25991;&#23383;&#39068;&#33394;&#65306;</value></data>
+  <data name="Grp_ServerInfo"><value>&#36830;&#25509;&#20449;&#24687;</value></data>
+  <data name="Btn_CopyUrl"><value>&#22797;&#21046; URL</value></data>
+
+  <!-- MessageBox messages -->
+  <data name="Msg_Checking"><value>&#27491;&#22312;&#26816;&#26597;...</value></data>
+  <data name="Msg_MissingTools"><value>&#32570;&#23569;&#20197;&#19979;&#24517;&#38656;&#24037;&#20855;&#65306;</value></data>
+  <data name="Msg_DownloadNow"><value>&#26159;&#21542;&#31435;&#21363;&#19979;&#36733;&#65311;</value></data>
+  <data name="Msg_MissingDeps"><value>&#32570;&#23569;&#20381;&#36182;</value></data>
+  <data name="Msg_UpdatesAvailable"><value>&#26377;&#24037;&#20855;&#26356;&#26032;&#21487;&#29992;&#65306;</value></data>
+  <data name="Msg_UpdateNow"><value>&#26159;&#21542;&#31435;&#21363;&#26356;&#26032;&#65311;</value></data>
+  <data name="Msg_UpdatesTitle"><value>&#26377;&#21487;&#29992;&#26356;&#26032;</value></data>
+  <data name="Msg_AllUpToDate"><value>&#25152;&#26377;&#24037;&#20855;&#22343;&#24050;&#26159;&#26368;&#26032;&#29256;&#26412;&#12290;</value></data>
+  <data name="Msg_ToolCheck"><value>&#24037;&#20855;&#26816;&#26597;</value></data>
+  <data name="Msg_ErrorCheckingDeps"><value>&#26816;&#26597;&#20381;&#36182;&#26102;&#20986;&#38169;&#65306;</value></data>
+  <data name="Msg_DownloadComplete"><value>&#25152;&#26377;&#24037;&#20855;&#24050;&#25104;&#21151;&#19979;&#36733;&#65281;</value></data>
+  <data name="Msg_DownloadCompleteTitle"><value>&#19979;&#36733;&#23436;&#25104;</value></data>
+  <data name="Msg_DownloadFailed"><value>&#19979;&#36733;&#22833;&#36133;&#65306;</value></data>
+  <data name="Msg_DownloadError"><value>&#19979;&#36733;&#38169;&#35823;</value></data>
+  <data name="Msg_PipelineError"><value>&#22788;&#29702;&#38169;&#35823;</value></data>
+  <data name="Msg_UnexpectedError"><value>&#24847;&#22806;&#38169;&#35823;</value></data>
+  <data name="Msg_NoSrtFound"><value>&#22312;&#36755;&#20986;&#25991;&#20214;&#22841;&#20013;&#26410;&#25214;&#21040;SRT&#25991;&#20214;&#12290;</value></data>
+  <data name="Msg_SubtitleEditNotFound"><value>&#26410;&#25214;&#21040;SubtitleEdit.exe&#65306;</value></data>
+  <data name="Msg_PathVerification"><value>&#36335;&#24452;&#39564;&#35777;</value></data>
+  <data name="Msg_RestoreDefaults"><value>&#23558;&#25152;&#26377;whisper&#21442;&#25968;&#24674;&#22797;&#20026;&#40664;&#35748;&#20540;&#65311;</value></data>
+  <data name="Msg_RestoreDefaultsTitle"><value>&#24674;&#22797;&#40664;&#35748;&#20540;</value></data>
+  <data name="Msg_ResetAll"><value>&#37325;&#32622;&#25152;&#26377;&#35774;&#32622;&#65311;&#27492;&#25805;&#20316;&#19981;&#21487;&#25764;&#38144;&#12290;</value></data>
+  <data name="Msg_ResetAllTitle"><value>&#37325;&#32622;&#35774;&#32622;</value></data>
+  <data name="Msg_StreamNotFound"><value>&#26410;&#25214;&#21040;whisper-stream.exe&#65306;</value></data>
+  <data name="Msg_TranscriptSaved"><value>&#36716;&#24405;&#24050;&#20445;&#23384;&#21040;&#65306;</value></data>
+  <data name="Msg_Saved"><value>&#24050;&#20445;&#23384;</value></data>
+  <data name="Msg_CleanUp"><value>&#28165;&#29702;</value></data>
+  <data name="Msg_Error"><value>&#38169;&#35823;</value></data>
+  <data name="Msg_NewVersionAvailable"><value>&#26377;&#26032;&#29256;&#26412;&#21487;&#29992;&#65306;</value></data>
+  <data name="Msg_DownloadUpdate"><value>&#26159;&#21542;&#35775;&#38382;&#19979;&#36733;&#39029;&#38754;&#65311;</value></data>
+  <data name="Msg_UpdateAvailable"><value>&#26377;&#21487;&#29992;&#26356;&#26032;</value></data>
+</root>

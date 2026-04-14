@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+
+  <!-- Tab labels -->
+  <data name="Tab_Main"><value>Principal / Tasca</value></data>
+  <data name="Tab_WhisperParams"><value>Par&#224;metres de Whisper</value></data>
+  <data name="Tab_Paths"><value>Camins &amp; eines</value></data>
+  <data name="Tab_Log"><value>Registre</value></data>
+  <data name="Tab_Help"><value>Ajuda</value></data>
+  <data name="Tab_Live"><value>Traducci&#243; en directe (Test)</value></data>
+  <data name="Tab_Settings"><value>Configuraci&#243;</value></data>
+
+  <!-- Main tab - Input group -->
+  <data name="Grp_Input"><value>Entrada</value></data>
+  <data name="Lbl_Url"><value>URL de YouTube o fitxer local:</value></data>
+  <data name="Btn_BrowseFile"><value>Examinar...</value></data>
+  <data name="Lbl_StartTime"><value>Hora d'inici (HH:MM:SS):</value></data>
+  <data name="Lbl_EndTime"><value>Hora de fi (HH:MM:SS):</value></data>
+  <data name="Lbl_OutputDir"><value>Carpeta de sortida:</value></data>
+  <data name="Btn_BrowseOutput"><value>Examinar...</value></data>
+  <data name="Lbl_Language"><value>Idioma:</value></data>
+
+  <!-- Main tab - Output formats group -->
+  <data name="Grp_OutputFormats"><value>Formats de sortida</value></data>
+
+  <!-- Main tab - Progress group -->
+  <data name="Grp_Progress"><value>Progr&#233;s</value></data>
+  <data name="Btn_Start"><value>Iniciar</value></data>
+  <data name="Btn_Cancel"><value>Cancel&#183;lar</value></data>
+  <data name="Btn_SubtitleEdit"><value>Subtitle Edit</value></data>
+  <data name="Btn_OpenOutputFolder"><value>Obrir carpeta de sortida</value></data>
+  <data name="Lnk_PreviewSrt"><value>Obrir preview.srt</value></data>
+
+  <!-- Whisper Params tab -->
+  <data name="Grp_LanguageModel"><value>Idioma &amp; model</value></data>
+  <data name="Grp_BeamSampling"><value>Cerca en feix / Mostreig</value></data>
+  <data name="Grp_QualityFiltering"><value>Qualitat / Filtratge</value></data>
+  <data name="Grp_SegmentControl"><value>Control de segments</value></data>
+  <data name="Grp_Prompting"><value>Indicacions</value></data>
+  <data name="Grp_Flags"><value>Opcions</value></data>
+  <data name="Grp_Vad"><value>VAD (Detecci&#243; d'activitat de veu)</value></data>
+
+  <data name="Lbl_Threads"><value>Fils:</value></data>
+  <data name="Lbl_Processors"><value>Processadors:</value></data>
+  <data name="Lbl_BeamSize"><value>Mida del feix:</value></data>
+  <data name="Lbl_BestOf"><value>Millor de:</value></data>
+  <data name="Lbl_Temperature"><value>Temperatura:</value></data>
+  <data name="Lbl_TemperatureInc"><value>Increment de temperatura:</value></data>
+  <data name="Lbl_MaxContext"><value>Context m&#224;xim:</value></data>
+  <data name="Lbl_WordThreshold"><value>Llindar de paraules:</value></data>
+  <data name="Lbl_EntropyThreshold"><value>Llindar d'entropia:</value></data>
+  <data name="Lbl_LogProbThreshold"><value>Llindar de log prob:</value></data>
+  <data name="Lbl_NoSpeechThreshold"><value>Llindar de silenci:</value></data>
+  <data name="Lbl_MaxSegmentLength"><value>Longitud m&#224;xima de segment:</value></data>
+  <data name="Lbl_MaxTokens"><value>Tokens m&#224;xims:</value></data>
+  <data name="Lbl_AudioContext"><value>Context d'&#224;udio:</value></data>
+  <data name="Lbl_InitialPrompt"><value>Indicaci&#243; inicial:</value></data>
+  <data name="Lbl_Hotwords"><value>Paraules clau:</value></data>
+  <data name="Lbl_VadThreshold"><value>Llindar VAD:</value></data>
+  <data name="Lbl_FreqThreshold"><value>Llindar de freq&#252;&#232;ncia:</value></data>
+
+  <data name="Chk_SplitOnWord"><value>Dividir per paraula</value></data>
+  <data name="Chk_NoGpu"><value>Sense GPU</value></data>
+  <data name="Chk_FlashAttn"><value>Atenci&#243; flash</value></data>
+  <data name="Chk_PrintProgress"><value>Imprimir progr&#233;s</value></data>
+  <data name="Chk_PrintColours"><value>Imprimir colors</value></data>
+  <data name="Chk_PrintRealtime"><value>Imprimir en temps real</value></data>
+  <data name="Chk_Diarize"><value>Diaritzar</value></data>
+  <data name="Chk_Tinydiarize"><value>Tinydiarize</value></data>
+  <data name="Chk_NoTimestamps"><value>Sense marques de temps</value></data>
+  <data name="Chk_Translate"><value>Traduir a l'angl&#232;s</value></data>
+
+  <data name="Btn_RestoreDefaults"><value>Restaurar valors predeterminats</value></data>
+
+  <!-- Paths tab -->
+  <data name="Lbl_PathWhisper"><value>whisper-cli.exe:</value></data>
+  <data name="Lbl_PathStream"><value>whisper-stream.exe:</value></data>
+  <data name="Lbl_PathYtdlp"><value>yt-dlp.exe:</value></data>
+  <data name="Lbl_PathFfmpeg"><value>ffmpeg.exe:</value></data>
+  <data name="Lbl_PathFfprobe"><value>ffprobe.exe:</value></data>
+  <data name="Lbl_PathModel"><value>Model YouTube (.bin):</value></data>
+  <data name="Lbl_PathModelAudio"><value>Model fitxer d'àudio (.bin):</value></data>
+  <data name="Lbl_PathOutputRoot"><value>Arrel de sortida predeterminada:</value></data>
+  <data name="Lbl_YtdlpFormat"><value>Cadena de format yt-dlp:</value></data>
+  <data name="Btn_VerifyPaths"><value>Verificar tots els camins</value></data>
+  <data name="Lnk_DownloadModels"><value>Descarregar models whisper...</value></data>
+  <data name="Btn_Browse"><value>Examinar...</value></data>
+
+  <!-- Log tab -->
+  <data name="Btn_ClearLog"><value>Esborrar registre</value></data>
+  <data name="Btn_CopyLog"><value>Copiar al porta-retalls</value></data>
+
+  <!-- Settings tab -->
+  <data name="Lbl_UiLanguage"><value>Idioma de la interf&#237;cie:</value></data>
+  <data name="Lbl_ParallelJobs"><value>Treballs de transcripci&#243; en paral&#183;lel:</value></data>
+  <data name="Lbl_ChunkSize"><value>Mida del fragment (segons):</value></data>
+  <data name="Lbl_PollInterval"><value>Interval de sondeig (ms):</value></data>
+  <data name="Lbl_ChunkTimeout"><value>Temps l&#237;mit del fragment (min):</value></data>
+  <data name="Chk_KeepChunks"><value>Conservar fitxers de fragments</value></data>
+  <data name="Chk_KeepPreview"><value>Conservar preview.mp4 retallat</value></data>
+  <data name="Chk_SkipDownload"><value>Ometre desc&#224;rrega si el fitxer existeix</value></data>
+  <data name="Lbl_Theme"><value>Tema:</value></data>
+  <data name="Btn_ResetSettings"><value>Restablir tota la configuraci&#243;</value></data>
+
+  <!-- Status messages -->
+  <data name="Msg_Validating"><value>Validant entrades...</value></data>
+  <data name="Msg_Downloading"><value>Descarregant v&#237;deo...</value></data>
+  <data name="Msg_Trimming"><value>Retallant v&#237;deo...</value></data>
+  <data name="Msg_ExtractingAudio"><value>Extraient &#224;udio...</value></data>
+  <data name="Msg_GettingDuration"><value>Obtenint durada...</value></data>
+  <data name="Msg_Splitting"><value>Dividint &#224;udio en fragments...</value></data>
+  <data name="Msg_Transcribing"><value>Transcrivint...</value></data>
+  <data name="Msg_Merging"><value>Fusionant subt&#237;tols...</value></data>
+  <data name="Msg_Done"><value>Fet!</value></data>
+  <data name="Msg_Cancelled"><value>Cancel&#183;lat.</value></data>
+  <data name="Msg_Ready"><value>Preparat</value></data>
+
+  <!-- Error messages -->
+  <data name="Err_ToolNotFound"><value>Eina no trobada al cam&#237; especificat. Si us plau, reviseu la pestanya Camins.</value></data>
+  <data name="Err_DownloadFailed"><value>La desc&#224;rrega del v&#237;deo ha fallat.</value></data>
+  <data name="Err_TrimFailed"><value>El retall del v&#237;deo ha fallat.</value></data>
+  <data name="Err_AudioExtractFailed"><value>L'extracci&#243; d'&#224;udio ha fallat.</value></data>
+  <data name="Err_DurationFailed"><value>No s'ha pogut determinar la durada de l'&#224;udio.</value></data>
+  <data name="Err_ChunkFailed"><value>La divisi&#243; de l'&#224;udio ha fallat.</value></data>
+  <data name="Err_WhisperFailed"><value>La transcripci&#243; de Whisper ha fallat.</value></data>
+  <data name="Err_MergeFailed"><value>La fusi&#243; d'SRT ha fallat.</value></data>
+  <data name="Err_NoInput"><value>Si us plau, introduiu una URL de YouTube o cerqueu un fitxer local.</value></data>
+
+  <!-- Tooltips -->
+  <data name="Tip_Url"><value>Introdu&#239;u una URL de YouTube o el cam&#237; a un fitxer de v&#237;deo/&#224;udio local</value></data>
+  <data name="Tip_BeamSize"><value>Amplada de cerca en feix. -1 usa descodificaci&#243; &#224;vida. Valors m&#233;s alts s&#243;n m&#233;s lents per&#242; m&#233;s precisos.</value></data>
+  <data name="Tip_BestOf"><value>Nombre de transcripcions candidates a considerar. M&#233;s alt = m&#233;s lent per&#242; millor qualitat.</value></data>
+  <data name="Tip_Temperature"><value>Temperatura de mostreig. 0 = determin&#237;stic (tokens m&#233;s probables). M&#233;s alt = m&#233;s aleatori.</value></data>
+  <data name="Tip_TemperatureInc"><value>Increment de temperatura quan falla la descodificaci&#243;. Afegeix aleatorietat en el reintent.</value></data>
+  <data name="Tip_MaxContext"><value>Tokens m&#224;xims del segment anterior usats com a context. -1 = usar tots. 0 = cap.</value></data>
+  <data name="Tip_WordThreshold"><value>Llindar de probabilitat de paraules. Les paraules per sota d'aquesta confian&#231;a es filtren.</value></data>
+  <data name="Tip_EntropyThreshold"><value>Llindar d'entropia per al replegament del descodificador. M&#233;s alt = m&#233;s tolerant amb sortida incerta.</value></data>
+  <data name="Tip_LogProbThreshold"><value>Llindar de probabilitat logar&#237;tmica per al replegament del descodificador.</value></data>
+  <data name="Tip_NoSpeechThreshold"><value>Llindar de probabilitat per detectar silenci/abs&#232;ncia de veu.</value></data>
+  <data name="Tip_SplitOnWord"><value>Dividir segments de subt&#237;tols als l&#237;mits de paraules en lloc de a meitat de paraula.</value></data>
+  <data name="Tip_NoGpu"><value>Desactivar l'acceleraci&#243; per GPU. Usar nom&#233;s CPU.</value></data>
+  <data name="Tip_FlashAttn"><value>Activar atenci&#243; flash per a infer&#232;ncia m&#233;s r&#224;pida en GPUs compatibles.</value></data>
+  <data name="Tip_Diarize"><value>Activar diaritzaci&#243; de parlants. Requereix &#224;udio est&#232;reo d'entrada.</value></data>
+  <data name="Tip_Tinydiarize"><value>Usar detecci&#243; lleugera de torns de parlant.</value></data>
+  <data name="Tip_Translate"><value>Traduir veu no anglesa a l'angl&#232;s.</value></data>
+  <data name="Tip_MaxSegmentLength"><value>Car&#224;cters m&#224;xims per segment de subt&#237;tol. 0 = sense l&#237;mit.</value></data>
+  <data name="Tip_MaxTokens"><value>Tokens m&#224;xims per segment. 0 = sense l&#237;mit.</value></data>
+  <data name="Tip_AudioContext"><value>Mida del context d'&#224;udio en tokens. 0 = usar context complet.</value></data>
+  <data name="Tip_InitialPrompt"><value>Indicaci&#243; de text per guiar l'estil, vocabulari o format de la transcripci&#243;.</value></data>
+  <data name="Tip_Hotwords"><value>Llista de paraules separades per comes per potenciar en la transcripci&#243;.</value></data>
+  <data name="Tip_VadThreshold"><value>Llindar de detecci&#243; d'activitat de veu. M&#233;s alt = detecci&#243; de silenci m&#233;s estricta.</value></data>
+  <data name="Tip_FreqThreshold"><value>Llindar de freq&#252;&#232;ncia per al filtre de pas alt VAD en Hz.</value></data>
+  <data name="Tip_Language"><value>Codi d'idioma de l'&#224;udio (en, es, fr, etc.) o 'auto' per a detecci&#243; autom&#224;tica.</value></data>
+  <data name="Tip_Threads"><value>Nombre de fils de CPU per a la transcripci&#243;.</value></data>
+  <data name="Tip_Processors"><value>Nombre de processadors en paral&#183;lel per a la transcripci&#243;.</value></data>
+  <data name="Tip_PrintProgress"><value>Imprimir percentatge de progr&#233;s de transcripci&#243; a stdout.</value></data>
+  <data name="Tip_PrintColours"><value>Acolorir la sortida de transcripci&#243; segons el nivell de confian&#231;a.</value></data>
+  <data name="Tip_PrintRealtime"><value>Imprimir la sortida de transcripci&#243; en temps real mentre es genera.</value></data>
+  <data name="Tip_NoTimestamps"><value>Suprimir marques de temps a la sortida de transcripci&#243;.</value></data>
+  <data name="Lbl_Mode"><value>Mode:</value></data>
+  <data name="Lbl_AudioFile"><value>Fitxer d'&#224;udio:</value></data>
+  <data name="Btn_BrowseAudio"><value>Cercar &#224;udio...</value></data>
+  <data name="Lbl_InputLanguage"><value>Idioma d'entrada:</value></data>
+  <data name="Lbl_OutputLanguage"><value>Idioma de sortida:</value></data>
+  <data name="Tip_InputLanguage"><value>Idioma parlat a l'&#224;udio (auto per detectar).</value></data>
+  <data name="Tip_OutputLanguage"><value>Idioma dels subt&#237;tols (auto = igual que l'entrada, en = traduir a l'angl&#232;s).</value></data>
+  <data name="Lbl_Model"><value>Model:</value></data>
+
+  <!-- Paths tab - group -->
+  <data name="Grp_Paths"><value>Rutes d'eines</value></data>
+
+  <!-- Settings tab - group -->
+  <data name="Grp_AppSettings"><value>Configuraci&#243; de l'aplicaci&#243;</value></data>
+  <data name="Btn_CheckToolUpdates"><value>Cercar actualitzacions</value></data>
+
+  <!-- Live tab -->
+  <data name="Grp_LiveInput"><value>Configuraci&#243; de traducci&#243; en directe</value></data>
+  <data name="Lbl_LiveDevice"><value>Dispositiu d'&#224;udio:</value></data>
+  <data name="Btn_RefreshDevices"><value>Actualitzar</value></data>
+  <data name="Lbl_LiveInputLang"><value>Idioma d'entrada:</value></data>
+  <data name="Lbl_LiveOutputLang"><value>Idioma de sortida:</value></data>
+  <data name="Lbl_LiveModel"><value>Model:</value></data>
+  <data name="Btn_LiveStart"><value>Iniciar</value></data>
+  <data name="Btn_LiveStop"><value>Aturar</value></data>
+  <data name="Btn_LiveSave"><value>Desar transcripci&#243;...</value></data>
+  <data name="Btn_LiveClear"><value>Netejar</value></data>
+
+  <!-- Subtitle Server tab -->
+  <data name="Tab_Server"><value>Servidor de subt&#237;tols</value></data>
+  <data name="Grp_ServerSettings"><value>Configuraci&#243; del servidor</value></data>
+  <data name="Lbl_ServerPort"><value>Port:</value></data>
+  <data name="Btn_ServerStart"><value>Iniciar servidor</value></data>
+  <data name="Btn_ServerStop"><value>Aturar servidor</value></data>
+  <data name="Btn_ServerRestart"><value>Reiniciar servidor</value></data>
+  <data name="Btn_Simulate"><value>Simular</value></data>
+  <data name="Btn_SimStop"><value>Parar sim.</value></data>
+  <data name="Lbl_SubtitleBg"><value>Fons:</value></data>
+  <data name="Lbl_SubtitleFg"><value>Color del text:</value></data>
+  <data name="Grp_ServerInfo"><value>Informaci&#243; de connexi&#243;</value></data>
+  <data name="Btn_CopyUrl"><value>Copiar URL</value></data>
+
+  <!-- MessageBox messages -->
+  <data name="Msg_Checking"><value>Comprovant...</value></data>
+  <data name="Msg_MissingTools"><value>Falten les seg&#252;ents eines necess&#224;ries:</value></data>
+  <data name="Msg_DownloadNow"><value>Voleu descarregar-les ara?</value></data>
+  <data name="Msg_MissingDeps"><value>Depend&#232;ncies que falten</value></data>
+  <data name="Msg_UpdatesAvailable"><value>Hi ha actualitzacions d'eines disponibles:</value></data>
+  <data name="Msg_UpdateNow"><value>Voleu actualitzar-les ara?</value></data>
+  <data name="Msg_UpdatesTitle"><value>Actualitzacions disponibles</value></data>
+  <data name="Msg_AllUpToDate"><value>Totes les eines estan actualitzades.</value></data>
+  <data name="Msg_ToolCheck"><value>Comprovaci&#243; d'eines</value></data>
+  <data name="Msg_ErrorCheckingDeps"><value>Error en comprovar depend&#232;ncies:</value></data>
+  <data name="Msg_DownloadComplete"><value>Totes les eines s'han descarregat correctament!</value></data>
+  <data name="Msg_DownloadCompleteTitle"><value>Desc&#224;rrega completa</value></data>
+  <data name="Msg_DownloadFailed"><value>Error de desc&#224;rrega:</value></data>
+  <data name="Msg_DownloadError"><value>Error de desc&#224;rrega</value></data>
+  <data name="Msg_PipelineError"><value>Error de proc&#233;s</value></data>
+  <data name="Msg_UnexpectedError"><value>Error inesperat</value></data>
+  <data name="Msg_NoSrtFound"><value>No s'ha trobat cap fitxer SRT a la carpeta de sortida.</value></data>
+  <data name="Msg_SubtitleEditNotFound"><value>SubtitleEdit.exe no trobat:</value></data>
+  <data name="Msg_PathVerification"><value>Verificaci&#243; de rutes</value></data>
+  <data name="Msg_RestoreDefaults"><value>Restaurar tots els par&#224;metres de whisper als valors predeterminats?</value></data>
+  <data name="Msg_RestoreDefaultsTitle"><value>Restaurar valors predeterminats</value></data>
+  <data name="Msg_ResetAll"><value>Restablir TOTA la configuraci&#243;? Aix&#242; no es pot desfer.</value></data>
+  <data name="Msg_ResetAllTitle"><value>Restablir configuraci&#243;</value></data>
+  <data name="Msg_StreamNotFound"><value>whisper-stream.exe no trobat:</value></data>
+  <data name="Msg_TranscriptSaved"><value>Transcripci&#243; desada a:</value></data>
+  <data name="Msg_Saved"><value>Desat</value></data>
+  <data name="Msg_CleanUp"><value>Netejar</value></data>
+  <data name="Msg_Error"><value>Error</value></data>
+  <data name="Msg_NewVersionAvailable"><value>Hi ha una nova versi&#243; disponible:</value></data>
+  <data name="Msg_DownloadUpdate"><value>Voleu visitar la p&#224;gina de desc&#224;rrega?</value></data>
+  <data name="Msg_UpdateAvailable"><value>Actualitzaci&#243; disponible</value></data>
+</root>
