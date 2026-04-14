@@ -24,7 +24,15 @@ jobs:
       - name: Publish
         run: dotnet publish TranscriptionTools/TranscriptionTools.vbproj -c Release -o TranscriptionTools/bin/Publish
 
+      - name: Cache whisper binaries
+        id: whisper-cache
+        uses: actions/cache@v4
+        with:
+          path: whisper-bin
+          key: whisper-v1.8.4-cuda12.4-${{ hashFiles('patches/stream.cpp') }}
+
       - name: Install CUDA Toolkit
+        if: steps.whisper-cache.outputs.cache-hit != 'true'
         run: |
           $url = "https://developer.download.nvidia.com/compute/cuda/12.4.0/network_installers/cuda_12.4.0_windows_network.exe"
           Invoke-WebRequest -Uri $url -OutFile "cuda_installer.exe"
@@ -35,14 +43,17 @@ jobs:
           echo "$cudaPath\bin" >> $env:GITHUB_PATH
 
       - name: Clone whisper.cpp
+        if: steps.whisper-cache.outputs.cache-hit != 'true'
         run: |
           git clone --depth 1 --branch v1.8.4 https://github.com/ggml-org/whisper.cpp.git whisper-src
 
       - name: Apply patches
+        if: steps.whisper-cache.outputs.cache-hit != 'true'
         run: |
           Copy-Item -Path "patches/stream.cpp" -Destination "whisper-src/examples/stream/stream.cpp" -Force
 
       - name: Download SDL2
+        if: steps.whisper-cache.outputs.cache-hit != 'true'
         run: |
           Invoke-WebRequest -Uri "https://github.com/libsdl-org/SDL/releases/download/release-2.30.11/SDL2-devel-2.30.11-VC.zip" -OutFile "sdl2.zip"
           Expand-Archive -Path "sdl2.zip" -DestinationPath "sdl2-temp" -Force
@@ -52,6 +63,7 @@ jobs:
           Remove-Item "sdl2-temp" -Recurse -Force
 
       - name: Build whisper.cpp with CUDA
+        if: steps.whisper-cache.outputs.cache-hit != 'true'
         run: |
           $cudaPath = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4"
           $env:CUDA_PATH = $cudaPath
@@ -69,6 +81,7 @@ jobs:
           cmake --build . --config Release
 
       - name: Collect whisper binaries
+        if: steps.whisper-cache.outputs.cache-hit != 'true'
         run: |
           New-Item -ItemType Directory -Force -Path "whisper-bin"
           $binDir = "whisper-src/build/bin/Release"
