@@ -79,7 +79,7 @@ jobs:
           Copy-Item "$binDir/ggml-base.dll" "whisper-bin/"
           Copy-Item "$binDir/ggml-cpu.dll" "whisper-bin/"
           Copy-Item "$binDir/ggml-cuda.dll" "whisper-bin/"
-          Copy-Item "$binDir/SDL2.dll" "whisper-bin/"
+          Copy-Item "${{ github.workspace }}/SDL2/lib/x64/SDL2.dll" "whisper-bin/"
           Write-Host "Whisper binaries:"
           Get-ChildItem "whisper-bin"
 
