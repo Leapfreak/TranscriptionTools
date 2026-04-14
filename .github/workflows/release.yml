@@ -53,6 +53,9 @@ jobs:
 
       - name: Build whisper.cpp with CUDA
         run: |
+          $cudaPath = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4"
+          $env:CUDA_PATH = $cudaPath
+          $env:CudaToolkitDir = $cudaPath
           cd whisper-src
           mkdir build
           cd build
@@ -60,7 +63,9 @@ jobs:
             -DGGML_CUDA=ON `
             -DCMAKE_BUILD_TYPE=Release `
             -DWHISPER_SDL2=ON `
-            -DSDL2_DIR="${{ github.workspace }}/SDL2/cmake"
+            -DSDL2_DIR="${{ github.workspace }}/SDL2/cmake" `
+            -DCUDAToolkit_ROOT="$cudaPath" `
+            -DCMAKE_CUDA_COMPILER="$cudaPath\bin\nvcc.exe"
           cmake --build . --config Release
 
       - name: Collect whisper binaries
