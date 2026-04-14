@@ -30,6 +30,8 @@ jobs:
           cuda: '12.4.0'
           method: 'network'
           sub-packages: '["nvcc", "cudart", "cublas", "cublas_dev", "visual_studio_integration"]'
+          use-github-cache: 'false'
+          use-local-cache: 'false'
 
       - name: Clone whisper.cpp
         run: |
