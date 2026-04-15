@@ -126,10 +126,8 @@ Public Class FormMain
         AddHandler trayMenuShow.Click, Sub(s, ev) ShowFromTray()
         AddHandler trayMenuExit.Click, Sub(s, ev) ExitApplication()
 
-        ' First run setup or apply saved preferences
-        If Not _config.FirstRunComplete Then
-            RunFirstTimeSetup()
-        Else
+        ' Apply saved startup preference (first-run setup happens after dependency download)
+        If _config.FirstRunComplete Then
             If _config.StartWithWindows Then RegisterStartup() Else UnregisterStartup()
         End If
 
@@ -294,6 +292,11 @@ Public Class FormMain
                 Cursor = Cursors.Default
             End If
         End Try
+
+        ' Run first-time setup after dependencies are ready
+        If Not manualCheck AndAlso Not _config.FirstRunComplete Then
+            RunFirstTimeSetup()
+        End If
     End Sub
 
     Private Async Function DownloadToolsAsync(mgr As Models.DependencyManager, tools As List(Of Models.ToolState)) As Task

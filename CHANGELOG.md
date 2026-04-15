@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.7 - 2026-04-16
+
+### Fixed
+- First-run setup (firewall/startup questions) now happens after dependency download, not before
+- Client-side JS `let` replaced with `var` for VB.NET string literal compatibility
+
 ## v1.0.6 - 2026-04-16
 
 ### Added

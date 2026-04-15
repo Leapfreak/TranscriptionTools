@@ -423,11 +423,11 @@ body{background:{{BG_COLOR}};color:{{FG_COLOR}};font-family:'Segoe UI',Arial,san
 </div>
 <div id=""container""><div id=""lines""><div id=""spacer""></div></div></div>
 <script>
-let fontSize=28;
-let currentEl=null;
-let speakEnabled=false;
-let selectedVoice='';
-let speechRate=1;
+var fontSize=28;
+var currentEl=null;
+var speakEnabled=false;
+var selectedVoice='';
+var speechRate=1;
 const synth=window.speechSynthesis;
 const lines=document.getElementById('lines');
 const container=document.getElementById('container');
@@ -529,7 +529,7 @@ connect();
 /* Admin remote control */
 const adminPanel=document.getElementById('adminPanel');
 const adminStatus=document.getElementById('adminStatus');
-let adminPollTimer=null;
+var adminPollTimer=null;
 function toggleAdmin(){
   if(adminPanel.style.display==='block'){adminPanel.style.display='none';if(adminPollTimer){clearInterval(adminPollTimer);adminPollTimer=null}}
   else{adminPanel.style.display='block';pollStatus();adminPollTimer=setInterval(pollStatus,3000)}
