@@ -30,6 +30,8 @@ jobs:
         with:
           path: whisper-bin
           key: whisper-v1.8.4-cuda12.4-${{ hashFiles('patches/stream.cpp') }}
+          restore-keys: |
+            whisper-v1.8.4-cuda12.4-
 
       - name: Install CUDA Toolkit
         if: steps.whisper-cache.outputs.cache-hit != 'true'
