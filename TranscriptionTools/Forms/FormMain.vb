@@ -1580,7 +1580,9 @@ Public Class FormMain
 
         AppendLiveText($"Starting live transcription (device {deviceId}, lang={inputLang})...", Drawing.Color.Yellow)
         AppendLiveText($"{Path.GetFileName(_config.PathStream)} {args}", Drawing.Color.Gray)
-        AppendLiveText("", Drawing.Color.White)
+        Dim fgColor As Drawing.Color = Drawing.Color.White
+        Try : fgColor = ColorTranslator.FromHtml(_config.SubtitleFgColor) : Catch : End Try
+        AppendLiveText("", fgColor)
 
         _liveRunner.Start(resolvedStreamPath, args)
 
@@ -1595,7 +1597,7 @@ Public Class FormMain
     Private Sub btnLiveStop_Click(sender As Object, e As EventArgs) Handles btnLiveStop.Click
         If _liveRunner IsNot Nothing AndAlso _liveRunner.IsRunning Then
             _liveRunner.Stop()
-            AppendLiveText("", Drawing.Color.White)
+            AppendLiveText("", Drawing.Color.Gray)
             AppendLiveText("Live transcription stopped.", Drawing.Color.Yellow)
         End If
 
@@ -1705,7 +1707,11 @@ Public Class FormMain
             rtb.SelectionStart = 0
             rtb.SelectionLength = txt.Length
         End If
-        rtb.SelectionColor = Drawing.Color.Red
+        Try
+            rtb.SelectionColor = ColorTranslator.FromHtml(_config.SubtitleFgColor)
+        Catch
+            rtb.SelectionColor = Drawing.Color.White
+        End Try
         rtb.SelectedText = text
         rtb.ScrollToCaret()
     End Sub
