@@ -65,7 +65,7 @@ Namespace Models
 
         Public Property Language As String = "auto"
 
-        Public Property OutputLanguage As String = "auto"
+        Public Property OutputLanguage As String = "en"
 
         Public Property Threads As Integer = 4
 
@@ -134,6 +134,10 @@ Namespace Models
         Public Property SubtitleFontFamily As String = "Segoe UI"
         Public Property SubtitleFontSize As Single = 12
         Public Property SubtitleFontBold As Boolean = False
+
+        Public Property FirstRunComplete As Boolean = False
+        Public Property StartWithWindows As Boolean = False
+        Public Property AllowFirewall As Boolean = False
 
         Public Shared Function CreateDefault() As AppConfig
             Return New AppConfig()

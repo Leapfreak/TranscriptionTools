@@ -38,41 +38,69 @@ Namespace Pipeline
             End Get
         End Property
 
-        Public Sub Start(port As Integer)
+        Public Sub Start(port As Integer, Optional allowRemote As Boolean = True)
             If _isRunning Then Return
 
             _port = port
             _cts = New CancellationTokenSource()
 
+            If allowRemote Then
+                If Not TryStartRemote() Then
+                    ' All remote attempts failed — fall back to localhost
+                    RaiseEvent StatusChanged(Me, "Falling back to localhost only...")
+                    TryStartLocalhost()
+                End If
+            Else
+                TryStartLocalhost()
+            End If
+        End Sub
+
+        Private Function TryStartRemote() As Boolean
+            ' Try binding to all interfaces (requires admin or URL ACL)
             _listener = New HttpListener()
             _listener.Prefixes.Add($"http://+:{_port}/")
 
             Try
                 _listener.Start()
+                _isRunning = True
+                RaiseEvent StatusChanged(Me, "Server started")
+                Task.Run(Sub() AcceptLoop(_cts.Token), _cts.Token)
+                Return True
             Catch ex As HttpListenerException
-                ' Access denied - try to add a URL reservation via elevated netsh
+                ' Access denied — try to add a URL reservation via elevated netsh
                 RaiseEvent StatusChanged(Me, "Access denied - requesting permission via UAC prompt...")
-                If TryAddUrlReservation(_port) Then
-                    ' Create a fresh listener — the old one is disposed after failure
-                    _listener = New HttpListener()
-                    _listener.Prefixes.Add($"http://+:{_port}/")
-                    Try
-                        _listener.Start()
-                    Catch ex2 As HttpListenerException
-                        _isRunning = False
-                        RaiseEvent StatusChanged(Me, $"Failed to start: {ex2.Message}")
-                        Throw
-                    End Try
-                Else
-                    _isRunning = False
-                    RaiseEvent StatusChanged(Me, $"Failed to start: {ex.Message}")
-                    Throw
-                End If
             End Try
 
-            _isRunning = True
-            RaiseEvent StatusChanged(Me, "Server started")
-            Task.Run(Sub() AcceptLoop(_cts.Token), _cts.Token)
+            If TryAddUrlReservation(_port) Then
+                ' Create a fresh listener — the old one is disposed after failure
+                _listener = New HttpListener()
+                _listener.Prefixes.Add($"http://+:{_port}/")
+                Try
+                    _listener.Start()
+                    _isRunning = True
+                    RaiseEvent StatusChanged(Me, "Server started")
+                    Task.Run(Sub() AcceptLoop(_cts.Token), _cts.Token)
+                    Return True
+                Catch ex2 As HttpListenerException
+                    RaiseEvent StatusChanged(Me, $"Failed to start on all interfaces: {ex2.Message}")
+                End Try
+            End If
+
+            Return False
+        End Function
+
+        Private Sub TryStartLocalhost()
+            _listener = New HttpListener()
+            _listener.Prefixes.Add($"http://localhost:{_port}/")
+            Try
+                _listener.Start()
+                _isRunning = True
+                RaiseEvent StatusChanged(Me, "Server started (localhost only)")
+                Task.Run(Sub() AcceptLoop(_cts.Token), _cts.Token)
+            Catch ex As Exception
+                _isRunning = False
+                RaiseEvent StatusChanged(Me, $"Failed to start: {ex.Message}")
+            End Try
         End Sub
 
         Private Function TryAddUrlReservation(port As Integer) As Boolean

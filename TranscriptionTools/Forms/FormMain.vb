@@ -121,22 +121,59 @@ Public Class FormMain
         ' Check for missing dependencies
         CheckDependenciesAsync()
 
-        ' Register to start with Windows
-        RegisterStartup()
-
         ' Wire up system tray
         AddHandler trayIcon.DoubleClick, Sub(s, ev) ShowFromTray()
         AddHandler trayMenuShow.Click, Sub(s, ev) ShowFromTray()
         AddHandler trayMenuExit.Click, Sub(s, ev) ExitApplication()
 
+        ' First run setup or apply saved preferences
+        If Not _config.FirstRunComplete Then
+            RunFirstTimeSetup()
+        Else
+            If _config.StartWithWindows Then RegisterStartup() Else UnregisterStartup()
+        End If
+
         ' Auto-start subtitle server after form is fully shown
         AddHandler Me.Shown, Sub(s, ev) StartSubtitleServer()
+    End Sub
+
+    Private Sub RunFirstTimeSetup()
+        ' Ask about starting with Windows
+        Dim bootResult = MessageBox.Show(
+            "Would you like Transcription Tools to start automatically when Windows starts?",
+            "Startup Preference",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Question)
+        _config.StartWithWindows = (bootResult = DialogResult.Yes)
+        If _config.StartWithWindows Then RegisterStartup() Else UnregisterStartup()
+
+        ' Ask about firewall access (needed for phones to connect to subtitle server)
+        Dim fwResult = MessageBox.Show(
+            "Allow Transcription Tools to accept connections from other devices on your network?" & vbCrLf & vbCrLf &
+            "This is needed for phones to display live subtitles. " &
+            "Windows may ask for administrator permission.",
+            "Network Access",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Question)
+        _config.AllowFirewall = (fwResult = DialogResult.Yes)
+
+        _config.FirstRunComplete = True
+        ConfigManager.Save(_config)
     End Sub
 
     Private Sub RegisterStartup()
         Try
             Using key = Registry.CurrentUser.OpenSubKey("SOFTWARE\Microsoft\Windows\CurrentVersion\Run", True)
                 key?.SetValue("TranscriptionTools", $"""{Application.ExecutablePath}""")
+            End Using
+        Catch
+        End Try
+    End Sub
+
+    Private Sub UnregisterStartup()
+        Try
+            Using key = Registry.CurrentUser.OpenSubKey("SOFTWARE\Microsoft\Windows\CurrentVersion\Run", True)
+                key?.DeleteValue("TranscriptionTools", False)
             End Using
         Catch
         End Try
@@ -1757,7 +1794,7 @@ Public Class FormMain
 
     Private Sub StartSubtitleServer()
         Dim port = CInt(nudServerPort.Value)
-        EnsureFirewallRule(port)
+        If _config.AllowFirewall Then EnsureFirewallRule(port)
 
         _subtitleServer = New SubtitleServer()
         _subtitleServer.BgColor = _config.SubtitleBgColor
@@ -1782,7 +1819,7 @@ Public Class FormMain
                                                   End Sub
 
         Try
-            _subtitleServer.Start(port)
+            _subtitleServer.Start(port, _config.AllowFirewall)
             UpdateServerUi(True)
             AppendServerLog($"Subtitle server started on port {port}")
             AppendServerLog($"Phones should open: http://{GetLocalIpAddress()}:{port}")

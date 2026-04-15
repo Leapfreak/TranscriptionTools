@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.0.6 - 2026-04-16
+
+### Added
+- First-run setup wizard: asks about Windows startup and firewall preferences once, then remembers
+- Localhost fallback for subtitle server when remote binding fails (non-admin friendly)
+
+### Fixed
+- Subtitle server now respects firewall preference (allowRemote parameter passed correctly)
+- Cleaned up subtitle server Start() flow to prevent double-starting AcceptLoop
+- Output language defaults to English instead of auto
+
 ## v1.0.5 - 2026-04-16
 
 ### Fixed
