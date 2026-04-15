@@ -29,9 +29,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: whisper-bin
-          key: whisper-v1.8.4-cuda12.4-${{ hashFiles('patches/stream.cpp') }}
+          key: whisper-v1.8.4-cuda12.4-withrt-${{ hashFiles('patches/stream.cpp') }}
           restore-keys: |
-            whisper-v1.8.4-cuda12.4-
+            whisper-v1.8.4-cuda12.4-withrt-
 
       - name: Install CUDA Toolkit
         if: steps.whisper-cache.outputs.cache-hit != 'true'
@@ -95,6 +95,11 @@ jobs:
           Copy-Item "$binDir/ggml-cpu.dll" "whisper-bin/"
           Copy-Item "$binDir/ggml-cuda.dll" "whisper-bin/"
           Copy-Item "${{ github.workspace }}/SDL2/lib/x64/SDL2.dll" "whisper-bin/"
+          # Bundle CUDA runtime DLLs so users don't need CUDA toolkit installed
+          $cudaBin = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4\bin"
+          Copy-Item "$cudaBin/cublas64_12.dll" "whisper-bin/"
+          Copy-Item "$cudaBin/cublasLt64_12.dll" "whisper-bin/"
+          Copy-Item "$cudaBin/cudart64_12.dll" "whisper-bin/"
           Write-Host "Whisper binaries:"
           Get-ChildItem "whisper-bin"
 

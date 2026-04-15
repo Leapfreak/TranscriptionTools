@@ -53,7 +53,9 @@ Namespace Pipeline
                 ' Access denied - try to add a URL reservation via elevated netsh
                 RaiseEvent StatusChanged(Me, "Access denied - requesting permission via UAC prompt...")
                 If TryAddUrlReservation(_port) Then
-                    ' Retry after reservation was added
+                    ' Create a fresh listener — the old one is disposed after failure
+                    _listener = New HttpListener()
+                    _listener.Prefixes.Add($"http://+:{_port}/")
                     Try
                         _listener.Start()
                     Catch ex2 As HttpListenerException
@@ -75,9 +77,11 @@ Namespace Pipeline
 
         Private Function TryAddUrlReservation(port As Integer) As Boolean
             Try
+                ' Delete any existing reservation first, then re-add
+                Dim cmd = $"/c netsh http delete urlacl url=http://+:{port}/ & netsh http add urlacl url=http://+:{port}/ user=Everyone"
                 Dim psi As New ProcessStartInfo() With {
-                    .FileName = "netsh",
-                    .Arguments = $"http add urlacl url=http://+:{port}/ user=Everyone",
+                    .FileName = "cmd.exe",
+                    .Arguments = cmd,
                     .Verb = "runas",
                     .UseShellExecute = True,
                     .CreateNoWindow = True,

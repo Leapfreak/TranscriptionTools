@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.0.5 - 2026-04-16
+
+### Fixed
+- Bundle CUDA runtime DLLs (cublas64_12, cublasLt64_12, cudart64_12) with installer so users don't need CUDA toolkit installed
+
 ## v1.0.4 - 2026-04-16
 
 ### Added
