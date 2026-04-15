@@ -29,9 +29,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: whisper-bin
-          key: whisper-v1.8.4-cuda12.4-withrt-${{ hashFiles('patches/stream.cpp') }}
+          key: whisper-v1.8.4-cuda12.4-v2-${{ hashFiles('patches/stream.cpp') }}
           restore-keys: |
-            whisper-v1.8.4-cuda12.4-withrt-
+            whisper-v1.8.4-cuda12.4-v2-
 
       - name: Check cache contents
         id: cache-check
