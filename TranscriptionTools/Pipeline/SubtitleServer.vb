@@ -350,10 +350,12 @@ body{background:{{BG_COLOR}};color:{{FG_COLOR}};font-family:'Segoe UI',Arial,san
 #status{padding:6px 12px;font-size:13px;color:#888;background:#111;border-bottom:1px solid #222;flex-shrink:0}
 #status.connected{color:#4a4}
 #status.disconnected{color:#a44}
-#container{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;justify-content:flex-end}
-#lines{display:flex;flex-direction:column}
-.line{font-size:28px;line-height:1.4;padding:4px 0;color:{{FG_COLOR}};word-wrap:break-word}
+#container{flex:1;overflow-y:auto;padding:16px}
+#lines{display:flex;flex-direction:column;min-height:100%}
+#spacer{flex:1}
+.line{font-size:28px;line-height:1.4;padding:4px 0;color:{{FG_COLOR}};word-wrap:break-word;transition:color 1.5s ease}
 .line.in-progress{color:#ff6b6b;opacity:0.85}
+.line.new-line{color:#ffdd57}
 #toolbar{position:fixed;top:0;right:0;padding:8px;z-index:10;display:flex;gap:4px}
 #toolbar button{background:#222;color:#aaa;border:1px solid #444;border-radius:4px;
                 padding:6px 10px;font-size:18px;cursor:pointer;min-width:40px}
@@ -419,7 +421,7 @@ body{background:{{BG_COLOR}};color:{{FG_COLOR}};font-family:'Segoe UI',Arial,san
     <option value=""1.6"">Very Fast</option>
   </select>
 </div>
-<div id=""container""><div id=""lines""></div></div>
+<div id=""container""><div id=""lines""><div id=""spacer""></div></div></div>
 <script>
 let fontSize=28;
 let currentEl=null;
@@ -487,13 +489,21 @@ function changeFontSize(d){fontSize=Math.max(12,Math.min(80,fontSize+d));localSt
 function changeFont(f){fontFamily=f;localStorage.setItem('fontFamily',f);applyStylesToAll()}
 function toggleBold(){isBold=!isBold;localStorage.setItem('bold',isBold);document.getElementById('btnBold').classList.toggle('active');applyStylesToAll()}
 function changeColor(c){textColor=c;localStorage.setItem('textColor',c);applyStylesToAll()}
-function scrollBottom(){container.scrollTop=container.scrollHeight}
+var userScrolled=false;
+container.addEventListener('scroll',function(){
+  var atBottom=container.scrollHeight-container.scrollTop-container.clientHeight<60;
+  userScrolled=!atBottom;
+});
+function scrollBottom(){if(!userScrolled){container.scrollTop=container.scrollHeight}}
 function styleEl(el,inProgress){el.style.fontSize=fontSize+'px';el.style.fontFamily=fontFamily;el.style.fontWeight=isBold?'bold':'normal';if(!inProgress)el.style.color=textColor}
 function addCommitted(text){
-  if(currentEl){currentEl.textContent=text;currentEl.className='line';styleEl(currentEl,false);currentEl=null}
-  else{const el=document.createElement('div');el.className='line';el.textContent=text;styleEl(el,false);lines.appendChild(el)}
+  var el;
+  if(currentEl){el=currentEl;el.textContent=text;el.className='line new-line';currentEl=null}
+  else{el=document.createElement('div');el.className='line new-line';el.textContent=text;lines.appendChild(el)}
+  styleEl(el,false);el.style.color='#ffdd57';
+  setTimeout(function(){el.style.color=textColor;el.classList.remove('new-line')},2000);
   scrollBottom();
-  while(lines.children.length>200){lines.removeChild(lines.firstChild)}
+  while(lines.children.length>201){lines.removeChild(lines.children[1])}
   speak(text);
 }
 function updateCurrent(text){
