@@ -26,8 +26,6 @@ Namespace Models
         End Function
 
         Private Shared Sub ApplyDefaults(cfg As AppConfig)
-            Const DefaultPrompt As String = "A sermon preached at an Evangelical Baptist Church. Includes Bible references, scripture readings, and Christian theological terminology."
-            If String.IsNullOrEmpty(cfg.InitialPrompt) Then cfg.InitialPrompt = DefaultPrompt
             If String.IsNullOrEmpty(cfg.SubtitleBgColor) OrElse Not cfg.SubtitleBgColor.StartsWith("#") Then cfg.SubtitleBgColor = "#000000"
             If String.IsNullOrEmpty(cfg.SubtitleFgColor) OrElse Not cfg.SubtitleFgColor.StartsWith("#") Then cfg.SubtitleFgColor = "#FFFFFF"
         End Sub

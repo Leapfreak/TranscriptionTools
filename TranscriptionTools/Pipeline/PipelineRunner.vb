@@ -68,7 +68,7 @@ Namespace Pipeline
                 Log("Local file provided, copying...")
                 File.Copy(url, fullVideoPath, True)
             Else
-                Await RunProcessAsync(_config.PathYtdlp,
+                Await RunProcessAsync(AppConfig.ResolvePath(_config.PathYtdlp),
                     $"-f ""{_config.YtdlpFormat}"" ""{url}"" -o ""{fullVideoPath}""",
                     outputDir, "Err_DownloadFailed", "yt-dlp failed")
             End If
@@ -91,7 +91,7 @@ Namespace Pipeline
                 If Not String.IsNullOrWhiteSpace(endTime) AndAlso TimeToSec(endTime) > 0 Then trimArgs &= $" -to {endTime}"
                 trimArgs &= $" -c:v copy -c:a copy ""{previewPath}"""
 
-                Await RunProcessAsync(_config.PathFfmpeg, trimArgs, outputDir, "Err_TrimFailed", "ffmpeg trim failed")
+                Await RunProcessAsync(AppConfig.ResolvePath(_config.PathFfmpeg), trimArgs, outputDir, "Err_TrimFailed", "ffmpeg trim failed")
             End If
 
             If Not File.Exists(previewPath) Then
@@ -107,7 +107,7 @@ Namespace Pipeline
             If File.Exists(audioPath) Then
                 Log("SKIP - yt_audio.wav already exists.", LogLevel.Success)
             Else
-                Await RunProcessAsync(_config.PathFfmpeg,
+                Await RunProcessAsync(AppConfig.ResolvePath(_config.PathFfmpeg),
                     $"-y -i ""{previewPath}"" -ac 1 -ar 16000 -c:a pcm_s16le ""{audioPath}""",
                     outputDir, "Err_AudioExtractFailed", "ffmpeg audio extraction failed")
             End If
@@ -151,7 +151,7 @@ Namespace Pipeline
                     Log($"SKIP - chunk_{idx}.wav already exists.", LogLevel.Success)
                 Else
                     Log($"Creating chunk_{idx}.wav (start={chunkStart}s)")
-                    Await RunProcessAsync(_config.PathFfmpeg,
+                    Await RunProcessAsync(AppConfig.ResolvePath(_config.PathFfmpeg),
                         $"-y -ss {chunkStart} -i ""{audioPath}"" -t {chunkSec} -ac 1 -ar 16000 -c:a pcm_s16le ""{outChunk}""",
                         outputDir, "Err_ChunkFailed", $"ffmpeg chunking failed on chunk {i}")
                 End If
@@ -246,7 +246,7 @@ Namespace Pipeline
                 Log("Local file provided, copying...")
                 File.Copy(url, fullVideoPath, True)
             Else
-                Await RunProcessAsync(_config.PathYtdlp,
+                Await RunProcessAsync(AppConfig.ResolvePath(_config.PathYtdlp),
                     $"-f ""{_config.YtdlpFormat}"" ""{url}"" -o ""{fullVideoPath}""",
                     outputDir, "Err_DownloadFailed", "yt-dlp failed")
             End If
@@ -269,7 +269,7 @@ Namespace Pipeline
                 If Not String.IsNullOrWhiteSpace(endTime) AndAlso TimeToSec(endTime) > 0 Then trimArgs &= $" -to {endTime}"
                 trimArgs &= $" -c:v copy -c:a copy ""{previewPath}"""
 
-                Await RunProcessAsync(_config.PathFfmpeg, trimArgs, outputDir, "Err_TrimFailed", "ffmpeg trim failed")
+                Await RunProcessAsync(AppConfig.ResolvePath(_config.PathFfmpeg), trimArgs, outputDir, "Err_TrimFailed", "ffmpeg trim failed")
             End If
 
             If Not File.Exists(previewPath) Then
@@ -318,7 +318,7 @@ Namespace Pipeline
                 Log("Local file provided, copying...")
                 File.Copy(url, fullVideoPath, True)
             Else
-                Await RunProcessAsync(_config.PathYtdlp,
+                Await RunProcessAsync(AppConfig.ResolvePath(_config.PathYtdlp),
                     $"-f ""{_config.YtdlpFormat}"" ""{url}"" -o ""{fullVideoPath}""",
                     outputDir, "Err_DownloadFailed", "yt-dlp failed")
             End If
@@ -341,7 +341,7 @@ Namespace Pipeline
                 If Not String.IsNullOrWhiteSpace(endTime) AndAlso TimeToSec(endTime) > 0 Then trimArgs &= $" -to {endTime}"
                 trimArgs &= $" -c:v copy -c:a copy ""{previewPath}"""
 
-                Await RunProcessAsync(_config.PathFfmpeg, trimArgs, outputDir, "Err_TrimFailed", "ffmpeg trim failed")
+                Await RunProcessAsync(AppConfig.ResolvePath(_config.PathFfmpeg), trimArgs, outputDir, "Err_TrimFailed", "ffmpeg trim failed")
             End If
 
             If Not File.Exists(previewPath) Then
@@ -357,7 +357,7 @@ Namespace Pipeline
             If File.Exists(audioPath) Then
                 Log("SKIP - yt_audio.mp3 already exists.", LogLevel.Success)
             Else
-                Await RunProcessAsync(_config.PathFfmpeg,
+                Await RunProcessAsync(AppConfig.ResolvePath(_config.PathFfmpeg),
                     $"-y -i ""{previewPath}"" -vn -q:a 0 ""{audioPath}""",
                     outputDir, "Err_AudioExtractFailed", "ffmpeg audio extraction failed")
             End If
@@ -390,17 +390,17 @@ Namespace Pipeline
             If String.IsNullOrWhiteSpace(inputFile) OrElse Not File.Exists(inputFile) Then
                 Throw New PipelineException("Err_NoInput", $"Audio file not found: {inputFile}")
             End If
-            If Not File.Exists(_config.PathFfmpeg) Then
-                Throw New PipelineException("Err_ToolNotFound", $"ffmpeg not found: {_config.PathFfmpeg}")
+            If Not File.Exists(AppConfig.ResolvePath(_config.PathFfmpeg)) Then
+                Throw New PipelineException("Err_ToolNotFound", $"ffmpeg not found: {AppConfig.ResolvePath(_config.PathFfmpeg)}")
             End If
-            If Not File.Exists(_config.PathFfprobe) Then
-                Throw New PipelineException("Err_ToolNotFound", $"ffprobe not found: {_config.PathFfprobe}")
+            If Not File.Exists(AppConfig.ResolvePath(_config.PathFfprobe)) Then
+                Throw New PipelineException("Err_ToolNotFound", $"ffprobe not found: {AppConfig.ResolvePath(_config.PathFfprobe)}")
             End If
-            If Not File.Exists(_config.PathWhisper) Then
-                Throw New PipelineException("Err_ToolNotFound", $"whisper-cli not found: {_config.PathWhisper}")
+            If Not File.Exists(AppConfig.ResolvePath(_config.PathWhisper)) Then
+                Throw New PipelineException("Err_ToolNotFound", $"whisper-cli not found: {AppConfig.ResolvePath(_config.PathWhisper)}")
             End If
-            If Not File.Exists(_config.PathModel) Then
-                Throw New PipelineException("Err_ToolNotFound", $"Model file not found: {_config.PathModel}")
+            If Not File.Exists(AppConfig.ResolvePath(_config.PathModel)) Then
+                Throw New PipelineException("Err_ToolNotFound", $"Model file not found: {AppConfig.ResolvePath(_config.PathModel)}")
             End If
 
             If Not Directory.Exists(outputDir) Then
@@ -417,7 +417,7 @@ Namespace Pipeline
             If File.Exists(audioPath) Then
                 Log("SKIP - audio.wav already exists.", LogLevel.Success)
             Else
-                Await RunProcessAsync(_config.PathFfmpeg,
+                Await RunProcessAsync(AppConfig.ResolvePath(_config.PathFfmpeg),
                     $"-y -i ""{inputFile}"" -ac 1 -ar 16000 -c:a pcm_s16le ""{audioPath}""",
                     outputDir, "Err_AudioExtractFailed", "ffmpeg audio conversion failed")
             End If
@@ -461,7 +461,7 @@ Namespace Pipeline
                     Log($"SKIP - chunk_{idx}.wav already exists.", LogLevel.Success)
                 Else
                     Log($"Creating chunk_{idx}.wav (start={chunkStart}s)")
-                    Await RunProcessAsync(_config.PathFfmpeg,
+                    Await RunProcessAsync(AppConfig.ResolvePath(_config.PathFfmpeg),
                         $"-y -ss {chunkStart} -i ""{audioPath}"" -t {chunkSec} -ac 1 -ar 16000 -c:a pcm_s16le ""{outChunk}""",
                         outputDir, "Err_ChunkFailed", $"ffmpeg chunking failed on chunk {i}")
                 End If
@@ -545,7 +545,7 @@ Namespace Pipeline
                     AddHandler runner.OutputReceived, Sub(s, data) Log($"  [chunk_{capturedJ.ToString("D3")}] {data}", LogLevel.Info)
                     AddHandler runner.ErrorReceived, Sub(s, data) Log($"  [chunk_{capturedJ.ToString("D3")}] {data}", LogLevel.Err)
 
-                    Dim proc = runner.StartNoWait(_config.PathWhisper, whisperArgs, outputDir, False)
+                    Dim proc = runner.StartNoWait(AppConfig.ResolvePath(_config.PathWhisper), whisperArgs, outputDir, False)
                     batchProcesses.Add(proc)
                 Next
 
@@ -606,7 +606,7 @@ Namespace Pipeline
             AddHandler runner.OutputReceived, Sub(s, data) output.AppendLine(data)
             AddHandler runner.ErrorReceived, Sub(s, data) Log($"  ffprobe: {data}", LogLevel.Verbose)
 
-            Dim code = Await runner.RunAsync(_config.PathFfprobe,
+            Dim code = Await runner.RunAsync(AppConfig.ResolvePath(_config.PathFfprobe),
                 $"-v error -show_entries format=duration -of csv=p=0 ""{audioPath}""",
                 workingDir, _ct)
 
@@ -642,13 +642,13 @@ Namespace Pipeline
 
             If Not File.Exists(url) Then
                 ' URL mode - need yt-dlp
-                If Not File.Exists(_config.PathYtdlp) Then
-                    Throw New PipelineException("Err_ToolNotFound", $"yt-dlp not found: {_config.PathYtdlp}")
+                If Not File.Exists(AppConfig.ResolvePath(_config.PathYtdlp)) Then
+                    Throw New PipelineException("Err_ToolNotFound", $"yt-dlp not found: {AppConfig.ResolvePath(_config.PathYtdlp)}")
                 End If
             End If
 
-            If Not File.Exists(_config.PathFfmpeg) Then
-                Throw New PipelineException("Err_ToolNotFound", $"ffmpeg not found: {_config.PathFfmpeg}")
+            If Not File.Exists(AppConfig.ResolvePath(_config.PathFfmpeg)) Then
+                Throw New PipelineException("Err_ToolNotFound", $"ffmpeg not found: {AppConfig.ResolvePath(_config.PathFfmpeg)}")
             End If
         End Sub
 
@@ -656,8 +656,8 @@ Namespace Pipeline
             If Not Directory.Exists(outputDir) Then
                 Throw New PipelineException("Err_NoInput", $"Output folder not found: {outputDir}")
             End If
-            If Not File.Exists(_config.PathFfmpeg) Then
-                Throw New PipelineException("Err_ToolNotFound", $"ffmpeg not found: {_config.PathFfmpeg}")
+            If Not File.Exists(AppConfig.ResolvePath(_config.PathFfmpeg)) Then
+                Throw New PipelineException("Err_ToolNotFound", $"ffmpeg not found: {AppConfig.ResolvePath(_config.PathFfmpeg)}")
             End If
         End Sub
 
@@ -665,17 +665,17 @@ Namespace Pipeline
             If Not Directory.Exists(outputDir) Then
                 Throw New PipelineException("Err_NoInput", $"Output folder not found: {outputDir}")
             End If
-            If Not File.Exists(_config.PathFfmpeg) Then
-                Throw New PipelineException("Err_ToolNotFound", $"ffmpeg not found: {_config.PathFfmpeg}")
+            If Not File.Exists(AppConfig.ResolvePath(_config.PathFfmpeg)) Then
+                Throw New PipelineException("Err_ToolNotFound", $"ffmpeg not found: {AppConfig.ResolvePath(_config.PathFfmpeg)}")
             End If
-            If Not File.Exists(_config.PathFfprobe) Then
-                Throw New PipelineException("Err_ToolNotFound", $"ffprobe not found: {_config.PathFfprobe}")
+            If Not File.Exists(AppConfig.ResolvePath(_config.PathFfprobe)) Then
+                Throw New PipelineException("Err_ToolNotFound", $"ffprobe not found: {AppConfig.ResolvePath(_config.PathFfprobe)}")
             End If
-            If Not File.Exists(_config.PathWhisper) Then
-                Throw New PipelineException("Err_ToolNotFound", $"whisper-cli not found: {_config.PathWhisper}")
+            If Not File.Exists(AppConfig.ResolvePath(_config.PathWhisper)) Then
+                Throw New PipelineException("Err_ToolNotFound", $"whisper-cli not found: {AppConfig.ResolvePath(_config.PathWhisper)}")
             End If
-            If Not File.Exists(_config.PathModel) Then
-                Throw New PipelineException("Err_ToolNotFound", $"Model file not found: {_config.PathModel}")
+            If Not File.Exists(AppConfig.ResolvePath(_config.PathModel)) Then
+                Throw New PipelineException("Err_ToolNotFound", $"Model file not found: {AppConfig.ResolvePath(_config.PathModel)}")
             End If
         End Sub
 
@@ -687,22 +687,22 @@ Namespace Pipeline
             ' Only check whisper tools that will be needed
             If Not File.Exists(url) Then
                 ' URL mode - need yt-dlp
-                If Not File.Exists(_config.PathYtdlp) Then
-                    Throw New PipelineException("Err_ToolNotFound", $"yt-dlp not found: {_config.PathYtdlp}")
+                If Not File.Exists(AppConfig.ResolvePath(_config.PathYtdlp)) Then
+                    Throw New PipelineException("Err_ToolNotFound", $"yt-dlp not found: {AppConfig.ResolvePath(_config.PathYtdlp)}")
                 End If
             End If
 
-            If Not File.Exists(_config.PathFfmpeg) Then
-                Throw New PipelineException("Err_ToolNotFound", $"ffmpeg not found: {_config.PathFfmpeg}")
+            If Not File.Exists(AppConfig.ResolvePath(_config.PathFfmpeg)) Then
+                Throw New PipelineException("Err_ToolNotFound", $"ffmpeg not found: {AppConfig.ResolvePath(_config.PathFfmpeg)}")
             End If
-            If Not File.Exists(_config.PathFfprobe) Then
-                Throw New PipelineException("Err_ToolNotFound", $"ffprobe not found: {_config.PathFfprobe}")
+            If Not File.Exists(AppConfig.ResolvePath(_config.PathFfprobe)) Then
+                Throw New PipelineException("Err_ToolNotFound", $"ffprobe not found: {AppConfig.ResolvePath(_config.PathFfprobe)}")
             End If
-            If Not File.Exists(_config.PathWhisper) Then
-                Throw New PipelineException("Err_ToolNotFound", $"whisper-cli not found: {_config.PathWhisper}")
+            If Not File.Exists(AppConfig.ResolvePath(_config.PathWhisper)) Then
+                Throw New PipelineException("Err_ToolNotFound", $"whisper-cli not found: {AppConfig.ResolvePath(_config.PathWhisper)}")
             End If
-            If Not File.Exists(_config.PathModel) Then
-                Throw New PipelineException("Err_ToolNotFound", $"Model file not found: {_config.PathModel}")
+            If Not File.Exists(AppConfig.ResolvePath(_config.PathModel)) Then
+                Throw New PipelineException("Err_ToolNotFound", $"Model file not found: {AppConfig.ResolvePath(_config.PathModel)}")
             End If
         End Sub
 

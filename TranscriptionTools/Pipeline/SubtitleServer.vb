@@ -362,6 +362,21 @@ body{background:{{BG_COLOR}};color:{{FG_COLOR}};font-family:'Segoe UI',Arial,san
 <div id=""panel"">
   <button onclick=""changeFontSize(4)"">A+</button>
   <button onclick=""changeFontSize(-4)"">A-</button>
+  <label>Font</label>
+  <select id=""fontSelect"" onchange=""changeFont(this.value)"">
+    <option value=""'Segoe UI',Arial,sans-serif"">Segoe UI</option>
+    <option value=""Arial,sans-serif"">Arial</option>
+    <option value=""'Courier New',monospace"">Courier New</option>
+    <option value=""Georgia,serif"">Georgia</option>
+    <option value=""'Times New Roman',serif"">Times New Roman</option>
+    <option value=""Verdana,sans-serif"">Verdana</option>
+    <option value=""'Trebuchet MS',sans-serif"">Trebuchet MS</option>
+    <option value=""Tahoma,sans-serif"">Tahoma</option>
+  </select>
+  <label>Style</label>
+  <button id=""btnBold"" onclick=""toggleBold()"" style=""min-width:60px"">Bold</button>
+  <label>Text Color</label>
+  <input type=""color"" id=""colorPicker"" value=""{{FG_COLOR}}"" onchange=""changeColor(this.value)"" style=""width:100%;height:32px;border:1px solid #555;border-radius:4px;background:#333;cursor:pointer"">
   <label>Voice</label>
   <select id=""voiceSelect"" onchange=""selectedVoice=this.value;localStorage.setItem('voice',this.value)""></select>
   <label>Speed</label>
@@ -424,19 +439,33 @@ function speak(text){
   synth.speak(utter);
 }
 
-function changeFontSize(d){fontSize=Math.max(12,Math.min(80,fontSize+d));
-  document.querySelectorAll('.line').forEach(el=>el.style.fontSize=fontSize+'px');
-  if(currentEl)currentEl.style.fontSize=fontSize+'px';scrollBottom()}
+var fontFamily=localStorage.getItem('fontFamily')||""'Segoe UI',Arial,sans-serif"";
+var isBold=localStorage.getItem('bold')==='true';
+var textColor=localStorage.getItem('textColor')||'{{FG_COLOR}}';
+if(localStorage.getItem('fontSize'))fontSize=parseInt(localStorage.getItem('fontSize'));
+(function(){var fs=document.getElementById('fontSelect');for(var i=0;i<fs.options.length;i++){if(fs.options[i].value===fontFamily){fs.selectedIndex=i;break}}
+  var bp=document.getElementById('btnBold');if(isBold){bp.classList.add('active')}
+  document.getElementById('colorPicker').value=textColor;
+})();
+function applyStylesToAll(){
+  document.querySelectorAll('.line').forEach(function(el){el.style.fontSize=fontSize+'px';el.style.fontFamily=fontFamily;el.style.fontWeight=isBold?'bold':'normal';if(!el.classList.contains('in-progress'))el.style.color=textColor});
+  if(currentEl){currentEl.style.fontSize=fontSize+'px';currentEl.style.fontFamily=fontFamily;currentEl.style.fontWeight=isBold?'bold':'normal'}
+  scrollBottom()}
+function changeFontSize(d){fontSize=Math.max(12,Math.min(80,fontSize+d));localStorage.setItem('fontSize',fontSize);applyStylesToAll()}
+function changeFont(f){fontFamily=f;localStorage.setItem('fontFamily',f);applyStylesToAll()}
+function toggleBold(){isBold=!isBold;localStorage.setItem('bold',isBold);document.getElementById('btnBold').classList.toggle('active');applyStylesToAll()}
+function changeColor(c){textColor=c;localStorage.setItem('textColor',c);applyStylesToAll()}
 function scrollBottom(){container.scrollTop=container.scrollHeight}
+function styleEl(el,inProgress){el.style.fontSize=fontSize+'px';el.style.fontFamily=fontFamily;el.style.fontWeight=isBold?'bold':'normal';if(!inProgress)el.style.color=textColor}
 function addCommitted(text){
-  if(currentEl){currentEl.textContent=text;currentEl.className='line';currentEl.style.fontSize=fontSize+'px';currentEl=null}
-  else{const el=document.createElement('div');el.className='line';el.textContent=text;el.style.fontSize=fontSize+'px';lines.appendChild(el)}
+  if(currentEl){currentEl.textContent=text;currentEl.className='line';styleEl(currentEl,false);currentEl=null}
+  else{const el=document.createElement('div');el.className='line';el.textContent=text;styleEl(el,false);lines.appendChild(el)}
   scrollBottom();
   while(lines.children.length>200){lines.removeChild(lines.firstChild)}
   speak(text);
 }
 function updateCurrent(text){
-  if(!currentEl){currentEl=document.createElement('div');currentEl.className='line in-progress';currentEl.style.fontSize=fontSize+'px';lines.appendChild(currentEl)}
+  if(!currentEl){currentEl=document.createElement('div');currentEl.className='line in-progress';styleEl(currentEl,true);lines.appendChild(currentEl)}
   currentEl.textContent=text;currentEl.className='line in-progress';
   scrollBottom()
 }

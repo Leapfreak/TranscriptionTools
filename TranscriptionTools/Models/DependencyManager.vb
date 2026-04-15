@@ -117,7 +117,7 @@ Namespace Models
         ' ──────────────────────────────────────────
 
         Private Function YtDlpInstalledPath() As String
-            Return ResolveConfigPath(_config.PathYtdlp)
+            Return AppConfig.ResolvePath(_config.PathYtdlp)
         End Function
 
         Private Function YtDlpDownloadPath() As String
@@ -166,11 +166,11 @@ Namespace Models
         ' ──────────────────────────────────────────
 
         Private Function FfmpegInstalledPath() As String
-            Return ResolveConfigPath(_config.PathFfmpeg)
+            Return AppConfig.ResolvePath(_config.PathFfmpeg)
         End Function
 
         Private Function FfprobeInstalledPath() As String
-            Return ResolveConfigPath(_config.PathFfprobe)
+            Return AppConfig.ResolvePath(_config.PathFfprobe)
         End Function
 
         Public Async Function CheckFfmpegAsync() As Task(Of ToolState)
@@ -224,7 +224,7 @@ Namespace Models
         ' ──────────────────────────────────────────
 
         Private Function ModelInstalledPath() As String
-            Return ResolveConfigPath(_config.PathModel)
+            Return AppConfig.ResolvePath(_config.PathModel)
         End Function
 
         Private Function ModelDownloadPath() As String
@@ -252,7 +252,7 @@ Namespace Models
         ' ──────────────────────────────────────────
 
         Private Function SubtitleEditInstalledPath() As String
-            Return ResolveConfigPath(_config.PathSubtitleEdit)
+            Return AppConfig.ResolvePath(_config.PathSubtitleEdit)
         End Function
 
         Private Function SubtitleEditDownloadDir() As String
@@ -351,20 +351,6 @@ Namespace Models
             ' If only one side parses, or neither parses, and they don't match,
             ' default to UpToDate to avoid false update prompts
             Return ToolStatus.UpToDate
-        End Function
-
-        ' ──────────────────────────────────────────
-        '  Path resolution
-        ' ──────────────────────────────────────────
-
-        ''' <summary>
-        ''' Resolves a config path to an absolute path. Relative paths are resolved
-        ''' against the app's base directory.
-        ''' </summary>
-        Private Shared Function ResolveConfigPath(configPath As String) As String
-            If String.IsNullOrWhiteSpace(configPath) Then Return ""
-            If Path.IsPathRooted(configPath) Then Return configPath
-            Return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configPath)
         End Function
 
         ' ──────────────────────────────────────────

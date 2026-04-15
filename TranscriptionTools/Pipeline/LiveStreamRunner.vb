@@ -102,7 +102,7 @@ Namespace Pipeline
                                           inputLanguage As String, translateToEnglish As Boolean) As String
             Dim args As New List(Of String)
 
-            args.Add($"-m ""{config.PathModel}""")
+            args.Add($"-m ""{AppConfig.ResolvePath(config.PathModel)}""")
             args.Add($"--capture {captureDeviceId}")
             args.Add($"-t {config.Threads}")
             args.Add($"-l {inputLanguage}")

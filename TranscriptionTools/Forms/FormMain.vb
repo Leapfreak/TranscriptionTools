@@ -3,6 +3,7 @@ Imports System.Globalization
 Imports System.IO
 Imports System.Resources
 Imports System.Threading
+Imports Microsoft.Win32
 Imports TranscriptionTools.Models
 Imports TranscriptionTools.Pipeline
 
@@ -17,6 +18,7 @@ Public Class FormMain
     Private _subtitleServer As SubtitleServer
     Private _simCts As CancellationTokenSource
     Private _isInitializing As Boolean = True
+    Private _exitForReal As Boolean = False
 
     ' Supported whisper languages
     Private ReadOnly _whisperLanguages As String() = {
@@ -61,7 +63,7 @@ Public Class FormMain
         ' Set default output directory
         If String.IsNullOrWhiteSpace(txtOutputDir.Text) Then
             Dim stamp = DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss")
-            txtOutputDir.Text = Path.Combine(_config.PathOutputRoot, stamp)
+            txtOutputDir.Text = Path.Combine(AppConfig.ResolvePath(_config.PathOutputRoot), stamp)
         End If
 
         ' Apply locale
@@ -93,8 +95,8 @@ Public Class FormMain
         cboLiveDevice.SelectedIndex = 0
 
         ' Enumerate SDL devices in the background
-        Dim streamPath = _config.PathStream
-        Dim modelPath = _config.PathModel
+        Dim streamPath = AppConfig.ResolvePath(_config.PathStream)
+        Dim modelPath = AppConfig.ResolvePath(_config.PathModel)
         Task.Run(Sub()
                      Dim runner As New LiveStreamRunner()
                      Dim devices = runner.EnumerateDevicesFromSDL(streamPath, modelPath)
@@ -118,11 +120,45 @@ Public Class FormMain
 
         ' Check for missing dependencies
         CheckDependenciesAsync()
+
+        ' Register to start with Windows
+        RegisterStartup()
+
+        ' Wire up system tray
+        AddHandler trayIcon.DoubleClick, Sub(s, ev) ShowFromTray()
+        AddHandler trayMenuShow.Click, Sub(s, ev) ShowFromTray()
+        AddHandler trayMenuExit.Click, Sub(s, ev) ExitApplication()
+
+        ' Auto-start subtitle server after form is fully shown
+        AddHandler Me.Shown, Sub(s, ev) StartSubtitleServer()
+    End Sub
+
+    Private Sub RegisterStartup()
+        Try
+            Using key = Registry.CurrentUser.OpenSubKey("SOFTWARE\Microsoft\Windows\CurrentVersion\Run", True)
+                key?.SetValue("TranscriptionTools", $"""{Application.ExecutablePath}""")
+            End Using
+        Catch
+        End Try
+    End Sub
+
+    Private Sub ShowFromTray()
+        Me.Show()
+        Me.WindowState = FormWindowState.Maximized
+        Me.Activate()
+    End Sub
+
+    Private Sub ExitApplication()
+        _exitForReal = True
+        Me.Close()
     End Sub
 
     Private Async Sub CheckForUpdatesAsync()
         Dim update = Await Models.UpdateChecker.CheckForUpdateAsync()
-        If update IsNot Nothing Then
+        If update Is Nothing Then Return
+
+        If String.IsNullOrWhiteSpace(update.InstallerUrl) Then
+            ' No installer asset found — fall back to opening the release page
             Dim result = MessageBox.Show(
                 $"{GetString("Msg_NewVersionAvailable")} {update.TagName}" & vbCrLf & vbCrLf &
                 GetString("Msg_DownloadUpdate"),
@@ -132,7 +168,39 @@ Public Class FormMain
             If result = DialogResult.Yes Then
                 Process.Start(New ProcessStartInfo(update.HtmlUrl) With {.UseShellExecute = True})
             End If
+            Return
         End If
+
+        Dim confirm = MessageBox.Show(
+            $"{GetString("Msg_NewVersionAvailable")} {update.TagName}" & vbCrLf & vbCrLf &
+            GetString("Msg_DownloadUpdate"),
+            GetString("Msg_UpdateAvailable"),
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Information)
+        If confirm <> DialogResult.Yes Then Return
+
+        ' Download installer to temp folder
+        Try
+            Dim tempPath = Path.Combine(Path.GetTempPath(), $"TranscriptionTools_Setup_{update.TagName}.exe")
+            Using client As New Net.Http.HttpClient()
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("TranscriptionTools-Updater")
+                Using response = Await client.GetAsync(update.InstallerUrl)
+                    response.EnsureSuccessStatusCode()
+                    Using fs As New FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None)
+                        Await response.Content.CopyToAsync(fs)
+                    End Using
+                End Using
+            End Using
+
+            ' Launch installer and exit
+            Process.Start(New ProcessStartInfo(tempPath) With {.UseShellExecute = True})
+            Application.Exit()
+        Catch ex As Exception
+            MessageBox.Show($"Update download failed: {ex.Message}" & vbCrLf & vbCrLf &
+                           "Opening release page instead.",
+                           GetString("Msg_Error"), MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Process.Start(New ProcessStartInfo(update.HtmlUrl) With {.UseShellExecute = True})
+        End Try
     End Sub
 
     Private Async Sub CheckDependenciesAsync(Optional manualCheck As Boolean = False)
@@ -288,7 +356,7 @@ Public Class FormMain
     Private Sub PopulateModelDropdown()
         cboModel.Items.Clear()
         Try
-            Dim modelDir = Path.GetDirectoryName(_config.PathModel)
+            Dim modelDir = Path.GetDirectoryName(AppConfig.ResolvePath(_config.PathModel))
             If Not String.IsNullOrWhiteSpace(modelDir) AndAlso Directory.Exists(modelDir) Then
                 For Each binFile In Directory.GetFiles(modelDir, "ggml-*.bin")
                     cboModel.Items.Add(Path.GetFileName(binFile))
@@ -393,6 +461,15 @@ Public Class FormMain
         ' Apply subtitle colors to live output textbox
         Try : rtbLiveOutput.BackColor = ColorTranslator.FromHtml(_config.SubtitleBgColor) : Catch : rtbLiveOutput.BackColor = Drawing.Color.Black : End Try
         Try : rtbLiveOutput.ForeColor = ColorTranslator.FromHtml(_config.SubtitleFgColor) : Catch : rtbLiveOutput.ForeColor = Drawing.Color.White : End Try
+
+        ' Apply subtitle font settings
+        If Not String.IsNullOrWhiteSpace(_config.SubtitleFontFamily) Then
+            Dim idx = cboSubtitleFont.Items.IndexOf(_config.SubtitleFontFamily)
+            If idx >= 0 Then cboSubtitleFont.SelectedIndex = idx
+        End If
+        nudSubtitleSize.Value = CDec(Math.Max(nudSubtitleSize.Minimum, Math.Min(nudSubtitleSize.Maximum, _config.SubtitleFontSize)))
+        chkSubtitleBold.Checked = _config.SubtitleFontBold
+        ApplyLiveOutputFont()
     End Sub
 
     Private Sub SaveUiToConfig()
@@ -470,6 +547,11 @@ Public Class FormMain
         ' Subtitle Server
         _config.SubtitleServerPort = CInt(nudServerPort.Value)
         ' Subtitle colors are saved directly from color dialog handlers, not here
+
+        ' Subtitle font
+        _config.SubtitleFontFamily = If(cboSubtitleFont.SelectedItem?.ToString(), "Segoe UI")
+        _config.SubtitleFontSize = CSng(nudSubtitleSize.Value)
+        _config.SubtitleFontBold = chkSubtitleBold.Checked
 
         ConfigManager.Save(_config)
     End Sub
@@ -832,7 +914,7 @@ Public Class FormMain
         Using dlg As New FolderBrowserDialog()
             dlg.Description = "Select an existing output folder to resume"
             If Not String.IsNullOrWhiteSpace(_config.PathOutputRoot) Then
-                dlg.SelectedPath = _config.PathOutputRoot
+                dlg.SelectedPath = AppConfig.ResolvePath(_config.PathOutputRoot)
             End If
             If dlg.ShowDialog() <> DialogResult.OK Then Return
             txtOutputDir.Text = dlg.SelectedPath
@@ -970,8 +1052,9 @@ Public Class FormMain
             If cboMode.SelectedIndex = 0 Then
                 ' Audio File mode
                 dlg.Filter = "Audio files|*.wav;*.mp3;*.ogg;*.flac;*.m4a;*.wma;*.aac;*.opus|All files|*.*"
-                If Not String.IsNullOrWhiteSpace(_config.PathOutputRoot) AndAlso Directory.Exists(_config.PathOutputRoot) Then
-                    dlg.InitialDirectory = _config.PathOutputRoot
+                Dim resolvedRoot = AppConfig.ResolvePath(_config.PathOutputRoot)
+                If Not String.IsNullOrWhiteSpace(resolvedRoot) AndAlso Directory.Exists(resolvedRoot) Then
+                    dlg.InitialDirectory = resolvedRoot
                 End If
             Else
                 ' YouTube / Download Only / Extract Audio modes
@@ -1011,11 +1094,12 @@ Public Class FormMain
             MessageBox.Show(GetString("Msg_NoSrtFound"), "Subtitle Edit", MessageBoxButtons.OK, MessageBoxIcon.Warning)
             Return
         End If
-        If Not File.Exists(_config.PathSubtitleEdit) Then
-            MessageBox.Show($"{GetString("Msg_SubtitleEditNotFound")} {_config.PathSubtitleEdit}", "Subtitle Edit", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+        Dim subtitleEditPath = AppConfig.ResolvePath(_config.PathSubtitleEdit)
+        If Not File.Exists(subtitleEditPath) Then
+            MessageBox.Show($"{GetString("Msg_SubtitleEditNotFound")} {subtitleEditPath}", "Subtitle Edit", MessageBoxButtons.OK, MessageBoxIcon.Warning)
             Return
         End If
-        Process.Start(_config.PathSubtitleEdit, $"""{srtPath}""")
+        Process.Start(subtitleEditPath, $"""{srtPath}""")
     End Sub
 
     Private Function FindOutputSrt() As String
@@ -1171,8 +1255,8 @@ Public Class FormMain
 
     Private Sub cboModel_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboModel.SelectedIndexChanged
         If _config Is Nothing OrElse cboModel.SelectedItem Is Nothing Then Return
-        Dim modelDir = Path.GetDirectoryName(_config.PathModel)
-        If String.IsNullOrWhiteSpace(modelDir) Then modelDir = Path.GetDirectoryName(_config.PathModelAudio)
+        Dim modelDir = Path.GetDirectoryName(AppConfig.ResolvePath(_config.PathModel))
+        If String.IsNullOrWhiteSpace(modelDir) Then modelDir = Path.GetDirectoryName(AppConfig.ResolvePath(_config.PathModelAudio))
         Dim fullPath = Path.Combine(If(modelDir, ""), cboModel.SelectedItem.ToString())
 
         Select Case cboMode.SelectedIndex
@@ -1338,8 +1422,8 @@ Public Class FormMain
         cboLiveModel.Items.Clear()
 
         ' Scan the model directory for .bin files
-        Dim modelDir = Path.GetDirectoryName(_config.PathModel)
-        If String.IsNullOrWhiteSpace(modelDir) Then modelDir = Path.GetDirectoryName(_config.PathModelAudio)
+        Dim modelDir = Path.GetDirectoryName(AppConfig.ResolvePath(_config.PathModel))
+        If String.IsNullOrWhiteSpace(modelDir) Then modelDir = Path.GetDirectoryName(AppConfig.ResolvePath(_config.PathModelAudio))
         If Not String.IsNullOrWhiteSpace(modelDir) AndAlso Directory.Exists(modelDir) Then
             For Each f In Directory.GetFiles(modelDir, "ggml-*.bin")
                 cboLiveModel.Items.Add(Path.GetFileName(f))
@@ -1372,8 +1456,8 @@ Public Class FormMain
         cboLiveDevice.Enabled = False
         btnRefreshDevices.Enabled = False
 
-        Dim streamPath = _config.PathStream
-        Dim modelPath = _config.PathModel
+        Dim streamPath = AppConfig.ResolvePath(_config.PathStream)
+        Dim modelPath = AppConfig.ResolvePath(_config.PathModel)
 
         Task.Run(Sub()
                      Dim runner As New LiveStreamRunner()
@@ -1389,11 +1473,12 @@ Public Class FormMain
     Private Sub btnLiveStart_Click(sender As Object, e As EventArgs) Handles btnLiveStart.Click
         SaveUiToConfig()
 
-        If Not File.Exists(_config.PathStream) Then
+        Dim resolvedStreamPath = AppConfig.ResolvePath(_config.PathStream)
+        If Not File.Exists(resolvedStreamPath) Then
             If _isRemoteCommand Then
-                AppendServerLog($"ERROR: whisper-stream.exe not found: {_config.PathStream}")
+                AppendServerLog($"ERROR: whisper-stream.exe not found: {resolvedStreamPath}")
             Else
-                MessageBox.Show($"{GetString("Msg_StreamNotFound")} {_config.PathStream}", GetString("Msg_Error"), MessageBoxButtons.OK, MessageBoxIcon.Error)
+                MessageBox.Show($"{GetString("Msg_StreamNotFound")} {resolvedStreamPath}", GetString("Msg_Error"), MessageBoxButtons.OK, MessageBoxIcon.Error)
             End If
             Return
         End If
@@ -1419,7 +1504,7 @@ Public Class FormMain
         End If
 
         ' Resolve model path
-        Dim modelDir = Path.GetDirectoryName(_config.PathModel)
+        Dim modelDir = Path.GetDirectoryName(AppConfig.ResolvePath(_config.PathModel))
         If cboLiveModel.SelectedItem IsNot Nothing AndAlso Not String.IsNullOrWhiteSpace(modelDir) Then
             _config.PathModel = Path.Combine(modelDir, cboLiveModel.SelectedItem.ToString())
         End If
@@ -1460,7 +1545,7 @@ Public Class FormMain
         AppendLiveText($"{Path.GetFileName(_config.PathStream)} {args}", Drawing.Color.Gray)
         AppendLiveText("", Drawing.Color.White)
 
-        _liveRunner.Start(_config.PathStream, args)
+        _liveRunner.Start(resolvedStreamPath, args)
 
         If _liveRunner.IsRunning Then
             btnLiveStart.Enabled = False
@@ -1539,8 +1624,9 @@ Public Class FormMain
             dlg.Filter = "Text files|*.txt|All files|*.*"
             dlg.DefaultExt = "txt"
             dlg.FileName = $"live_transcript_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt"
-            If Not String.IsNullOrWhiteSpace(_config.PathOutputRoot) Then
-                dlg.InitialDirectory = _config.PathOutputRoot
+            Dim resolvedOutput = AppConfig.ResolvePath(_config.PathOutputRoot)
+            If Not String.IsNullOrWhiteSpace(resolvedOutput) Then
+                dlg.InitialDirectory = resolvedOutput
             End If
             If dlg.ShowDialog() = DialogResult.OK Then
                 ' Save the content of the live output box
@@ -1666,7 +1752,12 @@ Public Class FormMain
 
     Private Sub btnServerStart_Click(sender As Object, e As EventArgs) Handles btnServerStart.Click
         SaveUiToConfig()
+        StartSubtitleServer()
+    End Sub
+
+    Private Sub StartSubtitleServer()
         Dim port = CInt(nudServerPort.Value)
+        EnsureFirewallRule(port)
 
         _subtitleServer = New SubtitleServer()
         _subtitleServer.BgColor = _config.SubtitleBgColor
@@ -1744,6 +1835,33 @@ Public Class FormMain
                 If _subtitleServer IsNot Nothing Then _subtitleServer.FgColor = _config.SubtitleFgColor
             End If
         End Using
+    End Sub
+
+    Private Sub cboSubtitleFont_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboSubtitleFont.SelectedIndexChanged
+        ApplyLiveOutputFont()
+    End Sub
+
+    Private Sub nudSubtitleSize_ValueChanged(sender As Object, e As EventArgs) Handles nudSubtitleSize.ValueChanged
+        ApplyLiveOutputFont()
+    End Sub
+
+    Private Sub chkSubtitleBold_CheckedChanged(sender As Object, e As EventArgs) Handles chkSubtitleBold.CheckedChanged
+        ApplyLiveOutputFont()
+    End Sub
+
+    Private Sub ApplyLiveOutputFont()
+        If rtbLiveOutput Is Nothing OrElse nudSubtitleSize Is Nothing OrElse cboSubtitleFont Is Nothing OrElse chkSubtitleBold Is Nothing Then Return
+        Dim fontName = If(cboSubtitleFont.SelectedItem?.ToString(), "Segoe UI")
+        Dim fontSize = CSng(nudSubtitleSize.Value)
+        Dim style = If(chkSubtitleBold.Checked, Drawing.FontStyle.Bold, Drawing.FontStyle.Regular)
+        rtbLiveOutput.Font = New Drawing.Font(fontName, fontSize, style)
+
+        If Not _isInitializing Then
+            _config.SubtitleFontFamily = fontName
+            _config.SubtitleFontSize = fontSize
+            _config.SubtitleFontBold = chkSubtitleBold.Checked
+            ConfigManager.Save(_config)
+        End If
     End Sub
 
     Private Sub btnCopyUrl_Click(sender As Object, e As EventArgs) Handles btnCopyUrl.Click
@@ -1843,15 +1961,27 @@ Public Class FormMain
     End Sub
 
     Private Sub FormMain_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
+        ' Always save settings
         SaveUiToConfig()
+
+        If Not _exitForReal Then
+            ' Minimize to system tray instead of closing
+            e.Cancel = True
+            Me.Hide()
+            Return
+        End If
+
+        ' Real exit — clean up everything
         _cts?.Cancel()
         _liveRunner?.Stop()
         _simCts?.Cancel()
         _subtitleServer?.Stop()
+        trayIcon.Visible = False
+        trayIcon.Dispose()
 
         ' Offer to clean up today's working folders
         Try
-            Dim outputRoot = _config.PathOutputRoot
+            Dim outputRoot = AppConfig.ResolvePath(_config.PathOutputRoot)
             If String.IsNullOrWhiteSpace(outputRoot) OrElse Not Directory.Exists(outputRoot) Then Return
 
             Dim todayPrefix = DateTime.Now.ToString("yyyy-MM-dd")
@@ -1880,4 +2010,44 @@ Public Class FormMain
     Private Shared Function ColorToHex(c As Drawing.Color) As String
         Return $"#{c.R:X2}{c.G:X2}{c.B:X2}"
     End Function
+
+    Private Shared Sub EnsureFirewallRule(port As Integer)
+        Const ruleName As String = "TranscriptionTools Subtitle Server"
+
+        ' Build a single command that deletes the old rule then adds the new one
+        Dim cmd = $"advfirewall firewall delete rule name=""{ruleName}"" & netsh advfirewall firewall add rule name=""{ruleName}"" dir=in action=allow protocol=TCP localport={port}"
+
+        ' First try without elevation
+        Try
+            Dim psi As New ProcessStartInfo() With {
+                .FileName = "netsh",
+                .Arguments = cmd,
+                .UseShellExecute = False,
+                .CreateNoWindow = True,
+                .RedirectStandardOutput = True,
+                .RedirectStandardError = True
+            }
+            Dim p = Process.Start(psi)
+            p.WaitForExit(5000)
+            If p.ExitCode = 0 Then Return
+        Catch
+        End Try
+
+        ' Non-elevated failed — try with UAC elevation via cmd /c
+        Try
+            Dim fullCmd = $"/c netsh advfirewall firewall delete rule name=""{ruleName}"" & netsh advfirewall firewall add rule name=""{ruleName}"" dir=in action=allow protocol=TCP localport={port}"
+            Dim psi As New ProcessStartInfo() With {
+                .FileName = "cmd.exe",
+                .Arguments = fullCmd,
+                .Verb = "runas",
+                .UseShellExecute = True,
+                .CreateNoWindow = True,
+                .WindowStyle = ProcessWindowStyle.Hidden
+            }
+            Dim p = Process.Start(psi)
+            p?.WaitForExit(10000)
+        Catch
+            ' User declined UAC or elevation not available — server still works on localhost
+        End Try
+    End Sub
 End Class

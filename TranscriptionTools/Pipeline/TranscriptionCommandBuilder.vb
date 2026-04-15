@@ -7,7 +7,7 @@ Namespace Pipeline
             Dim args As New List(Of String)
 
             ' Model
-            args.Add($"-m ""{config.PathModel}""")
+            args.Add($"-m ""{AppConfig.ResolvePath(config.PathModel)}""")
 
             ' Input file
             args.Add($"-f ""{audioFile}""")

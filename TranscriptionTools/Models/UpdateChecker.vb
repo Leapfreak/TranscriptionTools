@@ -6,6 +6,7 @@ Namespace Models
         Public Property TagName As String = ""
         Public Property HtmlUrl As String = ""
         Public Property Body As String = ""
+        Public Property InstallerUrl As String = ""
     End Class
 
     Public Class UpdateChecker
@@ -36,6 +37,20 @@ Namespace Models
                         body = bodyEl.GetString()
                     End If
 
+                    ' Find installer .exe asset
+                    Dim installerUrl = ""
+                    Dim assetsEl As JsonElement
+                    If root.TryGetProperty("assets", assetsEl) Then
+                        For Each asset In assetsEl.EnumerateArray()
+                            Dim name = asset.GetProperty("name").GetString()
+                            If name IsNot Nothing AndAlso name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) AndAlso
+                               name.StartsWith("TranscriptionTools_Setup", StringComparison.OrdinalIgnoreCase) Then
+                                installerUrl = asset.GetProperty("browser_download_url").GetString()
+                                Exit For
+                            End If
+                        Next
+                    End If
+
                     Dim remoteVersion = ParseVersion(tagName)
                     If remoteVersion Is Nothing Then Return Nothing
 
@@ -44,7 +59,8 @@ Namespace Models
                         Return New UpdateInfo With {
                             .TagName = tagName,
                             .HtmlUrl = htmlUrl,
-                            .Body = body
+                            .Body = body,
+                            .InstallerUrl = installerUrl
                         }
                     End If
                 End Using

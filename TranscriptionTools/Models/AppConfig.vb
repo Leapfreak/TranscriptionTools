@@ -113,7 +113,7 @@ Namespace Models
 
         Public Property AudioContext As Integer = 0
 
-        Public Property InitialPrompt As String = "A sermon preached at an Evangelical Baptist Church. Includes Bible references, scripture readings, and Christian theological terminology."
+        Public Property InitialPrompt As String = ""
 
         Public Property Hotwords As String = ""
 
@@ -131,8 +131,18 @@ Namespace Models
 
         Public Property SubtitleFgColor As String = "#FFFFFF"
 
+        Public Property SubtitleFontFamily As String = "Segoe UI"
+        Public Property SubtitleFontSize As Single = 12
+        Public Property SubtitleFontBold As Boolean = False
+
         Public Shared Function CreateDefault() As AppConfig
             Return New AppConfig()
+        End Function
+
+        Public Shared Function ResolvePath(configPath As String) As String
+            If String.IsNullOrWhiteSpace(configPath) Then Return ""
+            If IO.Path.IsPathRooted(configPath) Then Return configPath
+            Return IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configPath)
         End Function
     End Class
 End Namespace

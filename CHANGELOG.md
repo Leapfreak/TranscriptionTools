@@ -1,5 +1,32 @@
 # Changelog
 
+## v1.0.4 - 2026-04-16
+
+### Added
+- System tray support — closing the window minimizes to tray, right-click to exit
+- Auto-start with Windows (registry startup entry)
+- Subtitle server auto-starts on program launch
+- Font family, size, and bold controls for live transcription output (server side)
+- Client-side font, bold, color, and size controls in browser subtitle overlay
+- Automatic Windows Firewall rule for subtitle server port (with UAC elevation)
+- Auto-update: downloads and runs installer automatically, then exits
+- Font settings saved to config (SubtitleFontFamily, SubtitleFontSize, SubtitleFontBold)
+
+### Changed
+- Program launches maximized (full screen)
+- Tab order: Live, Server, Job (Main tab moved after Server tab)
+- Settings now save when minimizing to tray (not just on exit)
+- Removed hardcoded default prompt — initial prompt now blank by default
+
+### Fixed
+- Relative paths not resolved to absolute before use in process launching and File.Exists checks
+- Added AppConfig.ResolvePath() and applied across all path consumers (PipelineRunner, FormMain, LiveStreamRunner, TranscriptionCommandBuilder, DependencyManager)
+- Subtitle server failed to auto-start during Form_Load (moved to Shown event)
+- Font controls crashed during InitializeComponent (null check guard added)
+
+### Removed
+- Unit test project (TranscriptionTools.Tests)
+
 ## v1.0.3 - 2026-04-15
 
 ### Added

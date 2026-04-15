@@ -233,7 +233,7 @@ Partial Class FormMain
         ' === TabControl ===
         Me.tabMain.Size = New Drawing.Size(880, 650)
         Me.tabMain.Dock = DockStyle.Fill
-        Me.tabMain.TabPages.AddRange({Me.tabPageJob, Me.tabPageLive, Me.tabPageServer, Me.tabPageWhisper, Me.tabPagePaths, Me.tabPageLog, Me.tabPageSettings, Me.tabPageHelp})
+        Me.tabMain.TabPages.AddRange({Me.tabPageLive, Me.tabPageServer, Me.tabPageJob, Me.tabPageWhisper, Me.tabPagePaths, Me.tabPageLog, Me.tabPageSettings, Me.tabPageHelp})
 
         ' Set tab page sizes explicitly so anchoring calculates correctly during SuspendLayout
         Dim tpSize = New Drawing.Size(872, 622)
@@ -927,11 +927,43 @@ Partial Class FormMain
         Me.btnSubtitleFg.FlatStyle = FlatStyle.Flat
         Me.btnSubtitleFg.FlatAppearance.BorderColor = Drawing.Color.Gray
 
+        Me.lblSubtitleFont = New Label()
+        Me.lblSubtitleFont.Text = "Font:"
+        Me.lblSubtitleFont.Location = New Drawing.Point(380, svy + 32 + 3)
+        Me.lblSubtitleFont.AutoSize = True
+
+        Me.cboSubtitleFont = New ComboBox()
+        Me.cboSubtitleFont.Location = New Drawing.Point(420, svy + 32)
+        Me.cboSubtitleFont.Size = New Drawing.Size(160, 23)
+        Me.cboSubtitleFont.DropDownStyle = ComboBoxStyle.DropDownList
+        For Each fam In Drawing.FontFamily.Families
+            Me.cboSubtitleFont.Items.Add(fam.Name)
+        Next
+        Me.cboSubtitleFont.SelectedItem = "Segoe UI"
+
+        Me.lblSubtitleSize = New Label()
+        Me.lblSubtitleSize.Text = "Size:"
+        Me.lblSubtitleSize.Location = New Drawing.Point(590, svy + 32 + 3)
+        Me.lblSubtitleSize.AutoSize = True
+
+        Me.nudSubtitleSize = New NumericUpDown()
+        Me.nudSubtitleSize.Location = New Drawing.Point(625, svy + 32)
+        Me.nudSubtitleSize.Size = New Drawing.Size(55, 23)
+        Me.nudSubtitleSize.Minimum = 8
+        Me.nudSubtitleSize.Maximum = 72
+        Me.nudSubtitleSize.Value = 12
+
+        Me.chkSubtitleBold = New CheckBox()
+        Me.chkSubtitleBold.Text = "Bold"
+        Me.chkSubtitleBold.Location = New Drawing.Point(690, svy + 32 + 2)
+        Me.chkSubtitleBold.AutoSize = True
+
         Me.grpServerSettings.Size = New Drawing.Size(830, 100)
         Me.grpServerSettings.Controls.AddRange({Me.lblServerPort, Me.nudServerPort,
             Me.btnServerStart, Me.btnServerStop, Me.btnServerRestart,
             Me.btnServerSimulate, Me.btnServerSimStop,
-            Me.lblSubtitleBg, Me.btnSubtitleBg, Me.lblSubtitleFg, Me.btnSubtitleFg})
+            Me.lblSubtitleBg, Me.btnSubtitleBg, Me.lblSubtitleFg, Me.btnSubtitleFg,
+            Me.lblSubtitleFont, Me.cboSubtitleFont, Me.lblSubtitleSize, Me.nudSubtitleSize, Me.chkSubtitleBold})
 
         ' Connection info group
         Me.grpServerInfo = New GroupBox()
@@ -1006,6 +1038,19 @@ Partial Class FormMain
         Me.Text = $"Transcription Tools v{ver.Major}.{ver.Minor}.{ver.Build}"
         Me.Icon = Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath)
         Me.StartPosition = FormStartPosition.CenterScreen
+        Me.WindowState = FormWindowState.Maximized
+        ' === System Tray ===
+        Me.trayMenu = New ContextMenuStrip()
+        Me.trayMenuShow = New ToolStripMenuItem("Show")
+        Me.trayMenuExit = New ToolStripMenuItem("Exit")
+        Me.trayMenu.Items.AddRange({Me.trayMenuShow, Me.trayMenuExit})
+
+        Me.trayIcon = New NotifyIcon()
+        Me.trayIcon.Icon = Me.Icon
+        Me.trayIcon.Text = Me.Text
+        Me.trayIcon.ContextMenuStrip = Me.trayMenu
+        Me.trayIcon.Visible = True
+
         Me.ResumeLayout(False)
     End Sub
 
@@ -1206,6 +1251,11 @@ Partial Class FormMain
     Friend WithEvents btnSubtitleBg As Button
     Friend WithEvents lblSubtitleFg As Label
     Friend WithEvents btnSubtitleFg As Button
+    Friend WithEvents lblSubtitleFont As Label
+    Friend WithEvents cboSubtitleFont As ComboBox
+    Friend WithEvents lblSubtitleSize As Label
+    Friend WithEvents nudSubtitleSize As NumericUpDown
+    Friend WithEvents chkSubtitleBold As CheckBox
 
     ' Live Translation tab
     Friend WithEvents grpLiveInput As GroupBox
@@ -1223,4 +1273,10 @@ Partial Class FormMain
     Friend WithEvents btnLiveSave As Button
     Friend WithEvents btnLiveClear As Button
     Friend WithEvents rtbLiveOutput As RichTextBox
+
+    ' System Tray
+    Friend WithEvents trayIcon As NotifyIcon
+    Friend WithEvents trayMenu As ContextMenuStrip
+    Friend WithEvents trayMenuShow As ToolStripMenuItem
+    Friend WithEvents trayMenuExit As ToolStripMenuItem
 End Class
