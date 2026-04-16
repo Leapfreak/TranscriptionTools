@@ -245,16 +245,28 @@ Namespace Pipeline
                     })
                     Await HandleWebSocketStream(ws, ct).ConfigureAwait(False)
                     ' sslStream/client are owned by the WebSocket now — disposed when ws is disposed
-                ElseIf path = "/nosleep.mp4" Then
-                    Dim mp4 = BuildSilentMp4()
+                ElseIf path = "/nosleep.wav" Then
+                    Dim wav = BuildSilentWav()
                     Dim header = "HTTP/1.1 200 OK" & vbCrLf &
-                                 "Content-Type: video/mp4" & vbCrLf &
-                                 $"Content-Length: {mp4.Length}" & vbCrLf &
+                                 "Content-Type: audio/wav" & vbCrLf &
+                                 $"Content-Length: {wav.Length}" & vbCrLf &
                                  "Cache-Control: public, max-age=86400" & vbCrLf &
                                  "Connection: close" & vbCrLf & vbCrLf
                     Dim hdrBytes = Encoding.ASCII.GetBytes(header)
                     Await sslStream.WriteAsync(hdrBytes, 0, hdrBytes.Length, ct).ConfigureAwait(False)
-                    Await sslStream.WriteAsync(mp4, 0, mp4.Length, ct).ConfigureAwait(False)
+                    Await sslStream.WriteAsync(wav, 0, wav.Length, ct).ConfigureAwait(False)
+                    sslStream.Dispose()
+                    client.Dispose()
+                ElseIf path = "/cert" Then
+                    Dim certBytes = _httpsCert.Export(X509ContentType.Cert)
+                    Dim header = "HTTP/1.1 200 OK" & vbCrLf &
+                                 "Content-Type: application/x-x509-ca-cert" & vbCrLf &
+                                 "Content-Disposition: attachment; filename=""TranscriptionTools.crt""" & vbCrLf &
+                                 $"Content-Length: {certBytes.Length}" & vbCrLf &
+                                 "Connection: close" & vbCrLf & vbCrLf
+                    Dim hdrBytes = Encoding.ASCII.GetBytes(header)
+                    Await sslStream.WriteAsync(hdrBytes, 0, hdrBytes.Length, ct).ConfigureAwait(False)
+                    Await sslStream.WriteAsync(certBytes, 0, certBytes.Length, ct).ConfigureAwait(False)
                     sslStream.Dispose()
                     client.Dispose()
                 Else
@@ -357,7 +369,7 @@ Namespace Pipeline
             Directory.CreateDirectory(certDir)
             Using rsa As RSA = RSA.Create(2048)
                 Dim req As New CertificateRequest("CN=Transcription Tools Subtitle Server", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1)
-                req.CertificateExtensions.Add(New X509BasicConstraintsExtension(False, False, 0, False))
+                req.CertificateExtensions.Add(New X509BasicConstraintsExtension(True, False, 0, True))
                 req.CertificateExtensions.Add(New X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature Or X509KeyUsageFlags.KeyEncipherment, False))
                 req.CertificateExtensions.Add(New X509EnhancedKeyUsageExtension(New OidCollection From {New Oid("1.3.6.1.5.5.7.3.1")}, False))
 
@@ -475,8 +487,10 @@ Namespace Pipeline
                     If ctx.Request.IsWebSocketRequest Then
                         ' WebSocket upgrade (fire-and-forget per client)
                         Dim unused = Task.Run(Sub() HandleWebSocket(ctx, ct), ct)
-                    ElseIf ctx.Request.Url.AbsolutePath = "/nosleep.mp4" Then
-                        ServeNoSleepVideo(ctx)
+                    ElseIf ctx.Request.Url.AbsolutePath = "/nosleep.wav" Then
+                        ServeNoSleepAudio(ctx)
+                    ElseIf ctx.Request.Url.AbsolutePath = "/cert" Then
+                        ServeCertificate(ctx)
                     ElseIf ctx.Request.Url.AbsolutePath.StartsWith("/api/control") Then
                         HandleApiControl(ctx)
                     Else
@@ -582,188 +596,66 @@ Namespace Pipeline
             End Try
         End Sub
 
-        Private Sub ServeNoSleepVideo(ctx As HttpListenerContext)
-            Dim mp4 = BuildSilentMp4()
-            ctx.Response.ContentType = "video/mp4"
-            ctx.Response.ContentLength64 = mp4.Length
+        Private Sub ServeCertificate(ctx As HttpListenerContext)
+            If _httpsCert Is Nothing Then
+                ctx.Response.StatusCode = 404
+                ctx.Response.Close()
+                Return
+            End If
+            Dim certBytes = _httpsCert.Export(X509ContentType.Cert)
+            ctx.Response.ContentType = "application/x-x509-ca-cert"
+            ctx.Response.Headers.Add("Content-Disposition", "attachment; filename=""TranscriptionTools.crt""")
+            ctx.Response.ContentLength64 = certBytes.Length
             Try
-                ctx.Response.OutputStream.Write(mp4, 0, mp4.Length)
+                ctx.Response.OutputStream.Write(certBytes, 0, certBytes.Length)
                 ctx.Response.OutputStream.Close()
             Catch
             End Try
         End Sub
 
-        Private Shared Function BuildSilentMp4() As Byte()
-            ' Build a minimal valid MP4 with a 1-second silent audio track
-            Using ms As New MemoryStream()
-                Using w As New BinaryWriter(ms)
-                    ' ftyp box
-                    WriteBox(w, "ftyp", Sub()
-                        w.Write(ToBytes("isom"))       ' major brand
-                        w.Write(BEInt(512))            ' minor version
-                        w.Write(ToBytes("isomiso2mp41")) ' compatible brands
-                    End Sub)
-
-                    ' mdat box (empty)
-                    WriteBox(w, "mdat", Nothing)
-
-                    ' Build moov from inside out
-                    Dim stsd = FullBox("stsd", 0, 0, Sub()
-                        w.Write(BEInt(1))  ' entry count
-                        ' mp4a sample entry
-                        WriteBox(w, "mp4a", Sub()
-                            w.Write(New Byte(5) {})       ' reserved
-                            w.Write(BEShort(1))           ' data_reference_index
-                            w.Write(New Byte(7) {})       ' reserved
-                            w.Write(BEShort(1))           ' channel count
-                            w.Write(BEShort(16))          ' sample size
-                            w.Write(BEShort(0))           ' pre_defined
-                            w.Write(BEShort(0))           ' reserved
-                            w.Write(BEInt(&HAC440000))    ' sample rate 44100 (16.16 fixed)
-                        End Sub)
-                    End Sub)
-
-                    Dim stts = FullBox("stts", 0, 0, Sub() w.Write(BEInt(0)))
-                    Dim stsc = FullBox("stsc", 0, 0, Sub() w.Write(BEInt(0)))
-                    Dim stsz = FullBox("stsz", 0, 0, Sub()
-                        w.Write(BEInt(0))  ' sample size
-                        w.Write(BEInt(0))  ' sample count
-                    End Sub)
-                    Dim stco = FullBox("stco", 0, 0, Sub() w.Write(BEInt(0)))
-
-                    Dim smhd = FullBox("smhd", 0, 0, Sub()
-                        w.Write(BEShort(0))  ' balance
-                        w.Write(BEShort(0))  ' reserved
-                    End Sub)
-
-                    Dim drefUrl = FullBox("url ", 0, 1, Nothing) ' flag 1 = self-contained
-                    Dim dref = FullBox("dref", 0, 0, Sub()
-                        w.Write(BEInt(1)) ' entry count
-                        w.Write(drefUrl)
-                    End Sub)
-                    Dim dinf = ContainerBox("dinf", dref)
-                    Dim stbl = ContainerBox("stbl", stsd, stts, stsc, stsz, stco)
-                    Dim minf = ContainerBox("minf", smhd, dinf, stbl)
-
-                    Dim mdhd = FullBox("mdhd", 0, 0, Sub()
-                        w.Write(BEInt(0))       ' creation time
-                        w.Write(BEInt(0))       ' modification time
-                        w.Write(BEInt(1000))    ' timescale
-                        w.Write(BEInt(1000))    ' duration (1 second)
-                        w.Write(BEShort(&H55C4)) ' language (undetermined)
-                        w.Write(BEShort(0))     ' pre_defined
-                    End Sub)
-
-                    Dim hdlr = FullBox("hdlr", 0, 0, Sub()
-                        w.Write(BEInt(0))              ' pre_defined
-                        w.Write(ToBytes("soun"))       ' handler type
-                        w.Write(New Byte(11) {})       ' reserved
-                        w.Write(Encoding.ASCII.GetBytes("SoundHandler"))
-                        w.Write(CByte(0))              ' null terminator
-                    End Sub)
-
-                    Dim mdia = ContainerBox("mdia", mdhd, hdlr, minf)
-
-                    Dim tkhd = FullBox("tkhd", 0, 3, Sub() ' flags: enabled+in_movie
-                        w.Write(BEInt(0))       ' creation time
-                        w.Write(BEInt(0))       ' modification time
-                        w.Write(BEInt(1))       ' track ID
-                        w.Write(BEInt(0))       ' reserved
-                        w.Write(BEInt(1000))    ' duration
-                        w.Write(New Byte(7) {}) ' reserved
-                        w.Write(BEShort(0))     ' layer
-                        w.Write(BEShort(0))     ' alternate group
-                        w.Write(BEShort(&H100)) ' volume (1.0 fixed 8.8)
-                        w.Write(BEShort(0))     ' reserved
-                        ' identity matrix
-                        w.Write(BEInt(&H10000)) : w.Write(BEInt(0)) : w.Write(BEInt(0))
-                        w.Write(BEInt(0)) : w.Write(BEInt(&H10000)) : w.Write(BEInt(0))
-                        w.Write(BEInt(0)) : w.Write(BEInt(0)) : w.Write(BEInt(&H40000000))
-                        w.Write(BEInt(0))       ' width
-                        w.Write(BEInt(0))       ' height
-                    End Sub)
-
-                    Dim trak = ContainerBox("trak", tkhd, mdia)
-
-                    Dim mvhd = FullBox("mvhd", 0, 0, Sub()
-                        w.Write(BEInt(0))       ' creation time
-                        w.Write(BEInt(0))       ' modification time
-                        w.Write(BEInt(1000))    ' timescale
-                        w.Write(BEInt(1000))    ' duration
-                        w.Write(BEInt(&H10000)) ' rate (1.0 fixed 16.16)
-                        w.Write(BEShort(&H100)) ' volume (1.0 fixed 8.8)
-                        w.Write(New Byte(9) {}) ' reserved
-                        ' identity matrix
-                        w.Write(BEInt(&H10000)) : w.Write(BEInt(0)) : w.Write(BEInt(0))
-                        w.Write(BEInt(0)) : w.Write(BEInt(&H10000)) : w.Write(BEInt(0))
-                        w.Write(BEInt(0)) : w.Write(BEInt(0)) : w.Write(BEInt(&H40000000))
-                        w.Write(New Byte(23) {}) ' pre_defined
-                        w.Write(BEInt(2))        ' next track ID
-                    End Sub)
-
-                    ' Write moov container
-                    WriteBox(w, "moov", Sub()
-                        w.Write(mvhd)
-                        w.Write(trak)
-                    End Sub)
-                End Using
-                Return ms.ToArray()
-            End Using
-        End Function
-
-        ' ---- MP4 box helpers ----
-
-        Private Shared Function BEInt(value As Integer) As Byte()
-            Dim b = BitConverter.GetBytes(value)
-            If BitConverter.IsLittleEndian Then Array.Reverse(b)
-            Return b
-        End Function
-
-        Private Shared Function BEShort(value As Short) As Byte()
-            Dim b = BitConverter.GetBytes(value)
-            If BitConverter.IsLittleEndian Then Array.Reverse(b)
-            Return b
-        End Function
-
-        Private Shared Function ToBytes(fourCC As String) As Byte()
-            Return Encoding.ASCII.GetBytes(fourCC)
-        End Function
-
-        Private Shared Sub WriteBox(w As BinaryWriter, boxType As String, writeContent As Action)
-            Dim startPos = w.BaseStream.Position
-            w.Write(BEInt(0))           ' placeholder for size
-            w.Write(ToBytes(boxType))
-            writeContent?.Invoke()
-            Dim endPos = w.BaseStream.Position
-            Dim size = CInt(endPos - startPos)
-            w.BaseStream.Position = startPos
-            w.Write(BEInt(size))
-            w.BaseStream.Position = endPos
+        Private Sub ServeNoSleepAudio(ctx As HttpListenerContext)
+            Dim wav = BuildSilentWav()
+            ctx.Response.ContentType = "audio/wav"
+            ctx.Response.ContentLength64 = wav.Length
+            Try
+                ctx.Response.OutputStream.Write(wav, 0, wav.Length)
+                ctx.Response.OutputStream.Close()
+            Catch
+            End Try
         End Sub
 
-        Private Shared Function FullBox(boxType As String, version As Byte, flags As Integer, writeContent As Action) As Byte()
-            Using ms As New MemoryStream()
-                Using w As New BinaryWriter(ms)
-                    WriteBox(w, boxType, Sub()
-                        w.Write(CByte(version))
-                        Dim fb = BitConverter.GetBytes(flags)
-                        If BitConverter.IsLittleEndian Then Array.Reverse(fb)
-                        w.Write(fb, 1, 3) ' 3 bytes of flags
-                        writeContent?.Invoke()
-                    End Sub)
-                End Using
-                Return ms.ToArray()
-            End Using
-        End Function
+        ''' <summary>
+        ''' Build a valid WAV file with 2 seconds of silence (8kHz mono 8-bit PCM).
+        ''' Unlike the old empty MP4, this has real audio samples so browsers will play it.
+        ''' </summary>
+        Private Shared Function BuildSilentWav() As Byte()
+            Const sampleRate As Integer = 8000
+            Const durationSec As Integer = 2
+            Const bitsPerSample As Integer = 8
+            Const channels As Integer = 1
+            Dim dataSize = sampleRate * durationSec * channels * (bitsPerSample \ 8)
+            Dim fileSize = 36 + dataSize  ' 44 byte header - 8 for RIFF header itself
 
-        Private Shared Function ContainerBox(boxType As String, ParamArray children As Byte()()) As Byte()
             Using ms As New MemoryStream()
                 Using w As New BinaryWriter(ms)
-                    WriteBox(w, boxType, Sub()
-                        For Each child In children
-                            w.Write(child)
-                        Next
-                    End Sub)
+                    ' RIFF header
+                    w.Write(Encoding.ASCII.GetBytes("RIFF"))
+                    w.Write(fileSize)                         ' file size - 8
+                    w.Write(Encoding.ASCII.GetBytes("WAVE"))
+                    ' fmt chunk
+                    w.Write(Encoding.ASCII.GetBytes("fmt "))
+                    w.Write(16)                               ' chunk size
+                    w.Write(CShort(1))                        ' PCM format
+                    w.Write(CShort(channels))
+                    w.Write(sampleRate)
+                    w.Write(sampleRate * channels * (bitsPerSample \ 8)) ' byte rate
+                    w.Write(CShort(channels * (bitsPerSample \ 8)))     ' block align
+                    w.Write(CShort(bitsPerSample))
+                    ' data chunk
+                    w.Write(Encoding.ASCII.GetBytes("data"))
+                    w.Write(dataSize)
+                    ' Silence: 128 is zero-point for unsigned 8-bit PCM
+                    w.Write(Enumerable.Repeat(CByte(128), dataSize).ToArray())
                 End Using
                 Return ms.ToArray()
             End Using
@@ -833,6 +725,7 @@ body{background:{{BG_COLOR}};color:{{FG_COLOR}};font-family:'Segoe UI',Arial,san
   <button id=""btnAdmin"" onclick=""toggleAdmin()"" title=""Remote Control"">&#9881;</button>
   <button onclick=""togglePanel()"" title=""Settings"">Aa</button>
   <button id=""btnSpeak"" onclick=""toggleSpeak()"" title=""Read aloud"">&#128264;</button>
+  <button id=""btnWake"" onclick=""toggleWakeLock()"" title=""Keep screen on"">&#128261;</button>
 </div>
 <div id=""adminPanel"">
   <div id=""adminStatus"">Checking...</div>
@@ -977,49 +870,62 @@ function connect(){
 }
 connect();
 
-/* Keep screen on (mobile) */
-var noSleepActive=false;
-function enableNoSleep(){
-  if(noSleepActive)return;
-  noSleepActive=true;
-  /* Try Wake Lock API first (secure contexts) */
-  if('wakeLock' in navigator){
-    navigator.wakeLock.request('screen').then(function(lock){
-      document.addEventListener('visibilitychange',function(){
-        if(document.visibilityState==='visible')navigator.wakeLock.request('screen').catch(function(){})
-      });
-    }).catch(function(){startVideoNoSleep()});
-    return;
-  }
-  startVideoNoSleep();
+/* Keep screen on — Wake Lock toggle button */
+var wakeLockObj=null;
+var wakeActive=false;
+var btnWake=document.getElementById('btnWake');
+
+function setWakeActive(on){
+  wakeActive=on;
+  if(on){btnWake.classList.add('active')}else{btnWake.classList.remove('active')}
 }
-function startVideoNoSleep(){
-  var v=document.createElement('video');
-  v.setAttribute('playsinline','');v.setAttribute('webkit-playsinline','');
-  v.loop=true;v.muted=false;v.volume=0.001;
-  v.style.cssText='position:fixed;top:-1px;left:-1px;width:1px;height:1px;opacity:0.01';
-  document.body.appendChild(v);
-  /* Record a tiny video from canvas — guaranteed valid by the browser */
-  try{
-    var c=document.createElement('canvas');c.width=2;c.height=2;
-    var ctx=c.getContext('2d');ctx.fillRect(0,0,2,2);
-    var stream=c.captureStream(1);
-    var rec=new MediaRecorder(stream);
-    var chunks=[];
-    rec.ondataavailable=function(e){if(e.data.size>0)chunks.push(e.data)};
-    rec.onstop=function(){
-      v.src=URL.createObjectURL(new Blob(chunks,{type:rec.mimeType}));
-      v.play().catch(function(){});
-    };
-    rec.start();setTimeout(function(){rec.stop()},500);
-  }catch(e){
-    /* Last resort: server-generated MP4 */
-    v.src='/nosleep.mp4';v.play().catch(function(){});
+
+async function acquireWakeLock(){
+  /* HTTPS: use Wake Lock API (only try in secure context to preserve user gesture) */
+  if(window.isSecureContext&&'wakeLock' in navigator){
+    try{
+      wakeLockObj=await navigator.wakeLock.request('screen');
+      setWakeActive(true);
+      wakeLockObj.addEventListener('release',function(){wakeLockObj=null;if(wakeActive)acquireWakeLock()});
+      return;
+    }catch(e){}
   }
-  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')v.play().catch(function(){})});
+  /* HTTP: no reliable way to prevent sleep — guide user to HTTPS */
+  showCertSetup();
 }
-document.addEventListener('click',enableNoSleep,{once:true});
-document.addEventListener('touchstart',enableNoSleep,{once:true});
+
+function releaseWakeLock(){
+  wakeActive=false;
+  if(wakeLockObj){try{wakeLockObj.release()}catch(e){}wakeLockObj=null}
+  if(window._noSleepAudio){try{window._noSleepAudio.pause()}catch(e){}}
+  setWakeActive(false);
+}
+
+function toggleWakeLock(){if(wakeActive)releaseWakeLock();else acquireWakeLock()}
+
+function showCertSetup(){
+  var hp=parseInt(location.port||80)+1;
+  var url='https://'+location.hostname+':'+hp;
+  var d=document.createElement('div');
+  d.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;color:#fff;font-size:16px;line-height:1.6';
+  var c=document.createElement('div');c.style.cssText='max-width:400px;text-align:left';
+  var h=document.createElement('h2');h.style.cssText='color:#ffdd57;margin-bottom:16px;text-align:center';h.textContent='Keep Screen On';c.appendChild(h);
+  var p0=document.createElement('p');p0.style.cssText='margin-bottom:16px;text-align:center';p0.textContent='A secure connection is needed (one-time setup):';c.appendChild(p0);
+  var steps=['Tap the button below','You will see a warning page \u2014 this is normal','Tap \u0022Advanced\u0022','Tap \u0022Proceed to '+location.hostname+'\u0022','Tap the screen wake button again'];
+  for(var i=0;i<steps.length;i++){var s=document.createElement('p');s.style.cssText='margin-bottom:8px;padding-left:8px';s.textContent=(i+1)+'. '+steps[i];c.appendChild(s)}
+  var br=document.createElement('div');br.style.cssText='text-align:center;margin-top:20px';
+  var a1=document.createElement('a');a1.href=url;a1.textContent='Open Secure Page';a1.style.cssText='display:inline-block;background:#47f;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-size:18px;margin-bottom:16px';br.appendChild(a1);
+  br.appendChild(document.createElement('br'));
+  var b2=document.createElement('button');b2.textContent='Cancel';b2.style.cssText='background:#333;color:#aaa;border:1px solid #555;padding:8px 20px;border-radius:6px;font-size:14px;cursor:pointer;margin-top:8px';b2.onclick=function(){d.remove()};br.appendChild(b2);
+  c.appendChild(br);d.appendChild(c);document.body.appendChild(d);
+}
+
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState==='visible'&&wakeActive){
+    if(!wakeLockObj)acquireWakeLock();
+    else if(window._noSleepAudio)window._noSleepAudio.play().catch(function(){});
+  }
+});
 
 /* Admin remote control */
 const adminPanel=document.getElementById('adminPanel');
