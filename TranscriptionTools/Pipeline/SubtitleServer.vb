@@ -541,10 +541,10 @@ body{background:{{BG_COLOR}};color:{{FG_COLOR}};font-family:'Segoe UI',Arial,san
 #status{padding:6px 12px;font-size:13px;color:#888;background:#111;border-bottom:1px solid #222;flex-shrink:0}
 #status.connected{color:#4a4}
 #status.disconnected{color:#a44}
-#container{flex:1;overflow-y:auto;padding:16px}
-#lines{display:flex;flex-direction:column;min-height:100%}
+#container{flex:1;overflow-y:auto;padding:16px;padding-bottom:32px}
+#lines{display:flex;flex-direction:column;min-height:100%;padding-bottom:24px}
 #spacer{flex:1}
-.line{font-size:28px;line-height:1.4;padding:4px 0;color:{{FG_COLOR}};word-wrap:break-word}
+.line{font-size:28px;line-height:1.4;padding:4px 0;color:{{FG_COLOR}};word-wrap:break-word;border-bottom:1px solid #333;margin-bottom:4px}
 .line.in-progress{color:#ff6b6b;opacity:0.85}
 #toolbar{position:fixed;top:0;right:0;padding:8px;z-index:10;display:flex;gap:4px}
 #toolbar button{background:#222;color:#aaa;border:1px solid #444;border-radius:4px;
@@ -738,7 +738,7 @@ function enableNoSleep(){
 function startVideoNoSleep(){
   var v=document.createElement('video');
   v.setAttribute('playsinline','');v.setAttribute('webkit-playsinline','');
-  v.loop=true;v.muted=true;
+  v.loop=true;v.muted=false;v.volume=0.001;
   v.style.cssText='position:fixed;top:-1px;left:-1px;width:1px;height:1px;opacity:0.01';
   document.body.appendChild(v);
   /* Record a tiny video from canvas — guaranteed valid by the browser */
