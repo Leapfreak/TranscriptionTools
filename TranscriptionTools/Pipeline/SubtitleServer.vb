@@ -448,6 +448,16 @@ Namespace Pipeline
             BroadcastMessage(json)
         End Sub
 
+        Public Sub BroadcastClear()
+            If Not _isRunning Then Return
+            _currentLine = ""
+            While _committedLines.Count > 0
+                Dim discard As String = Nothing
+                _committedLines.TryDequeue(discard)
+            End While
+            BroadcastMessage("{""type"":""clear""}")
+        End Sub
+
         Private Sub BroadcastMessage(json As String)
             Dim buffer = Encoding.UTF8.GetBytes(json)
             Dim segment = New ArraySegment(Of Byte)(buffer)
@@ -567,7 +577,7 @@ Namespace Pipeline
                 End If
 
                 Select Case action.ToLower()
-                    Case "start", "stop", "restart", "simulate"
+                    Case "start", "stop", "restart", "simulate", "clear"
                         RaiseEvent RemoteCommand(Me, action.ToLower())
                         Dim json = $"{{""ok"":true,""action"":""{action.ToLower()}""}}"
                         SendJsonResponse(ctx, json)
@@ -733,6 +743,7 @@ body{background:{{BG_COLOR}};color:{{FG_COLOR}};font-family:'Segoe UI',Arial,san
   <button class=""stop"" onclick=""sendCommand('stop')"">&#9632; Stop</button>
   <button class=""restart"" onclick=""sendCommand('restart')"">&#8635; Restart</button>
   <button onclick=""sendCommand('simulate')"">&#9881; Simulate</button>
+  <button class=""stop"" onclick=""sendCommand('clear')"">&#10060; Clear</button>
 </div>
 <div id=""panel"">
   <button onclick=""changeFontSize(4)"">A+</button>
@@ -783,7 +794,7 @@ var T={};
         dfltVoice:'Default',title:'Live Subtitles',
         bold:'Bold',font:'Font',style:'Style',voice:'Voice',speed:'Speed',color:'Text Color',
         slow:'Slow',normal:'Normal',fast:'Fast',vfast:'Very Fast',
-        start:'Start',stop:'Stop',restart:'Restart',simulate:'Simulate',
+        start:'Start',stop:'Stop',restart:'Restart',simulate:'Simulate',clear:'Clear',
         remote:'Remote Control',settings:'Settings',readAloud:'Read aloud',keepScreen:'Keep screen on'},
     es:{connecting:'Conectando...',connected:'Conectado',disconnected:'Desconectado - reconectando...',
         wakeTitle:'Mantener Pantalla',wakeDesc:'Se necesita conexi\u00f3n segura (configuraci\u00f3n \u00fanica):',
@@ -799,7 +810,7 @@ var T={};
         dfltVoice:'Predeterminado',title:'Subt\u00edtulos en Vivo',
         bold:'Negrita',font:'Fuente',style:'Estilo',voice:'Voz',speed:'Velocidad',color:'Color de texto',
         slow:'Lento',normal:'Normal',fast:'R\u00e1pido',vfast:'Muy R\u00e1pido',
-        start:'Iniciar',stop:'Detener',restart:'Reiniciar',simulate:'Simular',
+        start:'Iniciar',stop:'Detener',restart:'Reiniciar',simulate:'Simular',clear:'Limpiar',
         remote:'Control Remoto',settings:'Ajustes',readAloud:'Leer en voz alta',keepScreen:'Mantener pantalla'},
     fr:{connecting:'Connexion...',connected:'Connect\u00e9',disconnected:'D\u00e9connect\u00e9 - reconnexion...',
         wakeTitle:'\u00c9cran Allum\u00e9',wakeDesc:'Connexion s\u00e9curis\u00e9e requise (une seule fois) :',
@@ -815,7 +826,7 @@ var T={};
         dfltVoice:'Par d\u00e9faut',title:'Sous-titres en Direct',
         bold:'Gras',font:'Police',style:'Style',voice:'Voix',speed:'Vitesse',color:'Couleur du texte',
         slow:'Lent',normal:'Normal',fast:'Rapide',vfast:'Tr\u00e8s Rapide',
-        start:'D\u00e9marrer',stop:'Arr\u00eater',restart:'Red\u00e9marrer',simulate:'Simuler',
+        start:'D\u00e9marrer',stop:'Arr\u00eater',restart:'Red\u00e9marrer',simulate:'Simuler',clear:'Effacer',
         remote:'T\u00e9l\u00e9commande',settings:'Param\u00e8tres',readAloud:'Lire \u00e0 voix haute',keepScreen:'\u00c9cran allum\u00e9'},
     de:{connecting:'Verbinde...',connected:'Verbunden',disconnected:'Getrennt - verbinde erneut...',
         wakeTitle:'Bildschirm An',wakeDesc:'Sichere Verbindung erforderlich (einmalig):',
@@ -831,7 +842,7 @@ var T={};
         dfltVoice:'Standard',title:'Live-Untertitel',
         bold:'Fett',font:'Schrift',style:'Stil',voice:'Stimme',speed:'Geschwindigkeit',color:'Textfarbe',
         slow:'Langsam',normal:'Normal',fast:'Schnell',vfast:'Sehr Schnell',
-        start:'Starten',stop:'Stoppen',restart:'Neustarten',simulate:'Simulieren',
+        start:'Starten',stop:'Stoppen',restart:'Neustarten',simulate:'Simulieren',clear:'L\u00f6schen',
         remote:'Fernsteuerung',settings:'Einstellungen',readAloud:'Vorlesen',keepScreen:'Bildschirm an'},
     ca:{connecting:'Connectant...',connected:'Connectat',disconnected:'Desconnectat - reconnectant...',
         wakeTitle:'Mantenir Pantalla',wakeDesc:'Cal connexi\u00f3 segura (configuraci\u00f3 \u00fanica):',
@@ -847,7 +858,7 @@ var T={};
         dfltVoice:'Per defecte',title:'Subt\u00edtols en Directe',
         bold:'Negreta',font:'Tipus de lletra',style:'Estil',voice:'Veu',speed:'Velocitat',color:'Color del text',
         slow:'Lent',normal:'Normal',fast:'R\u00e0pid',vfast:'Molt R\u00e0pid',
-        start:'Iniciar',stop:'Aturar',restart:'Reiniciar',simulate:'Simular',
+        start:'Iniciar',stop:'Aturar',restart:'Reiniciar',simulate:'Simular',clear:'Netejar',
         remote:'Control Remot',settings:'Ajustos',readAloud:'Llegir en veu alta',keepScreen:'Mantenir pantalla'},
     pt:{connecting:'Conectando...',connected:'Conectado',disconnected:'Desconectado - reconectando...',
         wakeTitle:'Manter Tela Ligada',wakeDesc:'Conex\u00e3o segura necess\u00e1ria (apenas uma vez):',
@@ -863,7 +874,7 @@ var T={};
         dfltVoice:'Padr\u00e3o',title:'Legendas ao Vivo',
         bold:'Negrito',font:'Fonte',style:'Estilo',voice:'Voz',speed:'Velocidade',color:'Cor do texto',
         slow:'Lento',normal:'Normal',fast:'R\u00e1pido',vfast:'Muito R\u00e1pido',
-        start:'Iniciar',stop:'Parar',restart:'Reiniciar',simulate:'Simular',
+        start:'Iniciar',stop:'Parar',restart:'Reiniciar',simulate:'Simular',clear:'Limpar',
         remote:'Controle Remoto',settings:'Configura\u00e7\u00f5es',readAloud:'Ler em voz alta',keepScreen:'Manter tela ligada'},
     ja:{connecting:'\u63a5\u7d9a\u4e2d...',connected:'\u63a5\u7d9a\u6e08\u307f',disconnected:'\u5207\u65ad - \u518d\u63a5\u7d9a\u4e2d...',
         wakeTitle:'\u753b\u9762\u3092\u70b9\u706f',wakeDesc:'\u5b89\u5168\u306a\u63a5\u7d9a\u304c\u5fc5\u8981\u3067\u3059\uff08\u521d\u56de\u306e\u307f\uff09:',
@@ -879,7 +890,7 @@ var T={};
         dfltVoice:'\u30c7\u30d5\u30a9\u30eb\u30c8',title:'\u30e9\u30a4\u30d6\u5b57\u5e55',
         bold:'\u592a\u5b57',font:'\u30d5\u30a9\u30f3\u30c8',style:'\u30b9\u30bf\u30a4\u30eb',voice:'\u97f3\u58f0',speed:'\u901f\u5ea6',color:'\u6587\u5b57\u8272',
         slow:'\u9045\u3044',normal:'\u666e\u901a',fast:'\u901f\u3044',vfast:'\u3068\u3066\u3082\u901f\u3044',
-        start:'\u958b\u59cb',stop:'\u505c\u6b62',restart:'\u518d\u958b',simulate:'\u30b7\u30df\u30e5\u30ec\u30fc\u30b7\u30e7\u30f3',
+        start:'\u958b\u59cb',stop:'\u505c\u6b62',restart:'\u518d\u958b',simulate:'\u30b7\u30df\u30e5\u30ec\u30fc\u30b7\u30e7\u30f3',clear:'\u30af\u30ea\u30a2',
         remote:'\u30ea\u30e2\u30fc\u30c8',settings:'\u8a2d\u5b9a',readAloud:'\u8aad\u307f\u4e0a\u3052',keepScreen:'\u753b\u9762\u70b9\u706f'},
     zh:{connecting:'\u8fde\u63a5\u4e2d...',connected:'\u5df2\u8fde\u63a5',disconnected:'\u5df2\u65ad\u5f00 - \u91cd\u65b0\u8fde\u63a5...',
         wakeTitle:'\u4fdd\u6301\u5c4f\u5e55\u5e38\u4eae',wakeDesc:'\u9700\u8981\u5b89\u5168\u8fde\u63a5\uff08\u4ec5\u9700\u4e00\u6b21\uff09:',
@@ -895,7 +906,7 @@ var T={};
         dfltVoice:'\u9ed8\u8ba4',title:'\u5b9e\u65f6\u5b57\u5e55',
         bold:'\u7c97\u4f53',font:'\u5b57\u4f53',style:'\u6837\u5f0f',voice:'\u8bed\u97f3',speed:'\u901f\u5ea6',color:'\u6587\u5b57\u989c\u8272',
         slow:'\u6162',normal:'\u6b63\u5e38',fast:'\u5feb',vfast:'\u975e\u5e38\u5feb',
-        start:'\u5f00\u59cb',stop:'\u505c\u6b62',restart:'\u91cd\u542f',simulate:'\u6a21\u62df',
+        start:'\u5f00\u59cb',stop:'\u505c\u6b62',restart:'\u91cd\u542f',simulate:'\u6a21\u62df',clear:'\u6e05\u9664',
         remote:'\u8fdc\u7a0b\u63a7\u5236',settings:'\u8bbe\u7f6e',readAloud:'\u6717\u8bfb',keepScreen:'\u4fdd\u6301\u5c4f\u5e55'}
   };
   if(lang.indexOf('zh')===0)T=tr.zh;
@@ -1004,15 +1015,36 @@ function connect(){
     try{var msg=JSON.parse(e.data);
       if(msg.type==='commit')addCommitted(msg.text);
       else if(msg.type==='update')updateCurrent(msg.text);
+      else if(msg.type==='clear'){if(currentEl){currentEl.remove();currentEl=null}while(lines.children.length>1)lines.removeChild(lines.children[1]);scrollBottom()}
     }catch(ex){}
   }
 }
+/* Apply i18n to HTML elements */
+document.title=t('title');
+status.textContent=t('connecting');
+document.getElementById('btnAdmin').title=t('remote');
+document.getElementById('btnSettings').title=t('settings');
+btnSpeak.title=t('readAloud');
+document.getElementById('lblFont').textContent=t('font');
+document.getElementById('lblStyle').textContent=t('style');
+document.getElementById('lblColor').textContent=t('color');
+document.getElementById('btnBold').textContent=t('bold');
+document.getElementById('lblVoice').textContent=t('voice');
+document.getElementById('lblSpeed').textContent=t('speed');
+var rOpts=rateSelect.options;rOpts[0].textContent=t('slow');rOpts[1].textContent=t('normal');rOpts[2].textContent=t('fast');rOpts[3].textContent=t('vfast');
+adminStatus.textContent=t('checking');
+var admBtns=document.querySelectorAll('#adminPanel button');
+admBtns[0].innerHTML='&#9654; '+t('start');admBtns[1].innerHTML='&#9632; '+t('stop');
+admBtns[2].innerHTML='&#8635; '+t('restart');admBtns[3].innerHTML='&#9881; '+t('simulate');
+admBtns[4].innerHTML='&#10060; '+t('clear');
+
 connect();
 
 /* Keep screen on — Wake Lock toggle button */
 var wakeLockObj=null;
 var wakeActive=false;
 var btnWake=document.getElementById('btnWake');
+btnWake.title=t('keepScreen');
 
 function setWakeActive(on){
   wakeActive=on;
@@ -1089,24 +1121,6 @@ function pollStatus(){
     else{adminStatus.textContent=t('stopped');adminStatus.style.color='#f44'}
   }).catch(function(){adminStatus.textContent=t('noServer');adminStatus.style.color='#888'});
 }
-/* Apply i18n to HTML elements */
-document.title=t('title');
-status.textContent=t('connecting');
-document.getElementById('btnAdmin').title=t('remote');
-document.getElementById('btnSettings').title=t('settings');
-btnSpeak.title=t('readAloud');
-btnWake.title=t('keepScreen');
-document.getElementById('lblFont').textContent=t('font');
-document.getElementById('lblStyle').textContent=t('style');
-document.getElementById('lblColor').textContent=t('color');
-document.getElementById('btnBold').textContent=t('bold');
-document.getElementById('lblVoice').textContent=t('voice');
-document.getElementById('lblSpeed').textContent=t('speed');
-var rOpts=rateSelect.options;rOpts[0].textContent=t('slow');rOpts[1].textContent=t('normal');rOpts[2].textContent=t('fast');rOpts[3].textContent=t('vfast');
-adminStatus.textContent=t('checking');
-var admBtns=document.querySelectorAll('#adminPanel button');
-admBtns[0].innerHTML='&#9654; '+t('start');admBtns[1].innerHTML='&#9632; '+t('stop');
-admBtns[2].innerHTML='&#8635; '+t('restart');admBtns[3].innerHTML='&#9881; '+t('simulate');
 </script>
 </body>
 </html>").Replace("{{BG_COLOR}}", bg).Replace("{{FG_COLOR}}", fg)

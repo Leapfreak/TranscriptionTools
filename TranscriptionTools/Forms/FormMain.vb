@@ -1768,6 +1768,10 @@ del ""%~f0""
                         AppendServerLog("Remote command: STOP SIMULATE")
                         btnServerSimStop_Click(Nothing, EventArgs.Empty)
                     End If
+                Case "clear"
+                    AppendServerLog("Remote command: CLEAR")
+                    rtbLiveOutput.Clear()
+                    _subtitleServer?.BroadcastClear()
             End Select
         Finally
             _isRemoteCommand = False
