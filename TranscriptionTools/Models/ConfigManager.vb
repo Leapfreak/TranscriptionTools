@@ -28,6 +28,16 @@ Namespace Models
         Private Shared Sub ApplyDefaults(cfg As AppConfig)
             If String.IsNullOrEmpty(cfg.SubtitleBgColor) OrElse Not cfg.SubtitleBgColor.StartsWith("#") Then cfg.SubtitleBgColor = "#000000"
             If String.IsNullOrEmpty(cfg.SubtitleFgColor) OrElse Not cfg.SubtitleFgColor.StartsWith("#") Then cfg.SubtitleFgColor = "#FFFFFF"
+
+            ' Migrate old flat paths to whisper\ subdirectory
+            If cfg.PathWhisper IsNot Nothing AndAlso cfg.PathWhisper.EndsWith("\whisper-cli.exe") AndAlso
+               Not cfg.PathWhisper.EndsWith("\whisper\whisper-cli.exe") Then
+                cfg.PathWhisper = cfg.PathWhisper.Replace("\whisper-cli.exe", "\whisper\whisper-cli.exe")
+            End If
+            If cfg.PathStream IsNot Nothing AndAlso cfg.PathStream.EndsWith("\whisper-stream.exe") AndAlso
+               Not cfg.PathStream.EndsWith("\whisper\whisper-stream.exe") Then
+                cfg.PathStream = cfg.PathStream.Replace("\whisper-stream.exe", "\whisper\whisper-stream.exe")
+            End If
         End Sub
 
         Public Shared Sub Save(config As AppConfig)

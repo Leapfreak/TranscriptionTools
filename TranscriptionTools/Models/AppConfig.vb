@@ -5,7 +5,7 @@ Namespace Models
 
         ' --- Paths & Tools ---
 
-        Public Property PathWhisper As String = ".\whisper-cli.exe"
+        Public Property PathWhisper As String = ".\whisper\whisper-cli.exe"
 
         Public Property PathYtdlp As String = ".\yt-dlp.exe"
 
@@ -17,7 +17,7 @@ Namespace Models
 
         Public Property PathModelAudio As String = ".\ggml-large-v3.bin"
 
-        Public Property PathStream As String = ".\whisper-stream.exe"
+        Public Property PathStream As String = ".\whisper\whisper-stream.exe"
 
         Public Property PathSubtitleEdit As String = ".\SubtitleEdit\SubtitleEdit.exe"
 

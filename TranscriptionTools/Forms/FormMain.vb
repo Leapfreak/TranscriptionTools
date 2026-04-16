@@ -370,8 +370,9 @@ Public Class FormMain
     End Function
 
     Private Sub UpdateConfigPaths(toolsDir As String)
-        _config.PathWhisper = IO.Path.Combine(toolsDir, "whisper-cli.exe")
-        _config.PathStream = IO.Path.Combine(toolsDir, "whisper-stream.exe")
+        Dim whisperDir = IO.Path.Combine(toolsDir, "whisper")
+        _config.PathWhisper = IO.Path.Combine(whisperDir, "whisper-cli.exe")
+        _config.PathStream = IO.Path.Combine(whisperDir, "whisper-stream.exe")
         _config.PathYtdlp = IO.Path.Combine(toolsDir, "yt-dlp.exe")
         _config.PathFfmpeg = IO.Path.Combine(toolsDir, "ffmpeg.exe")
         _config.PathFfprobe = IO.Path.Combine(toolsDir, "ffprobe.exe")

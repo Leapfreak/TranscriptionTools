@@ -126,7 +126,8 @@ jobs:
 
       - name: Create Zip
         run: |
-          Copy-Item -Path "whisper-bin/*" -Destination "TranscriptionTools/bin/Publish/" -Force
+          New-Item -ItemType Directory -Force -Path "TranscriptionTools/bin/Publish/whisper"
+          Copy-Item -Path "whisper-bin/*" -Destination "TranscriptionTools/bin/Publish/whisper/" -Force
           Compress-Archive -Path TranscriptionTools/bin/Publish/* -DestinationPath "Output/TranscriptionTools_${{ github.ref_name }}.zip"
 
       - name: Create Release

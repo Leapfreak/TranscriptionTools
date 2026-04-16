@@ -56,9 +56,9 @@ Source: "{#AppPublishDir}\TranscriptionTools.runtimeconfig.json"; DestDir: "{app
 ; Help files
 Source: "{#AppPublishDir}\Help\*"; DestDir: "{app}\Help"; Flags: ignoreversion recursesubdirs
 ; --- Whisper CUDA binaries ---
-Source: "{#WhisperBinDir}\whisper-cli.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#WhisperBinDir}\whisper-stream.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#WhisperBinDir}\*.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#WhisperBinDir}\whisper-cli.exe"; DestDir: "{app}\whisper"; Flags: ignoreversion
+Source: "{#WhisperBinDir}\whisper-stream.exe"; DestDir: "{app}\whisper"; Flags: ignoreversion
+Source: "{#WhisperBinDir}\*.dll"; DestDir: "{app}\whisper"; Flags: ignoreversion
 ; Locale satellite assemblies
 Source: "{#AppPublishDir}\ca\*"; DestDir: "{app}\ca"; Flags: ignoreversion
 Source: "{#AppPublishDir}\de\*"; DestDir: "{app}\de"; Flags: ignoreversion

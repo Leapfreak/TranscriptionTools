@@ -532,6 +532,11 @@ function connect(){
 }
 connect();
 
+/* Keep screen on (mobile) */
+var wakeLock=null;
+async function requestWakeLock(){try{wakeLock=await navigator.wakeLock.request('screen')}catch(e){}}
+if('wakeLock' in navigator){requestWakeLock();document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')requestWakeLock()})}
+
 /* Admin remote control */
 const adminPanel=document.getElementById('adminPanel');
 const adminStatus=document.getElementById('adminStatus');
