@@ -93,6 +93,7 @@ Public Class FormMain
         PopulateLiveModelDropdown()
         cboLiveDevice.Items.Add("Detecting devices...")
         cboLiveDevice.SelectedIndex = 0
+        btnLiveStart.Enabled = False
 
         ' Enumerate SDL devices in the background
         Dim streamPath = AppConfig.ResolvePath(_config.PathStream)
@@ -100,7 +101,10 @@ Public Class FormMain
         Task.Run(Sub()
                      Dim runner As New LiveStreamRunner()
                      Dim devices = runner.EnumerateDevicesFromSDL(streamPath, modelPath)
-                     cboLiveDevice.BeginInvoke(Sub() UpdateDeviceCombo(devices))
+                     cboLiveDevice.BeginInvoke(Sub()
+                                                   UpdateDeviceCombo(devices)
+                                                   btnLiveStart.Enabled = True
+                                               End Sub)
                  End Sub)
 
         ' Apply theme
@@ -229,6 +233,7 @@ Public Class FormMain
 
             ' Launch installer and exit
             Process.Start(New ProcessStartInfo(tempPath) With {.UseShellExecute = True})
+            _exitForReal = True
             Application.Exit()
         Catch ex As Exception
             MessageBox.Show($"Update download failed: {ex.Message}" & vbCrLf & vbCrLf &
@@ -1454,8 +1459,8 @@ Public Class FormMain
         Next
         cboLiveOutputLang.Items.AddRange({"auto", "en"})
 
-        SelectComboItem(cboLiveInputLang, "auto")
-        SelectComboItem(cboLiveOutputLang, "auto")
+        SelectComboItem(cboLiveInputLang, _config.Language)
+        SelectComboItem(cboLiveOutputLang, _config.OutputLanguage)
     End Sub
 
     Private Sub PopulateLiveModelDropdown()
@@ -1486,6 +1491,21 @@ Public Class FormMain
                 ConfigManager.Save(_config)
             End If
         End If
+    End Sub
+
+    Private Sub cboLiveInputLang_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboLiveInputLang.SelectedIndexChanged
+        If _isInitializing OrElse cboLiveInputLang.SelectedItem Is Nothing Then Return
+        _config.Language = cboLiveInputLang.SelectedItem.ToString()
+        SelectComboItem(cboInputLanguage, _config.Language)
+        SelectComboItem(cboWLanguage, _config.Language)
+        ConfigManager.Save(_config)
+    End Sub
+
+    Private Sub cboLiveOutputLang_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboLiveOutputLang.SelectedIndexChanged
+        If _isInitializing OrElse cboLiveOutputLang.SelectedItem Is Nothing Then Return
+        _config.OutputLanguage = cboLiveOutputLang.SelectedItem.ToString()
+        SelectComboItem(cboOutputLanguage, _config.OutputLanguage)
+        ConfigManager.Save(_config)
     End Sub
 
     Private Sub btnRefreshDevices_Click(sender As Object, e As EventArgs) Handles btnRefreshDevices.Click

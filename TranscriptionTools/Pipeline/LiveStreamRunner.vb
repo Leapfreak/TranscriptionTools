@@ -84,7 +84,10 @@ Namespace Pipeline
                 End While
 
                 Try
-                    If Not proc.HasExited Then proc.Kill(True)
+                    If Not proc.HasExited Then
+                        proc.Kill(True)
+                        proc.WaitForExit(3000)
+                    End If
                 Catch
                 End Try
                 proc.Dispose()
