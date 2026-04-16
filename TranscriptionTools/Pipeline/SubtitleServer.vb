@@ -2,6 +2,8 @@ Imports System.Collections.Concurrent
 Imports System.IO
 Imports System.Net
 Imports System.Net.WebSockets
+Imports System.Security.Cryptography
+Imports System.Security.Cryptography.X509Certificates
 Imports System.Text
 Imports System.Threading
 
@@ -12,10 +14,14 @@ Namespace Pipeline
         Public Event RemoteCommand As EventHandler(Of String)
 
         Private _listener As HttpListener
+        Private _httpsListener As HttpListener
         Private _cts As CancellationTokenSource
         Private ReadOnly _clients As New ConcurrentDictionary(Of String, WebSocket)()
         Private _port As Integer = 5080
+        Private _httpsPort As Integer = 5081
         Private _isRunning As Boolean = False
+        Private Const CertAppId As String = "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+        Private Const CertPassword As String = "transcription-tools-cert"
         Private _currentLine As String = ""
         Private ReadOnly _committedLines As New ConcurrentQueue(Of String)()
         Private Const MaxCommittedLines As Integer = 200
@@ -32,6 +38,12 @@ Namespace Pipeline
             End Get
         End Property
 
+        Public ReadOnly Property HttpsPort As Integer
+            Get
+                Return _httpsPort
+            End Get
+        End Property
+
         Public ReadOnly Property ConnectedClients As Integer
             Get
                 Return _clients.Count
@@ -42,6 +54,7 @@ Namespace Pipeline
             If _isRunning Then Return
 
             _port = port
+            _httpsPort = port + 1
             _cts = New CancellationTokenSource()
 
             If allowRemote Then
@@ -52,6 +65,11 @@ Namespace Pipeline
                 End If
             Else
                 TryStartLocalhost()
+            End If
+
+            ' Try to also start HTTPS so Wake Lock API works on phones
+            If _isRunning AndAlso allowRemote Then
+                TryStartHttps()
             End If
         End Sub
 
@@ -64,7 +82,7 @@ Namespace Pipeline
                 _listener.Start()
                 _isRunning = True
                 RaiseEvent StatusChanged(Me, "Server started")
-                Task.Run(Sub() AcceptLoop(_cts.Token), _cts.Token)
+                Task.Run(Sub() AcceptLoop(_listener, _cts.Token), _cts.Token)
                 Return True
             Catch ex As HttpListenerException
                 ' Access denied — try to add a URL reservation via elevated netsh
@@ -79,7 +97,7 @@ Namespace Pipeline
                     _listener.Start()
                     _isRunning = True
                     RaiseEvent StatusChanged(Me, "Server started")
-                    Task.Run(Sub() AcceptLoop(_cts.Token), _cts.Token)
+                    Task.Run(Sub() AcceptLoop(_listener, _cts.Token), _cts.Token)
                     Return True
                 Catch ex2 As HttpListenerException
                     RaiseEvent StatusChanged(Me, $"Failed to start on all interfaces: {ex2.Message}")
@@ -96,7 +114,7 @@ Namespace Pipeline
                 _listener.Start()
                 _isRunning = True
                 RaiseEvent StatusChanged(Me, "Server started (localhost only)")
-                Task.Run(Sub() AcceptLoop(_cts.Token), _cts.Token)
+                Task.Run(Sub() AcceptLoop(_listener, _cts.Token), _cts.Token)
             Catch ex As Exception
                 _isRunning = False
                 RaiseEvent StatusChanged(Me, $"Failed to start: {ex.Message}")
@@ -131,6 +149,123 @@ Namespace Pipeline
             End Try
         End Function
 
+        ''' <summary>
+        ''' Try to start an HTTPS listener so the Wake Lock API works on phones.
+        ''' This is best-effort — if it fails, HTTP still works.
+        ''' </summary>
+        Private Sub TryStartHttps()
+            Try
+                Dim cert = GetOrCreateCertificate()
+                If cert Is Nothing Then
+                    RaiseEvent StatusChanged(Me, "HTTPS: could not create certificate")
+                    Return
+                End If
+
+                ' Try starting HTTPS listener directly (works if already configured)
+                If TryStartHttpsListener() Then Return
+
+                ' Not configured yet — set up cert binding + URL ACL via elevated command
+                If SetupHttpsBinding(cert) Then
+                    If TryStartHttpsListener() Then Return
+                End If
+
+                RaiseEvent StatusChanged(Me, "HTTPS not available — phone screen wake may not work")
+            Catch ex As Exception
+                RaiseEvent StatusChanged(Me, $"HTTPS setup failed: {ex.Message}")
+            End Try
+        End Sub
+
+        Private Function TryStartHttpsListener() As Boolean
+            Try
+                _httpsListener = New HttpListener()
+                _httpsListener.Prefixes.Add($"https://+:{_httpsPort}/")
+                _httpsListener.Start()
+                Task.Run(Sub() AcceptLoop(_httpsListener, _cts.Token), _cts.Token)
+                RaiseEvent StatusChanged(Me, $"HTTPS enabled on port {_httpsPort}")
+                Return True
+            Catch
+                Try : _httpsListener?.Close() : Catch : End Try
+                _httpsListener = Nothing
+                Return False
+            End Try
+        End Function
+
+        Private Function GetOrCreateCertificate() As X509Certificate2
+            Dim certDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TranscriptionTools")
+            Dim certPath = Path.Combine(certDir, "subtitle-server.pfx")
+
+            ' Try to load existing cert
+            If File.Exists(certPath) Then
+                Try
+                    Dim cert As New X509Certificate2(certPath, CertPassword, X509KeyStorageFlags.PersistKeySet Or X509KeyStorageFlags.Exportable)
+                    If cert.NotAfter > DateTime.Now.AddDays(30) Then Return cert
+                    cert.Dispose()
+                Catch
+                End Try
+            End If
+
+            ' Generate a new self-signed certificate
+            Directory.CreateDirectory(certDir)
+            Using rsa As RSA = RSA.Create(2048)
+                Dim req As New CertificateRequest("CN=Transcription Tools Subtitle Server", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1)
+                req.CertificateExtensions.Add(New X509BasicConstraintsExtension(False, False, 0, False))
+                req.CertificateExtensions.Add(New X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature Or X509KeyUsageFlags.KeyEncipherment, False))
+                req.CertificateExtensions.Add(New X509EnhancedKeyUsageExtension(New OidCollection From {New Oid("1.3.6.1.5.5.7.3.1")}, False))
+
+                ' Add SAN with localhost + all local IPs
+                Dim san As New SubjectAlternativeNameBuilder()
+                san.AddDnsName("localhost")
+                Try
+                    For Each addr In Dns.GetHostAddresses(Dns.GetHostName())
+                        If addr.AddressFamily = Sockets.AddressFamily.InterNetwork Then
+                            san.AddIpAddress(addr)
+                        End If
+                    Next
+                Catch
+                End Try
+                req.CertificateExtensions.Add(san.Build())
+
+                Dim cert = req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(10))
+                Dim pfxBytes = cert.Export(X509ContentType.Pfx, CertPassword)
+                File.WriteAllBytes(certPath, pfxBytes)
+                Return New X509Certificate2(pfxBytes, CertPassword, X509KeyStorageFlags.PersistKeySet Or X509KeyStorageFlags.Exportable)
+            End Using
+        End Function
+
+        Private Function SetupHttpsBinding(cert As X509Certificate2) As Boolean
+            Try
+                Dim certDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TranscriptionTools")
+                Dim certPath = Path.Combine(certDir, "subtitle-server.pfx")
+                Dim thumbprint = cert.Thumbprint
+
+                ' Build a cmd that: imports cert to LocalMachine store, adds URL ACL, binds SSL
+                Dim cmd = $"/c certutil -f -p ""{CertPassword}"" -importpfx ""{certPath}"" & " &
+                          $"netsh http delete urlacl url=https://+:{_httpsPort}/ >nul 2>&1 & " &
+                          $"netsh http add urlacl url=https://+:{_httpsPort}/ user=Everyone & " &
+                          $"netsh http delete sslcert ipport=0.0.0.0:{_httpsPort} >nul 2>&1 & " &
+                          $"netsh http add sslcert ipport=0.0.0.0:{_httpsPort} certhash={thumbprint} appid={CertAppId}"
+
+                RaiseEvent StatusChanged(Me, "Setting up HTTPS — you may see a UAC prompt...")
+
+                Dim psi As New ProcessStartInfo() With {
+                    .FileName = "cmd.exe",
+                    .Arguments = cmd,
+                    .Verb = "runas",
+                    .UseShellExecute = True,
+                    .CreateNoWindow = True,
+                    .WindowStyle = ProcessWindowStyle.Hidden
+                }
+                Dim proc = Process.Start(psi)
+                proc.WaitForExit(15000)
+                Dim success = proc.ExitCode = 0
+                proc.Dispose()
+                Return success
+            Catch
+                ' User declined UAC or other error
+                Return False
+            End Try
+        End Function
+
         Public Sub [Stop]()
             If Not _isRunning Then Return
 
@@ -152,6 +287,12 @@ Namespace Pipeline
             Try
                 _listener?.Stop()
                 _listener?.Close()
+            Catch
+            End Try
+
+            Try
+                _httpsListener?.Stop()
+                _httpsListener?.Close()
             Catch
             End Try
 
@@ -207,10 +348,10 @@ Namespace Pipeline
             End If
         End Sub
 
-        Private Async Sub AcceptLoop(ct As CancellationToken)
+        Private Async Sub AcceptLoop(listener As HttpListener, ct As CancellationToken)
             While Not ct.IsCancellationRequested
                 Try
-                    Dim ctx = Await _listener.GetContextAsync().ConfigureAwait(False)
+                    Dim ctx = Await listener.GetContextAsync().ConfigureAwait(False)
 
                     If ct.IsCancellationRequested Then Exit While
 
