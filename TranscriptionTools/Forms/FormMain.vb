@@ -383,6 +383,21 @@ Public Class FormMain
         LoadConfigToUi()
         PopulateModelDropdown()
         PopulateLiveModelDropdown()
+
+        ' Re-enumerate audio devices now that whisper-stream.exe exists
+        Dim streamPath = AppConfig.ResolvePath(_config.PathStream)
+        Dim modelPath = AppConfig.ResolvePath(_config.PathModel)
+        If IO.File.Exists(streamPath) Then
+            btnLiveStart.Enabled = False
+            Task.Run(Sub()
+                         Dim runner As New LiveStreamRunner()
+                         Dim devices = runner.EnumerateDevicesFromSDL(streamPath, modelPath)
+                         cboLiveDevice.BeginInvoke(Sub()
+                                                       UpdateDeviceCombo(devices)
+                                                       btnLiveStart.Enabled = True
+                                                   End Sub)
+                     End Sub)
+        End If
     End Sub
 
     Private Sub btnCheckToolUpdates_Click(sender As Object, e As EventArgs) Handles btnCheckToolUpdates.Click

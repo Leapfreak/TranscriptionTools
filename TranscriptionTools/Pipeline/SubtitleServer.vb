@@ -503,7 +503,10 @@ function addCommitted(text){
   var el;
   if(currentEl){el=currentEl;el.textContent=text;el.className='line new-line';currentEl=null}
   else{el=document.createElement('div');el.className='line new-line';el.textContent=text;lines.appendChild(el)}
+  el.style.transition='none';
   styleEl(el,false);el.style.color='#ffdd57';
+  el.offsetHeight;
+  el.style.transition='';
   lastCommittedEl=el;
   scrollBottom();
   while(lines.children.length>201){lines.removeChild(lines.children[1])}
