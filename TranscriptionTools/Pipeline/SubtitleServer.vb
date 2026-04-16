@@ -515,6 +515,8 @@ Namespace Pipeline
             Dim html = GetHtmlPage()
             Dim buffer = Encoding.UTF8.GetBytes(html)
             ctx.Response.ContentType = "text/html; charset=utf-8"
+            ctx.Response.Headers.Add("Cache-Control", "no-store, no-cache, must-revalidate")
+            ctx.Response.Headers.Add("Pragma", "no-cache")
             ctx.Response.ContentLength64 = buffer.Length
             Try
                 ctx.Response.OutputStream.Write(buffer, 0, buffer.Length)
