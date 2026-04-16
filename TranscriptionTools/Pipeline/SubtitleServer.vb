@@ -257,6 +257,38 @@ Namespace Pipeline
                     Await sslStream.WriteAsync(wav, 0, wav.Length, ct).ConfigureAwait(False)
                     sslStream.Dispose()
                     client.Dispose()
+                ElseIf path.StartsWith("/api/control") Then
+                    Dim json As String
+                    Dim qIdx = path.IndexOf("?"c)
+                    Dim action As String = Nothing
+                    If qIdx >= 0 Then
+                        Dim qs = path.Substring(qIdx + 1)
+                        For Each pair In qs.Split("&"c)
+                            Dim kv = pair.Split("="c)
+                            If kv.Length = 2 AndAlso kv(0) = "action" Then action = kv(1).ToLower()
+                        Next
+                    End If
+
+                    If String.IsNullOrEmpty(action) OrElse action = "status" Then
+                        json = $"{{""live"":{If(IsLiveRunning, "true", "false")},""sim"":{If(IsSimulating, "true", "false")}}}"
+                    ElseIf action = "start" OrElse action = "stop" OrElse action = "restart" OrElse action = "simulate" OrElse action = "clear" Then
+                        RaiseEvent RemoteCommand(Me, action)
+                        json = $"{{""ok"":true,""action"":""{action}""}}"
+                    Else
+                        json = "{""error"":""unknown action""}"
+                    End If
+
+                    Dim jsonBytes = Encoding.UTF8.GetBytes(json)
+                    Dim header = "HTTP/1.1 200 OK" & vbCrLf &
+                                 "Content-Type: application/json; charset=utf-8" & vbCrLf &
+                                 $"Content-Length: {jsonBytes.Length}" & vbCrLf &
+                                 "Access-Control-Allow-Origin: *" & vbCrLf &
+                                 "Connection: close" & vbCrLf & vbCrLf
+                    Dim hdrBytes = Encoding.ASCII.GetBytes(header)
+                    Await sslStream.WriteAsync(hdrBytes, 0, hdrBytes.Length, ct).ConfigureAwait(False)
+                    Await sslStream.WriteAsync(jsonBytes, 0, jsonBytes.Length, ct).ConfigureAwait(False)
+                    sslStream.Dispose()
+                    client.Dispose()
                 ElseIf path = "/cert" Then
                     Dim certBytes = _httpsCert.Export(X509ContentType.Cert)
                     Dim header = "HTTP/1.1 200 OK" & vbCrLf &
@@ -921,7 +953,7 @@ var speechRate=1;
 var synth=window.speechSynthesis;
 var lines=document.getElementById('lines');
 var container=document.getElementById('container');
-var status=document.getElementById('status');
+var statusEl=document.getElementById('status');
 var panel=document.getElementById('panel');
 var btnSpeak=document.getElementById('btnSpeak');
 var voiceSelect=document.getElementById('voiceSelect');
@@ -1008,8 +1040,8 @@ function updateCurrent(text){
 function connect(){
   var proto=location.protocol==='https:'?'wss:':'ws:';
   var ws=new WebSocket(proto+'//'+location.host+'/ws');
-  ws.onopen=function(){status.textContent=t('connected');status.className='connected'};
-  ws.onclose=function(){status.textContent=t('disconnected');status.className='disconnected';setTimeout(connect,2000)};
+  ws.onopen=function(){statusEl.textContent=t('connected');statusEl.className='connected'};
+  ws.onclose=function(){statusEl.textContent=t('disconnected');statusEl.className='disconnected';setTimeout(connect,2000)};
   ws.onerror=function(){ws.close()};
   ws.onmessage=function(e){
     try{var msg=JSON.parse(e.data);
@@ -1021,7 +1053,7 @@ function connect(){
 }
 /* Apply i18n to HTML elements */
 document.title=t('title');
-status.textContent=t('connecting');
+statusEl.textContent=t('connecting');
 document.getElementById('btnAdmin').title=t('remote');
 document.getElementById('btnSettings').title=t('settings');
 btnSpeak.title=t('readAloud');

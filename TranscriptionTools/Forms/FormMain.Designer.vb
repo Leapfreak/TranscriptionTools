@@ -1052,6 +1052,16 @@ Partial Class FormMain
         Me.trayIcon.ContextMenuStrip = Me.trayMenu
         Me.trayIcon.Visible = True
 
+        ' Send labels to back so they don't paint over adjacent controls
+        Me.lblMode.SendToBack()
+        For Each grp As Control In {Me.grpInput, Me.grpLanguageModel, Me.grpBeamSampling,
+            Me.grpQualityFiltering, Me.grpSegmentControl, Me.grpPrompting, Me.grpVad,
+            Me.grpPaths, Me.grpSettings, Me.grpLiveInput, Me.grpServerSettings}
+            For Each child As Control In grp.Controls
+                If TypeOf child Is Label Then child.SendToBack()
+            Next
+        Next
+
         Me.ResumeLayout(False)
     End Sub
 
