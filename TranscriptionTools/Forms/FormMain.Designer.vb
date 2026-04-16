@@ -267,90 +267,90 @@ Partial Class FormMain
 
         ' --- Mode Selector ---
         Me.lblMode.Text = "Mode:"
-        Me.lblMode.Location = New Drawing.Point(12, y + 3)
+        Me.lblMode.Location = New Drawing.Point(12, y)
         Me.lblMode.AutoSize = True
-        Me.cboMode.Location = New Drawing.Point(60, y)
+        Me.cboMode.Location = New Drawing.Point(12, y + 16)
         Me.cboMode.Size = New Drawing.Size(200, 23)
         Me.cboMode.DropDownStyle = ComboBoxStyle.DropDownList
         Me.cboMode.Items.AddRange({"Audio File -> Subtitles", "YouTube -> Audio Only", "YouTube -> Full Video", "YouTube -> Subtitles"})
         Me.cboMode.SelectedIndex = 3
 
-        y += 32
+        y += 48
 
         ' --- Input Group ---
         Me.grpInput.Text = "Input"
         Me.grpInput.Location = New Drawing.Point(8, y)
-        Me.grpInput.Size = New Drawing.Size(856, 242)
+        Me.grpInput.Size = New Drawing.Size(856, 310)
         Me.grpInput.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
 
         Dim gy As Integer = 22
         Me.lblUrl.Text = "YouTube URL or local file:"
-        Me.lblUrl.Location = New Drawing.Point(10, gy + 3)
+        Me.lblUrl.Location = New Drawing.Point(10, gy)
         Me.lblUrl.AutoSize = True
         Me.txtUrl.Text = ""
-        Me.txtUrl.Location = New Drawing.Point(180, gy)
-        Me.txtUrl.Size = New Drawing.Size(556, 23)
+        Me.txtUrl.Location = New Drawing.Point(10, gy + 16)
+        Me.txtUrl.Size = New Drawing.Size(726, 23)
         Me.txtUrl.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
         Me.btnBrowseFile.Text = "Browse..."
-        Me.btnBrowseFile.Location = New Drawing.Point(746, gy - 1)
+        Me.btnBrowseFile.Location = New Drawing.Point(746, gy + 15)
         Me.btnBrowseFile.Size = New Drawing.Size(100, 25)
         Me.btnBrowseFile.Anchor = AnchorStyles.Top Or AnchorStyles.Right
 
-        gy += 32
+        gy += 48
         Me.lblInputLanguage.Text = "Input Language:"
-        Me.lblInputLanguage.Location = New Drawing.Point(10, gy + 3)
+        Me.lblInputLanguage.Location = New Drawing.Point(10, gy)
         Me.lblInputLanguage.AutoSize = True
-        Me.cboInputLanguage.Location = New Drawing.Point(180, gy)
-        Me.cboInputLanguage.Size = New Drawing.Size(120, 23)
+        Me.cboInputLanguage.Location = New Drawing.Point(10, gy + 16)
+        Me.cboInputLanguage.Size = New Drawing.Size(150, 23)
         Me.cboInputLanguage.DropDownStyle = ComboBoxStyle.DropDownList
 
         Me.lblOutputLanguage.Text = "Output Language:"
-        Me.lblOutputLanguage.Location = New Drawing.Point(350, gy + 3)
+        Me.lblOutputLanguage.Location = New Drawing.Point(250, gy)
         Me.lblOutputLanguage.AutoSize = True
-        Me.cboOutputLanguage.Location = New Drawing.Point(500, gy)
-        Me.cboOutputLanguage.Size = New Drawing.Size(120, 23)
+        Me.cboOutputLanguage.Location = New Drawing.Point(250, gy + 16)
+        Me.cboOutputLanguage.Size = New Drawing.Size(150, 23)
         Me.cboOutputLanguage.DropDownStyle = ComboBoxStyle.DropDownList
 
-        gy += 32
+        gy += 48
         Me.lblModel.Text = "Model:"
-        Me.lblModel.Location = New Drawing.Point(10, gy + 3)
+        Me.lblModel.Location = New Drawing.Point(10, gy)
         Me.lblModel.AutoSize = True
-        Me.cboModel.Location = New Drawing.Point(180, gy)
-        Me.cboModel.Size = New Drawing.Size(350, 23)
+        Me.cboModel.Location = New Drawing.Point(10, gy + 16)
+        Me.cboModel.Size = New Drawing.Size(400, 23)
         Me.cboModel.DropDownStyle = ComboBoxStyle.DropDownList
 
-        gy += 32
+        gy += 48
         Me.lblStartTime.Text = "Start time:"
-        Me.lblStartTime.Location = New Drawing.Point(10, gy + 3)
+        Me.lblStartTime.Location = New Drawing.Point(10, gy)
         Me.lblStartTime.AutoSize = True
 
-        Dim sx = 180
-        Me.txtStartHH.Text = "00" : Me.txtStartHH.Location = New Drawing.Point(sx, gy) : Me.txtStartHH.Size = New Drawing.Size(35, 23) : Me.txtStartHH.MaxLength = 2 : Me.txtStartHH.TextAlign = HorizontalAlignment.Center
-        Me.lblStartColon1.Text = ":" : Me.lblStartColon1.Location = New Drawing.Point(sx + 36, gy + 3) : Me.lblStartColon1.AutoSize = True : Me.lblStartColon1.Font = New Drawing.Font(Me.lblStartColon1.Font.FontFamily, 10, Drawing.FontStyle.Bold)
-        Me.txtStartMM.Text = "00" : Me.txtStartMM.Location = New Drawing.Point(sx + 48, gy) : Me.txtStartMM.Size = New Drawing.Size(35, 23) : Me.txtStartMM.MaxLength = 2 : Me.txtStartMM.TextAlign = HorizontalAlignment.Center
-        Me.lblStartColon2.Text = ":" : Me.lblStartColon2.Location = New Drawing.Point(sx + 84, gy + 3) : Me.lblStartColon2.AutoSize = True : Me.lblStartColon2.Font = New Drawing.Font(Me.lblStartColon2.Font.FontFamily, 10, Drawing.FontStyle.Bold)
-        Me.txtStartSS.Text = "00" : Me.txtStartSS.Location = New Drawing.Point(sx + 96, gy) : Me.txtStartSS.Size = New Drawing.Size(35, 23) : Me.txtStartSS.MaxLength = 2 : Me.txtStartSS.TextAlign = HorizontalAlignment.Center
+        Dim sx = 10
+        Me.txtStartHH.Text = "00" : Me.txtStartHH.Location = New Drawing.Point(sx, gy + 16) : Me.txtStartHH.Size = New Drawing.Size(35, 23) : Me.txtStartHH.MaxLength = 2 : Me.txtStartHH.TextAlign = HorizontalAlignment.Center
+        Me.lblStartColon1.Text = ":" : Me.lblStartColon1.Location = New Drawing.Point(sx + 36, gy + 19) : Me.lblStartColon1.AutoSize = True : Me.lblStartColon1.Font = New Drawing.Font(Me.lblStartColon1.Font.FontFamily, 10, Drawing.FontStyle.Bold)
+        Me.txtStartMM.Text = "00" : Me.txtStartMM.Location = New Drawing.Point(sx + 48, gy + 16) : Me.txtStartMM.Size = New Drawing.Size(35, 23) : Me.txtStartMM.MaxLength = 2 : Me.txtStartMM.TextAlign = HorizontalAlignment.Center
+        Me.lblStartColon2.Text = ":" : Me.lblStartColon2.Location = New Drawing.Point(sx + 84, gy + 19) : Me.lblStartColon2.AutoSize = True : Me.lblStartColon2.Font = New Drawing.Font(Me.lblStartColon2.Font.FontFamily, 10, Drawing.FontStyle.Bold)
+        Me.txtStartSS.Text = "00" : Me.txtStartSS.Location = New Drawing.Point(sx + 96, gy + 16) : Me.txtStartSS.Size = New Drawing.Size(35, 23) : Me.txtStartSS.MaxLength = 2 : Me.txtStartSS.TextAlign = HorizontalAlignment.Center
 
         Me.lblEndTime.Text = "End time:"
-        Me.lblEndTime.Location = New Drawing.Point(350, gy + 3)
+        Me.lblEndTime.Location = New Drawing.Point(250, gy)
         Me.lblEndTime.AutoSize = True
 
-        Dim ex = 520
-        Me.txtEndHH.Text = "00" : Me.txtEndHH.Location = New Drawing.Point(ex, gy) : Me.txtEndHH.Size = New Drawing.Size(35, 23) : Me.txtEndHH.MaxLength = 2 : Me.txtEndHH.TextAlign = HorizontalAlignment.Center
-        Me.lblEndColon1.Text = ":" : Me.lblEndColon1.Location = New Drawing.Point(ex + 36, gy + 3) : Me.lblEndColon1.AutoSize = True : Me.lblEndColon1.Font = New Drawing.Font(Me.lblEndColon1.Font.FontFamily, 10, Drawing.FontStyle.Bold)
-        Me.txtEndMM.Text = "00" : Me.txtEndMM.Location = New Drawing.Point(ex + 48, gy) : Me.txtEndMM.Size = New Drawing.Size(35, 23) : Me.txtEndMM.MaxLength = 2 : Me.txtEndMM.TextAlign = HorizontalAlignment.Center
-        Me.lblEndColon2.Text = ":" : Me.lblEndColon2.Location = New Drawing.Point(ex + 84, gy + 3) : Me.lblEndColon2.AutoSize = True : Me.lblEndColon2.Font = New Drawing.Font(Me.lblEndColon2.Font.FontFamily, 10, Drawing.FontStyle.Bold)
-        Me.txtEndSS.Text = "00" : Me.txtEndSS.Location = New Drawing.Point(ex + 96, gy) : Me.txtEndSS.Size = New Drawing.Size(35, 23) : Me.txtEndSS.MaxLength = 2 : Me.txtEndSS.TextAlign = HorizontalAlignment.Center
+        Dim ex = 250
+        Me.txtEndHH.Text = "00" : Me.txtEndHH.Location = New Drawing.Point(ex, gy + 16) : Me.txtEndHH.Size = New Drawing.Size(35, 23) : Me.txtEndHH.MaxLength = 2 : Me.txtEndHH.TextAlign = HorizontalAlignment.Center
+        Me.lblEndColon1.Text = ":" : Me.lblEndColon1.Location = New Drawing.Point(ex + 36, gy + 19) : Me.lblEndColon1.AutoSize = True : Me.lblEndColon1.Font = New Drawing.Font(Me.lblEndColon1.Font.FontFamily, 10, Drawing.FontStyle.Bold)
+        Me.txtEndMM.Text = "00" : Me.txtEndMM.Location = New Drawing.Point(ex + 48, gy + 16) : Me.txtEndMM.Size = New Drawing.Size(35, 23) : Me.txtEndMM.MaxLength = 2 : Me.txtEndMM.TextAlign = HorizontalAlignment.Center
+        Me.lblEndColon2.Text = ":" : Me.lblEndColon2.Location = New Drawing.Point(ex + 84, gy + 19) : Me.lblEndColon2.AutoSize = True : Me.lblEndColon2.Font = New Drawing.Font(Me.lblEndColon2.Font.FontFamily, 10, Drawing.FontStyle.Bold)
+        Me.txtEndSS.Text = "00" : Me.txtEndSS.Location = New Drawing.Point(ex + 96, gy + 16) : Me.txtEndSS.Size = New Drawing.Size(35, 23) : Me.txtEndSS.MaxLength = 2 : Me.txtEndSS.TextAlign = HorizontalAlignment.Center
 
-        gy += 32
+        gy += 48
         Me.lblOutputDir.Text = "Output folder:"
-        Me.lblOutputDir.Location = New Drawing.Point(10, gy + 3)
+        Me.lblOutputDir.Location = New Drawing.Point(10, gy)
         Me.lblOutputDir.AutoSize = True
-        Me.txtOutputDir.Location = New Drawing.Point(180, gy)
-        Me.txtOutputDir.Size = New Drawing.Size(556, 23)
+        Me.txtOutputDir.Location = New Drawing.Point(10, gy + 16)
+        Me.txtOutputDir.Size = New Drawing.Size(726, 23)
         Me.txtOutputDir.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
         Me.btnBrowseOutput.Text = "Browse..."
-        Me.btnBrowseOutput.Location = New Drawing.Point(746, gy - 1)
+        Me.btnBrowseOutput.Location = New Drawing.Point(746, gy + 15)
         Me.btnBrowseOutput.Size = New Drawing.Size(100, 25)
         Me.btnBrowseOutput.Anchor = AnchorStyles.Top Or AnchorStyles.Right
 
@@ -361,7 +361,7 @@ Partial Class FormMain
             Me.lblEndTime, Me.txtEndHH, Me.lblEndColon1, Me.txtEndMM, Me.lblEndColon2, Me.txtEndSS,
             Me.lblOutputDir, Me.txtOutputDir, Me.btnBrowseOutput})
 
-        y += 252
+        y += 320
 
         ' --- Output Formats Group ---
         Me.grpOutputFormats.Text = "Output Formats"
@@ -459,110 +459,110 @@ Partial Class FormMain
         ' --- Language & Model ---
         Me.grpLanguageModel.Text = "Language && Model"
         Me.grpLanguageModel.Location = New Drawing.Point(8, wy)
-        Me.grpLanguageModel.Size = New Drawing.Size(810, 55)
+        Me.grpLanguageModel.Size = New Drawing.Size(810, 68)
         Me.grpLanguageModel.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
 
         Me.lblWLanguage.Text = "Language:"
         Me.lblWLanguage.Location = New Drawing.Point(10, 22)
         Me.lblWLanguage.AutoSize = True
-        Me.cboWLanguage.Location = New Drawing.Point(120, 19)
-        Me.cboWLanguage.Size = New Drawing.Size(120, 23)
+        Me.cboWLanguage.Location = New Drawing.Point(10, 38)
+        Me.cboWLanguage.Size = New Drawing.Size(200, 23)
         Me.cboWLanguage.DropDownStyle = ComboBoxStyle.DropDownList
         Me.grpLanguageModel.Controls.AddRange({Me.lblWLanguage, Me.cboWLanguage})
 
-        wy += 62
+        wy += 76
 
         ' --- Beam Search / Sampling ---
         Me.grpBeamSampling.Text = "Beam Search / Sampling"
         Me.grpBeamSampling.Location = New Drawing.Point(8, wy)
-        Me.grpBeamSampling.Size = New Drawing.Size(810, 115)
+        Me.grpBeamSampling.Size = New Drawing.Size(810, 170)
         Me.grpBeamSampling.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
 
         Dim bsy = 22
-        Me.lblThreads.Text = "Threads:" : Me.lblThreads.Location = New Drawing.Point(10, bsy + 3) : Me.lblThreads.AutoSize = True
-        Me.nudThreads.Location = New Drawing.Point(140, bsy) : Me.nudThreads.Size = New Drawing.Size(80, 23) : Me.nudThreads.Minimum = 1 : Me.nudThreads.Maximum = 64 : Me.nudThreads.Value = 4
-        Me.lblProcessors.Text = "Processors:" : Me.lblProcessors.Location = New Drawing.Point(250, bsy + 3) : Me.lblProcessors.AutoSize = True
-        Me.nudProcessors.Location = New Drawing.Point(380, bsy) : Me.nudProcessors.Size = New Drawing.Size(80, 23) : Me.nudProcessors.Minimum = 1 : Me.nudProcessors.Maximum = 8 : Me.nudProcessors.Value = 1
+        Me.lblThreads.Text = "Threads:" : Me.lblThreads.Location = New Drawing.Point(10, bsy) : Me.lblThreads.AutoSize = True
+        Me.nudThreads.Location = New Drawing.Point(10, bsy + 16) : Me.nudThreads.Size = New Drawing.Size(100, 23) : Me.nudThreads.Minimum = 1 : Me.nudThreads.Maximum = 64 : Me.nudThreads.Value = 4
+        Me.lblProcessors.Text = "Processors:" : Me.lblProcessors.Location = New Drawing.Point(250, bsy) : Me.lblProcessors.AutoSize = True
+        Me.nudProcessors.Location = New Drawing.Point(250, bsy + 16) : Me.nudProcessors.Size = New Drawing.Size(100, 23) : Me.nudProcessors.Minimum = 1 : Me.nudProcessors.Maximum = 8 : Me.nudProcessors.Value = 1
 
-        bsy += 30
-        Me.lblBeamSize.Text = "Beam size:" : Me.lblBeamSize.Location = New Drawing.Point(10, bsy + 3) : Me.lblBeamSize.AutoSize = True
-        Me.nudBeamSize.Location = New Drawing.Point(140, bsy) : Me.nudBeamSize.Size = New Drawing.Size(80, 23) : Me.nudBeamSize.Minimum = -1 : Me.nudBeamSize.Maximum = 15 : Me.nudBeamSize.Value = 5
-        Me.lblBestOf.Text = "Best of:" : Me.lblBestOf.Location = New Drawing.Point(250, bsy + 3) : Me.lblBestOf.AutoSize = True
-        Me.nudBestOf.Location = New Drawing.Point(380, bsy) : Me.nudBestOf.Size = New Drawing.Size(80, 23) : Me.nudBestOf.Minimum = 1 : Me.nudBestOf.Maximum = 10 : Me.nudBestOf.Value = 5
+        bsy += 48
+        Me.lblBeamSize.Text = "Beam size:" : Me.lblBeamSize.Location = New Drawing.Point(10, bsy) : Me.lblBeamSize.AutoSize = True
+        Me.nudBeamSize.Location = New Drawing.Point(10, bsy + 16) : Me.nudBeamSize.Size = New Drawing.Size(100, 23) : Me.nudBeamSize.Minimum = -1 : Me.nudBeamSize.Maximum = 15 : Me.nudBeamSize.Value = 5
+        Me.lblBestOf.Text = "Best of:" : Me.lblBestOf.Location = New Drawing.Point(250, bsy) : Me.lblBestOf.AutoSize = True
+        Me.nudBestOf.Location = New Drawing.Point(250, bsy + 16) : Me.nudBestOf.Size = New Drawing.Size(100, 23) : Me.nudBestOf.Minimum = 1 : Me.nudBestOf.Maximum = 10 : Me.nudBestOf.Value = 5
 
-        bsy += 30
-        Me.lblTemperature.Text = "Temperature:" : Me.lblTemperature.Location = New Drawing.Point(10, bsy + 3) : Me.lblTemperature.AutoSize = True
-        Me.nudTemperature.Location = New Drawing.Point(140, bsy) : Me.nudTemperature.Size = New Drawing.Size(80, 23) : Me.nudTemperature.Minimum = 0 : Me.nudTemperature.Maximum = 1 : Me.nudTemperature.DecimalPlaces = 1 : Me.nudTemperature.Increment = 0.1D : Me.nudTemperature.Value = 0D
-        Me.lblTemperatureInc.Text = "Temp increment:" : Me.lblTemperatureInc.Location = New Drawing.Point(250, bsy + 3) : Me.lblTemperatureInc.AutoSize = True
-        Me.nudTemperatureInc.Location = New Drawing.Point(380, bsy) : Me.nudTemperatureInc.Size = New Drawing.Size(80, 23) : Me.nudTemperatureInc.Minimum = 0 : Me.nudTemperatureInc.Maximum = 1 : Me.nudTemperatureInc.DecimalPlaces = 1 : Me.nudTemperatureInc.Increment = 0.1D : Me.nudTemperatureInc.Value = 0.2D
+        bsy += 48
+        Me.lblTemperature.Text = "Temperature:" : Me.lblTemperature.Location = New Drawing.Point(10, bsy) : Me.lblTemperature.AutoSize = True
+        Me.nudTemperature.Location = New Drawing.Point(10, bsy + 16) : Me.nudTemperature.Size = New Drawing.Size(100, 23) : Me.nudTemperature.Minimum = 0 : Me.nudTemperature.Maximum = 1 : Me.nudTemperature.DecimalPlaces = 1 : Me.nudTemperature.Increment = 0.1D : Me.nudTemperature.Value = 0D
+        Me.lblTemperatureInc.Text = "Temp increment:" : Me.lblTemperatureInc.Location = New Drawing.Point(250, bsy) : Me.lblTemperatureInc.AutoSize = True
+        Me.nudTemperatureInc.Location = New Drawing.Point(250, bsy + 16) : Me.nudTemperatureInc.Size = New Drawing.Size(100, 23) : Me.nudTemperatureInc.Minimum = 0 : Me.nudTemperatureInc.Maximum = 1 : Me.nudTemperatureInc.DecimalPlaces = 1 : Me.nudTemperatureInc.Increment = 0.1D : Me.nudTemperatureInc.Value = 0.2D
 
         Me.grpBeamSampling.Controls.AddRange({Me.lblThreads, Me.nudThreads, Me.lblProcessors, Me.nudProcessors,
             Me.lblBeamSize, Me.nudBeamSize, Me.lblBestOf, Me.nudBestOf,
             Me.lblTemperature, Me.nudTemperature, Me.lblTemperatureInc, Me.nudTemperatureInc})
 
-        wy += 122
+        wy += 178
 
         ' --- Quality / Filtering ---
         Me.grpQualityFiltering.Text = "Quality / Filtering"
         Me.grpQualityFiltering.Location = New Drawing.Point(8, wy)
-        Me.grpQualityFiltering.Size = New Drawing.Size(810, 115)
+        Me.grpQualityFiltering.Size = New Drawing.Size(810, 170)
         Me.grpQualityFiltering.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
 
         Dim qy = 22
-        Me.lblMaxContext.Text = "Max context:" : Me.lblMaxContext.Location = New Drawing.Point(10, qy + 3) : Me.lblMaxContext.AutoSize = True
-        Me.nudMaxContext.Location = New Drawing.Point(160, qy) : Me.nudMaxContext.Size = New Drawing.Size(80, 23) : Me.nudMaxContext.Minimum = -1 : Me.nudMaxContext.Maximum = 512 : Me.nudMaxContext.Value = 0
-        Me.lblWordThreshold.Text = "Word threshold:" : Me.lblWordThreshold.Location = New Drawing.Point(280, qy + 3) : Me.lblWordThreshold.AutoSize = True
-        Me.nudWordThreshold.Location = New Drawing.Point(420, qy) : Me.nudWordThreshold.Size = New Drawing.Size(80, 23) : Me.nudWordThreshold.Minimum = 0 : Me.nudWordThreshold.Maximum = 1 : Me.nudWordThreshold.DecimalPlaces = 2 : Me.nudWordThreshold.Increment = 0.01D : Me.nudWordThreshold.Value = 0.01D
+        Me.lblMaxContext.Text = "Max context:" : Me.lblMaxContext.Location = New Drawing.Point(10, qy) : Me.lblMaxContext.AutoSize = True
+        Me.nudMaxContext.Location = New Drawing.Point(10, qy + 16) : Me.nudMaxContext.Size = New Drawing.Size(100, 23) : Me.nudMaxContext.Minimum = -1 : Me.nudMaxContext.Maximum = 512 : Me.nudMaxContext.Value = 0
+        Me.lblWordThreshold.Text = "Word threshold:" : Me.lblWordThreshold.Location = New Drawing.Point(250, qy) : Me.lblWordThreshold.AutoSize = True
+        Me.nudWordThreshold.Location = New Drawing.Point(250, qy + 16) : Me.nudWordThreshold.Size = New Drawing.Size(100, 23) : Me.nudWordThreshold.Minimum = 0 : Me.nudWordThreshold.Maximum = 1 : Me.nudWordThreshold.DecimalPlaces = 2 : Me.nudWordThreshold.Increment = 0.01D : Me.nudWordThreshold.Value = 0.01D
 
-        qy += 30
-        Me.lblEntropyThreshold.Text = "Entropy threshold:" : Me.lblEntropyThreshold.Location = New Drawing.Point(10, qy + 3) : Me.lblEntropyThreshold.AutoSize = True
-        Me.nudEntropyThreshold.Location = New Drawing.Point(160, qy) : Me.nudEntropyThreshold.Size = New Drawing.Size(80, 23) : Me.nudEntropyThreshold.Minimum = 0 : Me.nudEntropyThreshold.Maximum = 5 : Me.nudEntropyThreshold.DecimalPlaces = 1 : Me.nudEntropyThreshold.Increment = 0.1D : Me.nudEntropyThreshold.Value = 2.4D
-        Me.lblLogProbThreshold.Text = "Log prob threshold:" : Me.lblLogProbThreshold.Location = New Drawing.Point(280, qy + 3) : Me.lblLogProbThreshold.AutoSize = True
-        Me.nudLogProbThreshold.Location = New Drawing.Point(420, qy) : Me.nudLogProbThreshold.Size = New Drawing.Size(80, 23) : Me.nudLogProbThreshold.Minimum = -10 : Me.nudLogProbThreshold.Maximum = 0 : Me.nudLogProbThreshold.DecimalPlaces = 1 : Me.nudLogProbThreshold.Increment = 0.1D : Me.nudLogProbThreshold.Value = -1D
+        qy += 48
+        Me.lblEntropyThreshold.Text = "Entropy threshold:" : Me.lblEntropyThreshold.Location = New Drawing.Point(10, qy) : Me.lblEntropyThreshold.AutoSize = True
+        Me.nudEntropyThreshold.Location = New Drawing.Point(10, qy + 16) : Me.nudEntropyThreshold.Size = New Drawing.Size(100, 23) : Me.nudEntropyThreshold.Minimum = 0 : Me.nudEntropyThreshold.Maximum = 5 : Me.nudEntropyThreshold.DecimalPlaces = 1 : Me.nudEntropyThreshold.Increment = 0.1D : Me.nudEntropyThreshold.Value = 2.4D
+        Me.lblLogProbThreshold.Text = "Log prob threshold:" : Me.lblLogProbThreshold.Location = New Drawing.Point(250, qy) : Me.lblLogProbThreshold.AutoSize = True
+        Me.nudLogProbThreshold.Location = New Drawing.Point(250, qy + 16) : Me.nudLogProbThreshold.Size = New Drawing.Size(100, 23) : Me.nudLogProbThreshold.Minimum = -10 : Me.nudLogProbThreshold.Maximum = 0 : Me.nudLogProbThreshold.DecimalPlaces = 1 : Me.nudLogProbThreshold.Increment = 0.1D : Me.nudLogProbThreshold.Value = -1D
 
-        qy += 30
-        Me.lblNoSpeechThreshold.Text = "No speech threshold:" : Me.lblNoSpeechThreshold.Location = New Drawing.Point(10, qy + 3) : Me.lblNoSpeechThreshold.AutoSize = True
-        Me.nudNoSpeechThreshold.Location = New Drawing.Point(160, qy) : Me.nudNoSpeechThreshold.Size = New Drawing.Size(80, 23) : Me.nudNoSpeechThreshold.Minimum = 0 : Me.nudNoSpeechThreshold.Maximum = 1 : Me.nudNoSpeechThreshold.DecimalPlaces = 1 : Me.nudNoSpeechThreshold.Increment = 0.1D : Me.nudNoSpeechThreshold.Value = 0.6D
+        qy += 48
+        Me.lblNoSpeechThreshold.Text = "No speech threshold:" : Me.lblNoSpeechThreshold.Location = New Drawing.Point(10, qy) : Me.lblNoSpeechThreshold.AutoSize = True
+        Me.nudNoSpeechThreshold.Location = New Drawing.Point(10, qy + 16) : Me.nudNoSpeechThreshold.Size = New Drawing.Size(100, 23) : Me.nudNoSpeechThreshold.Minimum = 0 : Me.nudNoSpeechThreshold.Maximum = 1 : Me.nudNoSpeechThreshold.DecimalPlaces = 1 : Me.nudNoSpeechThreshold.Increment = 0.1D : Me.nudNoSpeechThreshold.Value = 0.6D
 
         Me.grpQualityFiltering.Controls.AddRange({Me.lblMaxContext, Me.nudMaxContext, Me.lblWordThreshold, Me.nudWordThreshold,
             Me.lblEntropyThreshold, Me.nudEntropyThreshold, Me.lblLogProbThreshold, Me.nudLogProbThreshold,
             Me.lblNoSpeechThreshold, Me.nudNoSpeechThreshold})
 
-        wy += 122
+        wy += 178
 
         ' --- Segment Control ---
         Me.grpSegmentControl.Text = "Segment Control"
         Me.grpSegmentControl.Location = New Drawing.Point(8, wy)
-        Me.grpSegmentControl.Size = New Drawing.Size(810, 55)
+        Me.grpSegmentControl.Size = New Drawing.Size(810, 68)
         Me.grpSegmentControl.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
 
-        Me.lblMaxSegmentLength.Text = "Max segment length:" : Me.lblMaxSegmentLength.Location = New Drawing.Point(10, 22 + 3) : Me.lblMaxSegmentLength.AutoSize = True
-        Me.nudMaxSegmentLength.Location = New Drawing.Point(160, 22) : Me.nudMaxSegmentLength.Size = New Drawing.Size(80, 23) : Me.nudMaxSegmentLength.Minimum = 0 : Me.nudMaxSegmentLength.Maximum = 200 : Me.nudMaxSegmentLength.Value = 0
-        Me.lblMaxTokens.Text = "Max tokens:" : Me.lblMaxTokens.Location = New Drawing.Point(280, 22 + 3) : Me.lblMaxTokens.AutoSize = True
-        Me.nudMaxTokens.Location = New Drawing.Point(420, 22) : Me.nudMaxTokens.Size = New Drawing.Size(80, 23) : Me.nudMaxTokens.Minimum = 0 : Me.nudMaxTokens.Maximum = 256 : Me.nudMaxTokens.Value = 0
-        Me.lblAudioContext.Text = "Audio context:" : Me.lblAudioContext.Location = New Drawing.Point(530, 22 + 3) : Me.lblAudioContext.AutoSize = True
-        Me.nudAudioContext.Location = New Drawing.Point(640, 22) : Me.nudAudioContext.Size = New Drawing.Size(80, 23) : Me.nudAudioContext.Minimum = 0 : Me.nudAudioContext.Maximum = 1500 : Me.nudAudioContext.Value = 0
+        Me.lblMaxSegmentLength.Text = "Max segment length:" : Me.lblMaxSegmentLength.Location = New Drawing.Point(10, 22) : Me.lblMaxSegmentLength.AutoSize = True
+        Me.nudMaxSegmentLength.Location = New Drawing.Point(10, 38) : Me.nudMaxSegmentLength.Size = New Drawing.Size(100, 23) : Me.nudMaxSegmentLength.Minimum = 0 : Me.nudMaxSegmentLength.Maximum = 200 : Me.nudMaxSegmentLength.Value = 0
+        Me.lblMaxTokens.Text = "Max tokens:" : Me.lblMaxTokens.Location = New Drawing.Point(250, 22) : Me.lblMaxTokens.AutoSize = True
+        Me.nudMaxTokens.Location = New Drawing.Point(250, 38) : Me.nudMaxTokens.Size = New Drawing.Size(100, 23) : Me.nudMaxTokens.Minimum = 0 : Me.nudMaxTokens.Maximum = 256 : Me.nudMaxTokens.Value = 0
+        Me.lblAudioContext.Text = "Audio context:" : Me.lblAudioContext.Location = New Drawing.Point(490, 22) : Me.lblAudioContext.AutoSize = True
+        Me.nudAudioContext.Location = New Drawing.Point(490, 38) : Me.nudAudioContext.Size = New Drawing.Size(100, 23) : Me.nudAudioContext.Minimum = 0 : Me.nudAudioContext.Maximum = 1500 : Me.nudAudioContext.Value = 0
 
         Me.grpSegmentControl.Controls.AddRange({Me.lblMaxSegmentLength, Me.nudMaxSegmentLength,
             Me.lblMaxTokens, Me.nudMaxTokens, Me.lblAudioContext, Me.nudAudioContext})
 
-        wy += 62
+        wy += 76
 
         ' --- Prompting ---
         Me.grpPrompting.Text = "Prompting"
         Me.grpPrompting.Location = New Drawing.Point(8, wy)
-        Me.grpPrompting.Size = New Drawing.Size(810, 130)
+        Me.grpPrompting.Size = New Drawing.Size(810, 155)
         Me.grpPrompting.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
 
-        Me.lblInitialPrompt.Text = "Initial prompt:" : Me.lblInitialPrompt.Location = New Drawing.Point(10, 22 + 3) : Me.lblInitialPrompt.AutoSize = True
-        Me.txtInitialPrompt.Location = New Drawing.Point(120, 22) : Me.txtInitialPrompt.Size = New Drawing.Size(670, 60)
+        Me.lblInitialPrompt.Text = "Initial prompt:" : Me.lblInitialPrompt.Location = New Drawing.Point(10, 22) : Me.lblInitialPrompt.AutoSize = True
+        Me.txtInitialPrompt.Location = New Drawing.Point(10, 38) : Me.txtInitialPrompt.Size = New Drawing.Size(780, 60)
         Me.txtInitialPrompt.Multiline = True : Me.txtInitialPrompt.WordWrap = True : Me.txtInitialPrompt.ScrollBars = ScrollBars.Vertical
-        Me.lblHotwords.Text = "Hotwords:" : Me.lblHotwords.Location = New Drawing.Point(10, 92 + 3) : Me.lblHotwords.AutoSize = True
-        Me.txtHotwords.Location = New Drawing.Point(120, 92) : Me.txtHotwords.Size = New Drawing.Size(670, 23) : Me.txtHotwords.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
+        Me.lblHotwords.Text = "Hotwords:" : Me.lblHotwords.Location = New Drawing.Point(10, 106) : Me.lblHotwords.AutoSize = True
+        Me.txtHotwords.Location = New Drawing.Point(10, 122) : Me.txtHotwords.Size = New Drawing.Size(780, 23) : Me.txtHotwords.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
 
         Me.grpPrompting.Controls.AddRange({Me.lblInitialPrompt, Me.txtInitialPrompt, Me.lblHotwords, Me.txtHotwords})
 
-        wy += 138
+        wy += 163
 
         ' --- Flags ---
         Me.grpFlags.Text = "Flags"
@@ -594,17 +594,17 @@ Partial Class FormMain
         ' --- VAD ---
         Me.grpVad.Text = "VAD (Voice Activity Detection)"
         Me.grpVad.Location = New Drawing.Point(8, wy)
-        Me.grpVad.Size = New Drawing.Size(810, 55)
+        Me.grpVad.Size = New Drawing.Size(810, 68)
         Me.grpVad.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
 
-        Me.lblVadThreshold.Text = "VAD threshold:" : Me.lblVadThreshold.Location = New Drawing.Point(10, 22 + 3) : Me.lblVadThreshold.AutoSize = True
-        Me.nudVadThreshold.Location = New Drawing.Point(140, 22) : Me.nudVadThreshold.Size = New Drawing.Size(80, 23) : Me.nudVadThreshold.Minimum = 0 : Me.nudVadThreshold.Maximum = 1 : Me.nudVadThreshold.DecimalPlaces = 1 : Me.nudVadThreshold.Increment = 0.1D : Me.nudVadThreshold.Value = 0.6D
-        Me.lblFreqThreshold.Text = "Frequency threshold:" : Me.lblFreqThreshold.Location = New Drawing.Point(280, 22 + 3) : Me.lblFreqThreshold.AutoSize = True
-        Me.nudFreqThreshold.Location = New Drawing.Point(420, 22) : Me.nudFreqThreshold.Size = New Drawing.Size(80, 23) : Me.nudFreqThreshold.Minimum = 0 : Me.nudFreqThreshold.Maximum = 3000 : Me.nudFreqThreshold.DecimalPlaces = 1 : Me.nudFreqThreshold.Increment = 10D : Me.nudFreqThreshold.Value = 100D
+        Me.lblVadThreshold.Text = "VAD threshold:" : Me.lblVadThreshold.Location = New Drawing.Point(10, 22) : Me.lblVadThreshold.AutoSize = True
+        Me.nudVadThreshold.Location = New Drawing.Point(10, 38) : Me.nudVadThreshold.Size = New Drawing.Size(100, 23) : Me.nudVadThreshold.Minimum = 0 : Me.nudVadThreshold.Maximum = 1 : Me.nudVadThreshold.DecimalPlaces = 1 : Me.nudVadThreshold.Increment = 0.1D : Me.nudVadThreshold.Value = 0.6D
+        Me.lblFreqThreshold.Text = "Frequency threshold:" : Me.lblFreqThreshold.Location = New Drawing.Point(250, 22) : Me.lblFreqThreshold.AutoSize = True
+        Me.nudFreqThreshold.Location = New Drawing.Point(250, 38) : Me.nudFreqThreshold.Size = New Drawing.Size(100, 23) : Me.nudFreqThreshold.Minimum = 0 : Me.nudFreqThreshold.Maximum = 3000 : Me.nudFreqThreshold.DecimalPlaces = 1 : Me.nudFreqThreshold.Increment = 10D : Me.nudFreqThreshold.Value = 100D
 
         Me.grpVad.Controls.AddRange({Me.lblVadThreshold, Me.nudVadThreshold, Me.lblFreqThreshold, Me.nudFreqThreshold})
 
-        wy += 62
+        wy += 76
 
         ' Restore defaults button
         Me.btnRestoreDefaults.Text = "Restore Defaults"
@@ -620,7 +620,7 @@ Partial Class FormMain
         ' ============================================
         Me.grpPaths.Text = "Tool Paths"
         Me.grpPaths.Location = New Drawing.Point(8, 6)
-        Me.grpPaths.Size = New Drawing.Size(830, 344)
+        Me.grpPaths.Size = New Drawing.Size(830, 420)
         Me.grpPaths.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
 
         Dim py = 22
@@ -637,36 +637,35 @@ Partial Class FormMain
 
         For Each row In pathRows
             row.Item1.Text = row.Item4
-            row.Item1.Location = New Drawing.Point(10, py + 3)
+            row.Item1.Location = New Drawing.Point(10, py)
             row.Item1.AutoSize = True
-            row.Item2.Location = New Drawing.Point(170, py)
-            row.Item2.Size = New Drawing.Size(540, 23)
+            row.Item2.Location = New Drawing.Point(10, py + 16)
+            row.Item2.Size = New Drawing.Size(700, 23)
             row.Item2.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
             row.Item3.Text = "Browse..."
-            row.Item3.Location = New Drawing.Point(720, py - 1)
+            row.Item3.Location = New Drawing.Point(720, py + 15)
             row.Item3.Size = New Drawing.Size(85, 25)
             row.Item3.Anchor = AnchorStyles.Top Or AnchorStyles.Right
             Me.grpPaths.Controls.AddRange({row.Item1, row.Item2, row.Item3})
-            py += 32
+            py += 48
         Next
 
         ' yt-dlp format (no browse button)
-        py += 5
         Me.lblYtdlpFormat.Text = "yt-dlp format string:"
-        Me.lblYtdlpFormat.Location = New Drawing.Point(10, py + 3)
+        Me.lblYtdlpFormat.Location = New Drawing.Point(10, py)
         Me.lblYtdlpFormat.AutoSize = True
-        Me.txtYtdlpFormat.Location = New Drawing.Point(170, py)
-        Me.txtYtdlpFormat.Size = New Drawing.Size(540, 23)
+        Me.txtYtdlpFormat.Location = New Drawing.Point(10, py + 16)
+        Me.txtYtdlpFormat.Size = New Drawing.Size(700, 23)
         Me.txtYtdlpFormat.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
         Me.grpPaths.Controls.AddRange({Me.lblYtdlpFormat, Me.txtYtdlpFormat})
 
         Me.btnVerifyPaths.Text = "Verify All Paths"
-        Me.btnVerifyPaths.Location = New Drawing.Point(8, 359)
+        Me.btnVerifyPaths.Location = New Drawing.Point(8, 435)
         Me.btnVerifyPaths.Size = New Drawing.Size(150, 30)
 
         Me.lnkDownloadModels = New LinkLabel()
         Me.lnkDownloadModels.Text = "Download whisper models..."
-        Me.lnkDownloadModels.Location = New Drawing.Point(170, 366)
+        Me.lnkDownloadModels.Location = New Drawing.Point(170, 442)
         Me.lnkDownloadModels.AutoSize = True
 
         Me.tabPagePaths.Controls.AddRange({Me.grpPaths, Me.btnVerifyPaths, Me.lnkDownloadModels})
@@ -701,30 +700,30 @@ Partial Class FormMain
         ' ============================================
         Me.grpSettings.Text = "Application Settings"
         Me.grpSettings.Location = New Drawing.Point(8, 6)
-        Me.grpSettings.Size = New Drawing.Size(830, 350)
+        Me.grpSettings.Size = New Drawing.Size(830, 420)
         Me.grpSettings.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
 
         Dim sy = 25
 
-        Me.lblUiLanguage.Text = "UI Language:" : Me.lblUiLanguage.Location = New Drawing.Point(10, sy + 3) : Me.lblUiLanguage.AutoSize = True
-        Me.cboUiLanguage.Location = New Drawing.Point(220, sy) : Me.cboUiLanguage.Size = New Drawing.Size(200, 23) : Me.cboUiLanguage.DropDownStyle = ComboBoxStyle.DropDownList
-        sy += 35
+        Me.lblUiLanguage.Text = "UI Language:" : Me.lblUiLanguage.Location = New Drawing.Point(10, sy) : Me.lblUiLanguage.AutoSize = True
+        Me.cboUiLanguage.Location = New Drawing.Point(10, sy + 16) : Me.cboUiLanguage.Size = New Drawing.Size(200, 23) : Me.cboUiLanguage.DropDownStyle = ComboBoxStyle.DropDownList
+        sy += 48
 
-        Me.lblParallelJobs.Text = "Parallel transcription jobs:" : Me.lblParallelJobs.Location = New Drawing.Point(10, sy + 3) : Me.lblParallelJobs.AutoSize = True
-        Me.nudParallelJobs.Location = New Drawing.Point(220, sy) : Me.nudParallelJobs.Size = New Drawing.Size(80, 23) : Me.nudParallelJobs.Minimum = 1 : Me.nudParallelJobs.Maximum = 16 : Me.nudParallelJobs.Value = 4
-        sy += 35
+        Me.lblParallelJobs.Text = "Parallel transcription jobs:" : Me.lblParallelJobs.Location = New Drawing.Point(10, sy) : Me.lblParallelJobs.AutoSize = True
+        Me.nudParallelJobs.Location = New Drawing.Point(10, sy + 16) : Me.nudParallelJobs.Size = New Drawing.Size(100, 23) : Me.nudParallelJobs.Minimum = 1 : Me.nudParallelJobs.Maximum = 16 : Me.nudParallelJobs.Value = 4
+        sy += 48
 
-        Me.lblChunkSize.Text = "Chunk size (seconds):" : Me.lblChunkSize.Location = New Drawing.Point(10, sy + 3) : Me.lblChunkSize.AutoSize = True
-        Me.nudChunkSize.Location = New Drawing.Point(220, sy) : Me.nudChunkSize.Size = New Drawing.Size(80, 23) : Me.nudChunkSize.Minimum = 60 : Me.nudChunkSize.Maximum = 1800 : Me.nudChunkSize.Value = 300
-        sy += 35
+        Me.lblChunkSize.Text = "Chunk size (seconds):" : Me.lblChunkSize.Location = New Drawing.Point(10, sy) : Me.lblChunkSize.AutoSize = True
+        Me.nudChunkSize.Location = New Drawing.Point(10, sy + 16) : Me.nudChunkSize.Size = New Drawing.Size(100, 23) : Me.nudChunkSize.Minimum = 60 : Me.nudChunkSize.Maximum = 1800 : Me.nudChunkSize.Value = 300
+        sy += 48
 
-        Me.lblPollInterval.Text = "Poll interval (ms):" : Me.lblPollInterval.Location = New Drawing.Point(10, sy + 3) : Me.lblPollInterval.AutoSize = True
-        Me.nudPollInterval.Location = New Drawing.Point(220, sy) : Me.nudPollInterval.Size = New Drawing.Size(80, 23) : Me.nudPollInterval.Minimum = 500 : Me.nudPollInterval.Maximum = 10000 : Me.nudPollInterval.Value = 2000
-        sy += 35
+        Me.lblPollInterval.Text = "Poll interval (ms):" : Me.lblPollInterval.Location = New Drawing.Point(10, sy) : Me.lblPollInterval.AutoSize = True
+        Me.nudPollInterval.Location = New Drawing.Point(10, sy + 16) : Me.nudPollInterval.Size = New Drawing.Size(100, 23) : Me.nudPollInterval.Minimum = 500 : Me.nudPollInterval.Maximum = 10000 : Me.nudPollInterval.Value = 2000
+        sy += 48
 
-        Me.lblChunkTimeout.Text = "Chunk timeout (min):" : Me.lblChunkTimeout.Location = New Drawing.Point(10, sy + 3) : Me.lblChunkTimeout.AutoSize = True
-        Me.nudChunkTimeout.Location = New Drawing.Point(220, sy) : Me.nudChunkTimeout.Size = New Drawing.Size(80, 23) : Me.nudChunkTimeout.Minimum = 1 : Me.nudChunkTimeout.Maximum = 120 : Me.nudChunkTimeout.Value = 60
-        sy += 35
+        Me.lblChunkTimeout.Text = "Chunk timeout (min):" : Me.lblChunkTimeout.Location = New Drawing.Point(10, sy) : Me.lblChunkTimeout.AutoSize = True
+        Me.nudChunkTimeout.Location = New Drawing.Point(10, sy + 16) : Me.nudChunkTimeout.Size = New Drawing.Size(100, 23) : Me.nudChunkTimeout.Minimum = 1 : Me.nudChunkTimeout.Maximum = 120 : Me.nudChunkTimeout.Value = 60
+        sy += 48
 
         Me.chkKeepChunks.Text = "Keep chunk files" : Me.chkKeepChunks.Location = New Drawing.Point(10, sy) : Me.chkKeepChunks.AutoSize = True
         sy += 28
@@ -733,8 +732,8 @@ Partial Class FormMain
         Me.chkSkipDownload.Text = "Skip download if file exists" : Me.chkSkipDownload.Location = New Drawing.Point(10, sy) : Me.chkSkipDownload.AutoSize = True
         sy += 35
 
-        Me.lblTheme.Text = "Theme:" : Me.lblTheme.Location = New Drawing.Point(10, sy + 3) : Me.lblTheme.AutoSize = True
-        Me.cboTheme.Location = New Drawing.Point(220, sy) : Me.cboTheme.Size = New Drawing.Size(150, 23) : Me.cboTheme.DropDownStyle = ComboBoxStyle.DropDownList
+        Me.lblTheme.Text = "Theme:" : Me.lblTheme.Location = New Drawing.Point(10, sy) : Me.lblTheme.AutoSize = True
+        Me.cboTheme.Location = New Drawing.Point(10, sy + 16) : Me.cboTheme.Size = New Drawing.Size(150, 23) : Me.cboTheme.DropDownStyle = ComboBoxStyle.DropDownList
         Me.cboTheme.Items.AddRange({"System", "Light", "Dark"})
         Me.cboTheme.SelectedIndex = 0
 
@@ -747,12 +746,12 @@ Partial Class FormMain
             Me.lblTheme, Me.cboTheme})
 
         Me.btnResetSettings.Text = "Reset All Settings"
-        Me.btnResetSettings.Location = New Drawing.Point(8, 365)
+        Me.btnResetSettings.Location = New Drawing.Point(8, 435)
         Me.btnResetSettings.Size = New Drawing.Size(150, 30)
 
         Me.btnCheckToolUpdates = New Button()
         Me.btnCheckToolUpdates.Text = "Check for Tool Updates"
-        Me.btnCheckToolUpdates.Location = New Drawing.Point(170, 365)
+        Me.btnCheckToolUpdates.Location = New Drawing.Point(170, 435)
         Me.btnCheckToolUpdates.Size = New Drawing.Size(180, 30)
 
         Me.tabPageSettings.Controls.AddRange({Me.grpSettings, Me.btnResetSettings, Me.btnCheckToolUpdates})
@@ -767,43 +766,43 @@ Partial Class FormMain
         ' Input settings group
         Me.grpLiveInput.Text = "Live Translation Settings"
         Me.grpLiveInput.Location = New Drawing.Point(8, 6)
-        Me.grpLiveInput.Size = New Drawing.Size(830, 130)
+        Me.grpLiveInput.Size = New Drawing.Size(830, 178)
         Me.grpLiveInput.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
 
         Dim ly = 22
 
         Me.lblLiveDevice.Text = "Audio Device:"
-        Me.lblLiveDevice.Location = New Drawing.Point(10, ly + 3)
+        Me.lblLiveDevice.Location = New Drawing.Point(10, ly)
         Me.lblLiveDevice.AutoSize = True
-        Me.cboLiveDevice.Location = New Drawing.Point(130, ly)
-        Me.cboLiveDevice.Size = New Drawing.Size(420, 23)
+        Me.cboLiveDevice.Location = New Drawing.Point(10, ly + 16)
+        Me.cboLiveDevice.Size = New Drawing.Size(600, 23)
         Me.cboLiveDevice.DropDownStyle = ComboBoxStyle.DropDownList
         Me.cboLiveDevice.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
         Me.btnRefreshDevices.Text = "Refresh"
-        Me.btnRefreshDevices.Location = New Drawing.Point(560, ly - 1)
+        Me.btnRefreshDevices.Location = New Drawing.Point(620, ly + 15)
         Me.btnRefreshDevices.Size = New Drawing.Size(85, 25)
         Me.btnRefreshDevices.Anchor = AnchorStyles.Top Or AnchorStyles.Right
-        ly += 32
+        ly += 48
 
         Me.lblLiveInputLang.Text = "Input Language:"
-        Me.lblLiveInputLang.Location = New Drawing.Point(10, ly + 3)
+        Me.lblLiveInputLang.Location = New Drawing.Point(10, ly)
         Me.lblLiveInputLang.AutoSize = True
-        Me.cboLiveInputLang.Location = New Drawing.Point(130, ly)
+        Me.cboLiveInputLang.Location = New Drawing.Point(10, ly + 16)
         Me.cboLiveInputLang.Size = New Drawing.Size(150, 23)
         Me.cboLiveInputLang.DropDownStyle = ComboBoxStyle.DropDownList
 
         Me.lblLiveOutputLang.Text = "Output Language:"
-        Me.lblLiveOutputLang.Location = New Drawing.Point(300, ly + 3)
+        Me.lblLiveOutputLang.Location = New Drawing.Point(250, ly)
         Me.lblLiveOutputLang.AutoSize = True
-        Me.cboLiveOutputLang.Location = New Drawing.Point(420, ly)
+        Me.cboLiveOutputLang.Location = New Drawing.Point(250, ly + 16)
         Me.cboLiveOutputLang.Size = New Drawing.Size(150, 23)
         Me.cboLiveOutputLang.DropDownStyle = ComboBoxStyle.DropDownList
-        ly += 32
+        ly += 48
 
         Me.lblLiveModel.Text = "Model:"
-        Me.lblLiveModel.Location = New Drawing.Point(10, ly + 3)
+        Me.lblLiveModel.Location = New Drawing.Point(10, ly)
         Me.lblLiveModel.AutoSize = True
-        Me.cboLiveModel.Location = New Drawing.Point(130, ly)
+        Me.cboLiveModel.Location = New Drawing.Point(10, ly + 16)
         Me.cboLiveModel.Size = New Drawing.Size(250, 23)
         Me.cboLiveModel.DropDownStyle = ComboBoxStyle.DropDownList
 
@@ -813,7 +812,7 @@ Partial Class FormMain
 
         ' Buttons panel
         Dim pnlLiveButtons As New Panel()
-        pnlLiveButtons.Location = New Drawing.Point(8, 142)
+        pnlLiveButtons.Location = New Drawing.Point(8, 190)
         pnlLiveButtons.Size = New Drawing.Size(830, 35)
         pnlLiveButtons.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
 
@@ -837,8 +836,8 @@ Partial Class FormMain
         pnlLiveButtons.Controls.AddRange({Me.btnLiveStart, Me.btnLiveStop, Me.btnLiveSave, Me.btnLiveClear})
 
         ' Real-time output
-        Me.rtbLiveOutput.Location = New Drawing.Point(8, 183)
-        Me.rtbLiveOutput.Size = New Drawing.Size(830, 430)
+        Me.rtbLiveOutput.Location = New Drawing.Point(8, 231)
+        Me.rtbLiveOutput.Size = New Drawing.Size(830, 382)
         Me.rtbLiveOutput.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Me.rtbLiveOutput.[ReadOnly] = True
         Me.rtbLiveOutput.BackColor = Drawing.Color.Black
@@ -858,17 +857,17 @@ Partial Class FormMain
         Me.grpServerSettings = New GroupBox()
         Me.grpServerSettings.Text = "Server Settings"
         Me.grpServerSettings.Location = New Drawing.Point(8, 6)
-        Me.grpServerSettings.Size = New Drawing.Size(830, 70)
+        Me.grpServerSettings.Size = New Drawing.Size(830, 148)
         Me.grpServerSettings.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
 
-        Dim svy = 25
+        Dim svy = 22
         Me.lblServerPort = New Label()
         Me.lblServerPort.Text = "Port:"
-        Me.lblServerPort.Location = New Drawing.Point(10, svy + 3)
+        Me.lblServerPort.Location = New Drawing.Point(10, svy)
         Me.lblServerPort.AutoSize = True
 
         Me.nudServerPort = New NumericUpDown()
-        Me.nudServerPort.Location = New Drawing.Point(60, svy)
+        Me.nudServerPort.Location = New Drawing.Point(10, svy + 16)
         Me.nudServerPort.Size = New Drawing.Size(80, 23)
         Me.nudServerPort.Minimum = 1024
         Me.nudServerPort.Maximum = 65535
@@ -876,40 +875,42 @@ Partial Class FormMain
 
         Me.btnServerStart = New Button()
         Me.btnServerStart.Text = "Start Server"
-        Me.btnServerStart.Location = New Drawing.Point(160, svy - 1)
+        Me.btnServerStart.Location = New Drawing.Point(110, svy + 15)
         Me.btnServerStart.Size = New Drawing.Size(110, 25)
 
         Me.btnServerStop = New Button()
         Me.btnServerStop.Text = "Stop Server"
-        Me.btnServerStop.Location = New Drawing.Point(280, svy - 1)
+        Me.btnServerStop.Location = New Drawing.Point(230, svy + 15)
         Me.btnServerStop.Size = New Drawing.Size(110, 25)
         Me.btnServerStop.Enabled = False
 
         Me.btnServerRestart = New Button()
         Me.btnServerRestart.Text = "Restart Server"
-        Me.btnServerRestart.Location = New Drawing.Point(400, svy - 1)
+        Me.btnServerRestart.Location = New Drawing.Point(350, svy + 15)
         Me.btnServerRestart.Size = New Drawing.Size(110, 25)
         Me.btnServerRestart.Enabled = False
 
         Me.btnServerSimulate = New Button()
         Me.btnServerSimulate.Text = "Simulate"
-        Me.btnServerSimulate.Location = New Drawing.Point(530, svy - 1)
+        Me.btnServerSimulate.Location = New Drawing.Point(480, svy + 15)
         Me.btnServerSimulate.Size = New Drawing.Size(100, 25)
         Me.btnServerSimulate.Enabled = False
 
         Me.btnServerSimStop = New Button()
         Me.btnServerSimStop.Text = "Stop Sim"
-        Me.btnServerSimStop.Location = New Drawing.Point(640, svy - 1)
+        Me.btnServerSimStop.Location = New Drawing.Point(590, svy + 15)
         Me.btnServerSimStop.Size = New Drawing.Size(90, 25)
         Me.btnServerSimStop.Enabled = False
 
+        svy += 48
+
         Me.lblSubtitleBg = New Label()
         Me.lblSubtitleBg.Text = "Background:"
-        Me.lblSubtitleBg.Location = New Drawing.Point(10, svy + 32 + 3)
+        Me.lblSubtitleBg.Location = New Drawing.Point(10, svy)
         Me.lblSubtitleBg.AutoSize = True
 
         Me.btnSubtitleBg = New Button()
-        Me.btnSubtitleBg.Location = New Drawing.Point(100, svy + 32)
+        Me.btnSubtitleBg.Location = New Drawing.Point(10, svy + 16)
         Me.btnSubtitleBg.Size = New Drawing.Size(80, 23)
         Me.btnSubtitleBg.BackColor = Drawing.Color.Black
         Me.btnSubtitleBg.FlatStyle = FlatStyle.Flat
@@ -917,11 +918,11 @@ Partial Class FormMain
 
         Me.lblSubtitleFg = New Label()
         Me.lblSubtitleFg.Text = "Text color:"
-        Me.lblSubtitleFg.Location = New Drawing.Point(200, svy + 32 + 3)
+        Me.lblSubtitleFg.Location = New Drawing.Point(110, svy)
         Me.lblSubtitleFg.AutoSize = True
 
         Me.btnSubtitleFg = New Button()
-        Me.btnSubtitleFg.Location = New Drawing.Point(280, svy + 32)
+        Me.btnSubtitleFg.Location = New Drawing.Point(110, svy + 16)
         Me.btnSubtitleFg.Size = New Drawing.Size(80, 23)
         Me.btnSubtitleFg.BackColor = Drawing.Color.White
         Me.btnSubtitleFg.FlatStyle = FlatStyle.Flat
@@ -929,12 +930,12 @@ Partial Class FormMain
 
         Me.lblSubtitleFont = New Label()
         Me.lblSubtitleFont.Text = "Font:"
-        Me.lblSubtitleFont.Location = New Drawing.Point(380, svy + 32 + 3)
+        Me.lblSubtitleFont.Location = New Drawing.Point(210, svy)
         Me.lblSubtitleFont.AutoSize = True
 
         Me.cboSubtitleFont = New ComboBox()
-        Me.cboSubtitleFont.Location = New Drawing.Point(420, svy + 32)
-        Me.cboSubtitleFont.Size = New Drawing.Size(160, 23)
+        Me.cboSubtitleFont.Location = New Drawing.Point(210, svy + 16)
+        Me.cboSubtitleFont.Size = New Drawing.Size(200, 23)
         Me.cboSubtitleFont.DropDownStyle = ComboBoxStyle.DropDownList
         For Each fam In Drawing.FontFamily.Families
             Me.cboSubtitleFont.Items.Add(fam.Name)
@@ -943,11 +944,11 @@ Partial Class FormMain
 
         Me.lblSubtitleSize = New Label()
         Me.lblSubtitleSize.Text = "Size:"
-        Me.lblSubtitleSize.Location = New Drawing.Point(590, svy + 32 + 3)
+        Me.lblSubtitleSize.Location = New Drawing.Point(430, svy)
         Me.lblSubtitleSize.AutoSize = True
 
         Me.nudSubtitleSize = New NumericUpDown()
-        Me.nudSubtitleSize.Location = New Drawing.Point(625, svy + 32)
+        Me.nudSubtitleSize.Location = New Drawing.Point(430, svy + 16)
         Me.nudSubtitleSize.Size = New Drawing.Size(55, 23)
         Me.nudSubtitleSize.Minimum = 8
         Me.nudSubtitleSize.Maximum = 72
@@ -955,10 +956,10 @@ Partial Class FormMain
 
         Me.chkSubtitleBold = New CheckBox()
         Me.chkSubtitleBold.Text = "Bold"
-        Me.chkSubtitleBold.Location = New Drawing.Point(690, svy + 32 + 2)
+        Me.chkSubtitleBold.Location = New Drawing.Point(500, svy + 18)
         Me.chkSubtitleBold.AutoSize = True
 
-        Me.grpServerSettings.Size = New Drawing.Size(830, 100)
+        Me.grpServerSettings.Size = New Drawing.Size(830, 148)
         Me.grpServerSettings.Controls.AddRange({Me.lblServerPort, Me.nudServerPort,
             Me.btnServerStart, Me.btnServerStop, Me.btnServerRestart,
             Me.btnServerSimulate, Me.btnServerSimStop,
@@ -968,7 +969,7 @@ Partial Class FormMain
         ' Connection info group
         Me.grpServerInfo = New GroupBox()
         Me.grpServerInfo.Text = "Connection Info"
-        Me.grpServerInfo.Location = New Drawing.Point(8, 112)
+        Me.grpServerInfo.Location = New Drawing.Point(8, 160)
         Me.grpServerInfo.Size = New Drawing.Size(830, 100)
         Me.grpServerInfo.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
 
@@ -1000,8 +1001,8 @@ Partial Class FormMain
 
         ' Server log
         Me.rtbServerLog = New RichTextBox()
-        Me.rtbServerLog.Location = New Drawing.Point(8, 218)
-        Me.rtbServerLog.Size = New Drawing.Size(830, 425)
+        Me.rtbServerLog.Location = New Drawing.Point(8, 266)
+        Me.rtbServerLog.Size = New Drawing.Size(830, 347)
         Me.rtbServerLog.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Me.rtbServerLog.[ReadOnly] = True
         Me.rtbServerLog.BackColor = Drawing.Color.Black

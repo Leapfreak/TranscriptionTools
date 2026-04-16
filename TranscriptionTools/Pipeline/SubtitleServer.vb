@@ -1032,12 +1032,6 @@ document.getElementById('btnBold').textContent=t('bold');
 document.getElementById('lblVoice').textContent=t('voice');
 document.getElementById('lblSpeed').textContent=t('speed');
 var rOpts=rateSelect.options;rOpts[0].textContent=t('slow');rOpts[1].textContent=t('normal');rOpts[2].textContent=t('fast');rOpts[3].textContent=t('vfast');
-adminStatus.textContent=t('checking');
-var admBtns=document.querySelectorAll('#adminPanel button');
-admBtns[0].innerHTML='&#9654; '+t('start');admBtns[1].innerHTML='&#9632; '+t('stop');
-admBtns[2].innerHTML='&#8635; '+t('restart');admBtns[3].innerHTML='&#9881; '+t('simulate');
-admBtns[4].innerHTML='&#10060; '+t('clear');
-
 connect();
 
 /* Keep screen on — Wake Lock toggle button */
@@ -1121,6 +1115,12 @@ function pollStatus(){
     else{adminStatus.textContent=t('stopped');adminStatus.style.color='#f44'}
   }).catch(function(){adminStatus.textContent=t('noServer');adminStatus.style.color='#888'});
 }
+/* Apply i18n to admin panel */
+adminStatus.textContent=t('checking');
+var admBtns=document.querySelectorAll('#adminPanel button');
+admBtns[0].innerHTML='&#9654; '+t('start');admBtns[1].innerHTML='&#9632; '+t('stop');
+admBtns[2].innerHTML='&#8635; '+t('restart');admBtns[3].innerHTML='&#9881; '+t('simulate');
+admBtns[4].innerHTML='&#10060; '+t('clear');
 </script>
 </body>
 </html>").Replace("{{BG_COLOR}}", bg).Replace("{{FG_COLOR}}", fg)
