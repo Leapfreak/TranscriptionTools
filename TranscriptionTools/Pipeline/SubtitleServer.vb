@@ -723,7 +723,7 @@ body{background:{{BG_COLOR}};color:{{FG_COLOR}};font-family:'Segoe UI',Arial,san
 <div id=""status"" class=""disconnected"">Connecting...</div>
 <div id=""toolbar"">
   <button id=""btnAdmin"" onclick=""toggleAdmin()"" title=""Remote Control"">&#9881;</button>
-  <button onclick=""togglePanel()"" title=""Settings"">Aa</button>
+  <button id=""btnSettings"" onclick=""togglePanel()"" title=""Settings"">Aa</button>
   <button id=""btnSpeak"" onclick=""toggleSpeak()"" title=""Read aloud"">&#128264;</button>
   <button id=""btnWake"" onclick=""toggleWakeLock()"" title=""Keep screen on"">&#128261;</button>
 </div>
@@ -737,7 +737,7 @@ body{background:{{BG_COLOR}};color:{{FG_COLOR}};font-family:'Segoe UI',Arial,san
 <div id=""panel"">
   <button onclick=""changeFontSize(4)"">A+</button>
   <button onclick=""changeFontSize(-4)"">A-</button>
-  <label>Font</label>
+  <label id=""lblFont"">Font</label>
   <select id=""fontSelect"" onchange=""changeFont(this.value)"">
     <option value=""'Segoe UI',Arial,sans-serif"">Segoe UI</option>
     <option value=""Arial,sans-serif"">Arial</option>
@@ -748,13 +748,13 @@ body{background:{{BG_COLOR}};color:{{FG_COLOR}};font-family:'Segoe UI',Arial,san
     <option value=""'Trebuchet MS',sans-serif"">Trebuchet MS</option>
     <option value=""Tahoma,sans-serif"">Tahoma</option>
   </select>
-  <label>Style</label>
+  <label id=""lblStyle"">Style</label>
   <button id=""btnBold"" onclick=""toggleBold()"" style=""min-width:60px"">Bold</button>
-  <label>Text Color</label>
+  <label id=""lblColor"">Text Color</label>
   <input type=""color"" id=""colorPicker"" value=""{{FG_COLOR}}"" onchange=""changeColor(this.value)"" style=""width:100%;height:32px;border:1px solid #555;border-radius:4px;background:#333;cursor:pointer"">
-  <label>Voice</label>
+  <label id=""lblVoice"">Voice</label>
   <select id=""voiceSelect"" onchange=""selectedVoice=this.value;localStorage.setItem('voice',this.value)""></select>
-  <label>Speed</label>
+  <label id=""lblSpeed"">Speed</label>
   <select id=""rateSelect"" onchange=""speechRate=parseFloat(this.value);localStorage.setItem('rate',this.value)"">
     <option value=""0.7"">Slow</option>
     <option value=""1"" selected>Normal</option>
@@ -764,19 +764,157 @@ body{background:{{BG_COLOR}};color:{{FG_COLOR}};font-family:'Segoe UI',Arial,san
 </div>
 <div id=""container""><div id=""lines""><div id=""spacer""></div></div></div>
 <script>
+var T={};
+(function(){
+  var lang=(navigator.language||'en').toLowerCase();
+  var lc=lang.split('-')[0];
+  var tr={
+    en:{connecting:'Connecting...',connected:'Connected',disconnected:'Disconnected - reconnecting...',
+        wakeTitle:'Keep Screen On',wakeDesc:'A secure connection is needed (one-time setup):',
+        stepTap:'Tap the button below',stepWarn:'You will see a warning page \u2014 this is normal',
+        stepAdv:'Tap \u0022Advanced\u0022',stepProceed:'Tap \u0022Proceed to {0}\u0022',
+        stepAccept:'Tap \u0022Accept the Risk and Continue\u0022',
+        stepDetails:'Tap \u0022Show Details\u0022',stepVisit:'Tap \u0022visit this website\u0022',
+        stepRetry:'Tap the screen wake button again',
+        openSecure:'Open Secure Page',cancel:'Cancel',
+        sending:'Sending...',cmdSent:' command sent',cmdFail:'Failed to send command',
+        liveRun:'Live: RUNNING',simRun:'Simulation: RUNNING',stopped:'Status: STOPPED',
+        noServer:'Unable to reach server',checking:'Checking...',
+        dfltVoice:'Default',title:'Live Subtitles',
+        bold:'Bold',font:'Font',style:'Style',voice:'Voice',speed:'Speed',color:'Text Color',
+        slow:'Slow',normal:'Normal',fast:'Fast',vfast:'Very Fast',
+        start:'Start',stop:'Stop',restart:'Restart',simulate:'Simulate',
+        remote:'Remote Control',settings:'Settings',readAloud:'Read aloud',keepScreen:'Keep screen on'},
+    es:{connecting:'Conectando...',connected:'Conectado',disconnected:'Desconectado - reconectando...',
+        wakeTitle:'Mantener Pantalla',wakeDesc:'Se necesita conexi\u00f3n segura (configuraci\u00f3n \u00fanica):',
+        stepTap:'Toca el bot\u00f3n de abajo',stepWarn:'Ver\u00e1s una advertencia \u2014 es normal',
+        stepAdv:'Toca \u0022Avanzado\u0022',stepProceed:'Toca \u0022Continuar a {0}\u0022',
+        stepAccept:'Toca \u0022Aceptar el riesgo y continuar\u0022',
+        stepDetails:'Toca \u0022Mostrar detalles\u0022',stepVisit:'Toca \u0022visitar este sitio web\u0022',
+        stepRetry:'Toca el bot\u00f3n de pantalla de nuevo',
+        openSecure:'Abrir P\u00e1gina Segura',cancel:'Cancelar',
+        sending:'Enviando...',cmdSent:' comando enviado',cmdFail:'Error al enviar comando',
+        liveRun:'En vivo: ACTIVO',simRun:'Simulaci\u00f3n: ACTIVA',stopped:'Estado: DETENIDO',
+        noServer:'No se puede conectar',checking:'Comprobando...',
+        dfltVoice:'Predeterminado',title:'Subt\u00edtulos en Vivo',
+        bold:'Negrita',font:'Fuente',style:'Estilo',voice:'Voz',speed:'Velocidad',color:'Color de texto',
+        slow:'Lento',normal:'Normal',fast:'R\u00e1pido',vfast:'Muy R\u00e1pido',
+        start:'Iniciar',stop:'Detener',restart:'Reiniciar',simulate:'Simular',
+        remote:'Control Remoto',settings:'Ajustes',readAloud:'Leer en voz alta',keepScreen:'Mantener pantalla'},
+    fr:{connecting:'Connexion...',connected:'Connect\u00e9',disconnected:'D\u00e9connect\u00e9 - reconnexion...',
+        wakeTitle:'\u00c9cran Allum\u00e9',wakeDesc:'Connexion s\u00e9curis\u00e9e requise (une seule fois) :',
+        stepTap:'Appuyez sur le bouton ci-dessous',stepWarn:'Un avertissement s\u0027affichera \u2014 c\u0027est normal',
+        stepAdv:'Appuyez sur \u0022Avanc\u00e9\u0022',stepProceed:'Appuyez sur \u0022Continuer vers {0}\u0022',
+        stepAccept:'Appuyez sur \u0022Accepter le risque\u0022',
+        stepDetails:'Appuyez sur \u0022Afficher les d\u00e9tails\u0022',stepVisit:'Appuyez sur \u0022acc\u00e9der \u00e0 ce site\u0022',
+        stepRetry:'Appuyez \u00e0 nouveau sur le bouton veille',
+        openSecure:'Ouvrir Page S\u00e9curis\u00e9e',cancel:'Annuler',
+        sending:'Envoi...',cmdSent:' commande envoy\u00e9e',cmdFail:'Erreur d\u0027envoi',
+        liveRun:'En direct : ACTIF',simRun:'Simulation : ACTIVE',stopped:'\u00c9tat : ARR\u00caT\u00c9',
+        noServer:'Serveur inaccessible',checking:'V\u00e9rification...',
+        dfltVoice:'Par d\u00e9faut',title:'Sous-titres en Direct',
+        bold:'Gras',font:'Police',style:'Style',voice:'Voix',speed:'Vitesse',color:'Couleur du texte',
+        slow:'Lent',normal:'Normal',fast:'Rapide',vfast:'Tr\u00e8s Rapide',
+        start:'D\u00e9marrer',stop:'Arr\u00eater',restart:'Red\u00e9marrer',simulate:'Simuler',
+        remote:'T\u00e9l\u00e9commande',settings:'Param\u00e8tres',readAloud:'Lire \u00e0 voix haute',keepScreen:'\u00c9cran allum\u00e9'},
+    de:{connecting:'Verbinde...',connected:'Verbunden',disconnected:'Getrennt - verbinde erneut...',
+        wakeTitle:'Bildschirm An',wakeDesc:'Sichere Verbindung erforderlich (einmalig):',
+        stepTap:'Tippen Sie auf den Button unten',stepWarn:'Sie sehen eine Warnung \u2014 das ist normal',
+        stepAdv:'Tippen Sie auf \u0022Erweitert\u0022',stepProceed:'Tippen Sie auf \u0022Weiter zu {0}\u0022',
+        stepAccept:'Tippen Sie auf \u0022Risiko akzeptieren\u0022',
+        stepDetails:'Tippen Sie auf \u0022Details anzeigen\u0022',stepVisit:'Tippen Sie auf \u0022Website besuchen\u0022',
+        stepRetry:'Tippen Sie erneut auf den Wach-Button',
+        openSecure:'Sichere Seite \u00d6ffnen',cancel:'Abbrechen',
+        sending:'Sende...',cmdSent:' Befehl gesendet',cmdFail:'Befehl fehlgeschlagen',
+        liveRun:'Live: L\u00c4UFT',simRun:'Simulation: L\u00c4UFT',stopped:'Status: GESTOPPT',
+        noServer:'Server nicht erreichbar',checking:'Pr\u00fcfe...',
+        dfltVoice:'Standard',title:'Live-Untertitel',
+        bold:'Fett',font:'Schrift',style:'Stil',voice:'Stimme',speed:'Geschwindigkeit',color:'Textfarbe',
+        slow:'Langsam',normal:'Normal',fast:'Schnell',vfast:'Sehr Schnell',
+        start:'Starten',stop:'Stoppen',restart:'Neustarten',simulate:'Simulieren',
+        remote:'Fernsteuerung',settings:'Einstellungen',readAloud:'Vorlesen',keepScreen:'Bildschirm an'},
+    ca:{connecting:'Connectant...',connected:'Connectat',disconnected:'Desconnectat - reconnectant...',
+        wakeTitle:'Mantenir Pantalla',wakeDesc:'Cal connexi\u00f3 segura (configuraci\u00f3 \u00fanica):',
+        stepTap:'Toca el bot\u00f3 de sota',stepWarn:'Veur\u00e0s un av\u00eds \u2014 \u00e9s normal',
+        stepAdv:'Toca \u0022Avan\u00e7at\u0022',stepProceed:'Toca \u0022Continuar a {0}\u0022',
+        stepAccept:'Toca \u0022Acceptar el risc i continuar\u0022',
+        stepDetails:'Toca \u0022Mostrar detalls\u0022',stepVisit:'Toca \u0022visitar aquest lloc\u0022',
+        stepRetry:'Toca el bot\u00f3 de pantalla de nou',
+        openSecure:'Obrir P\u00e0gina Segura',cancel:'Cancel\u00b7lar',
+        sending:'Enviant...',cmdSent:' comanda enviada',cmdFail:'Error en enviar',
+        liveRun:'En directe: ACTIU',simRun:'Simulaci\u00f3: ACTIVA',stopped:'Estat: ATURAT',
+        noServer:'No es pot connectar',checking:'Comprovant...',
+        dfltVoice:'Per defecte',title:'Subt\u00edtols en Directe',
+        bold:'Negreta',font:'Tipus de lletra',style:'Estil',voice:'Veu',speed:'Velocitat',color:'Color del text',
+        slow:'Lent',normal:'Normal',fast:'R\u00e0pid',vfast:'Molt R\u00e0pid',
+        start:'Iniciar',stop:'Aturar',restart:'Reiniciar',simulate:'Simular',
+        remote:'Control Remot',settings:'Ajustos',readAloud:'Llegir en veu alta',keepScreen:'Mantenir pantalla'},
+    pt:{connecting:'Conectando...',connected:'Conectado',disconnected:'Desconectado - reconectando...',
+        wakeTitle:'Manter Tela Ligada',wakeDesc:'Conex\u00e3o segura necess\u00e1ria (apenas uma vez):',
+        stepTap:'Toque no bot\u00e3o abaixo',stepWarn:'Voc\u00ea ver\u00e1 um aviso \u2014 isso \u00e9 normal',
+        stepAdv:'Toque em \u0022Avan\u00e7ado\u0022',stepProceed:'Toque em \u0022Prosseguir para {0}\u0022',
+        stepAccept:'Toque em \u0022Aceitar o risco e continuar\u0022',
+        stepDetails:'Toque em \u0022Mostrar detalhes\u0022',stepVisit:'Toque em \u0022visitar este site\u0022',
+        stepRetry:'Toque no bot\u00e3o de tela novamente',
+        openSecure:'Abrir P\u00e1gina Segura',cancel:'Cancelar',
+        sending:'Enviando...',cmdSent:' comando enviado',cmdFail:'Falha ao enviar',
+        liveRun:'Ao vivo: ATIVO',simRun:'Simula\u00e7\u00e3o: ATIVA',stopped:'Status: PARADO',
+        noServer:'N\u00e3o foi poss\u00edvel conectar',checking:'Verificando...',
+        dfltVoice:'Padr\u00e3o',title:'Legendas ao Vivo',
+        bold:'Negrito',font:'Fonte',style:'Estilo',voice:'Voz',speed:'Velocidade',color:'Cor do texto',
+        slow:'Lento',normal:'Normal',fast:'R\u00e1pido',vfast:'Muito R\u00e1pido',
+        start:'Iniciar',stop:'Parar',restart:'Reiniciar',simulate:'Simular',
+        remote:'Controle Remoto',settings:'Configura\u00e7\u00f5es',readAloud:'Ler em voz alta',keepScreen:'Manter tela ligada'},
+    ja:{connecting:'\u63a5\u7d9a\u4e2d...',connected:'\u63a5\u7d9a\u6e08\u307f',disconnected:'\u5207\u65ad - \u518d\u63a5\u7d9a\u4e2d...',
+        wakeTitle:'\u753b\u9762\u3092\u70b9\u706f',wakeDesc:'\u5b89\u5168\u306a\u63a5\u7d9a\u304c\u5fc5\u8981\u3067\u3059\uff08\u521d\u56de\u306e\u307f\uff09:',
+        stepTap:'\u4e0b\u306e\u30dc\u30bf\u30f3\u3092\u30bf\u30c3\u30d7',stepWarn:'\u8b66\u544a\u304c\u8868\u793a\u3055\u308c\u307e\u3059 \u2014 \u6b63\u5e38\u3067\u3059',
+        stepAdv:'\u0022\u8a73\u7d30\u8a2d\u5b9a\u0022\u3092\u30bf\u30c3\u30d7',stepProceed:'\u0022{0}\u306b\u30a2\u30af\u30bb\u30b9\u0022\u3092\u30bf\u30c3\u30d7',
+        stepAccept:'\u0022\u30ea\u30b9\u30af\u3092\u627f\u8afe\u3057\u3066\u7d9a\u884c\u0022\u3092\u30bf\u30c3\u30d7',
+        stepDetails:'\u0022\u8a73\u7d30\u3092\u8868\u793a\u0022\u3092\u30bf\u30c3\u30d7',stepVisit:'\u0022\u3053\u306e\u30b5\u30a4\u30c8\u3092\u8a2a\u554f\u0022\u3092\u30bf\u30c3\u30d7',
+        stepRetry:'\u753b\u9762\u70b9\u706f\u30dc\u30bf\u30f3\u3092\u518d\u5ea6\u30bf\u30c3\u30d7',
+        openSecure:'\u5b89\u5168\u306a\u30da\u30fc\u30b8\u3092\u958b\u304f',cancel:'\u30ad\u30e3\u30f3\u30bb\u30eb',
+        sending:'\u9001\u4fe1\u4e2d...',cmdSent:'\u30b3\u30de\u30f3\u30c9\u9001\u4fe1\u6e08\u307f',cmdFail:'\u30b3\u30de\u30f3\u30c9\u9001\u4fe1\u5931\u6557',
+        liveRun:'\u30e9\u30a4\u30d6: \u5b9f\u884c\u4e2d',simRun:'\u30b7\u30df\u30e5\u30ec\u30fc\u30b7\u30e7\u30f3: \u5b9f\u884c\u4e2d',stopped:'\u30b9\u30c6\u30fc\u30bf\u30b9: \u505c\u6b62',
+        noServer:'\u30b5\u30fc\u30d0\u30fc\u306b\u63a5\u7d9a\u3067\u304d\u307e\u305b\u3093',checking:'\u78ba\u8a8d\u4e2d...',
+        dfltVoice:'\u30c7\u30d5\u30a9\u30eb\u30c8',title:'\u30e9\u30a4\u30d6\u5b57\u5e55',
+        bold:'\u592a\u5b57',font:'\u30d5\u30a9\u30f3\u30c8',style:'\u30b9\u30bf\u30a4\u30eb',voice:'\u97f3\u58f0',speed:'\u901f\u5ea6',color:'\u6587\u5b57\u8272',
+        slow:'\u9045\u3044',normal:'\u666e\u901a',fast:'\u901f\u3044',vfast:'\u3068\u3066\u3082\u901f\u3044',
+        start:'\u958b\u59cb',stop:'\u505c\u6b62',restart:'\u518d\u958b',simulate:'\u30b7\u30df\u30e5\u30ec\u30fc\u30b7\u30e7\u30f3',
+        remote:'\u30ea\u30e2\u30fc\u30c8',settings:'\u8a2d\u5b9a',readAloud:'\u8aad\u307f\u4e0a\u3052',keepScreen:'\u753b\u9762\u70b9\u706f'},
+    zh:{connecting:'\u8fde\u63a5\u4e2d...',connected:'\u5df2\u8fde\u63a5',disconnected:'\u5df2\u65ad\u5f00 - \u91cd\u65b0\u8fde\u63a5...',
+        wakeTitle:'\u4fdd\u6301\u5c4f\u5e55\u5e38\u4eae',wakeDesc:'\u9700\u8981\u5b89\u5168\u8fde\u63a5\uff08\u4ec5\u9700\u4e00\u6b21\uff09:',
+        stepTap:'\u70b9\u51fb\u4e0b\u65b9\u6309\u94ae',stepWarn:'\u60a8\u5c06\u770b\u5230\u8b66\u544a\u9875\u9762 \u2014 \u8fd9\u662f\u6b63\u5e38\u7684',
+        stepAdv:'\u70b9\u51fb\u0022\u9ad8\u7ea7\u0022',stepProceed:'\u70b9\u51fb\u0022\u7ee7\u7eed\u8bbf\u95ee{0}\u0022',
+        stepAccept:'\u70b9\u51fb\u0022\u63a5\u53d7\u98ce\u9669\u5e76\u7ee7\u7eed\u0022',
+        stepDetails:'\u70b9\u51fb\u0022\u663e\u793a\u8be6\u60c5\u0022',stepVisit:'\u70b9\u51fb\u0022\u8bbf\u95ee\u6b64\u7f51\u7ad9\u0022',
+        stepRetry:'\u518d\u6b21\u70b9\u51fb\u5c4f\u5e55\u5e38\u4eae\u6309\u94ae',
+        openSecure:'\u6253\u5f00\u5b89\u5168\u9875\u9762',cancel:'\u53d6\u6d88',
+        sending:'\u53d1\u9001\u4e2d...',cmdSent:'\u547d\u4ee4\u5df2\u53d1\u9001',cmdFail:'\u53d1\u9001\u5931\u8d25',
+        liveRun:'\u76f4\u64ad: \u8fd0\u884c\u4e2d',simRun:'\u6a21\u62df: \u8fd0\u884c\u4e2d',stopped:'\u72b6\u6001: \u5df2\u505c\u6b62',
+        noServer:'\u65e0\u6cd5\u8fde\u63a5\u670d\u52a1\u5668',checking:'\u68c0\u67e5\u4e2d...',
+        dfltVoice:'\u9ed8\u8ba4',title:'\u5b9e\u65f6\u5b57\u5e55',
+        bold:'\u7c97\u4f53',font:'\u5b57\u4f53',style:'\u6837\u5f0f',voice:'\u8bed\u97f3',speed:'\u901f\u5ea6',color:'\u6587\u5b57\u989c\u8272',
+        slow:'\u6162',normal:'\u6b63\u5e38',fast:'\u5feb',vfast:'\u975e\u5e38\u5feb',
+        start:'\u5f00\u59cb',stop:'\u505c\u6b62',restart:'\u91cd\u542f',simulate:'\u6a21\u62df',
+        remote:'\u8fdc\u7a0b\u63a7\u5236',settings:'\u8bbe\u7f6e',readAloud:'\u6717\u8bfb',keepScreen:'\u4fdd\u6301\u5c4f\u5e55'}
+  };
+  if(lang.indexOf('zh')===0)T=tr.zh;
+  else T=tr[lc]||tr.en;
+})();
+function t(k){return T[k]||k}
 var fontSize=28;
 var currentEl=null;
 var speakEnabled=false;
 var selectedVoice='';
 var speechRate=1;
-const synth=window.speechSynthesis;
-const lines=document.getElementById('lines');
-const container=document.getElementById('container');
-const status=document.getElementById('status');
-const panel=document.getElementById('panel');
-const btnSpeak=document.getElementById('btnSpeak');
-const voiceSelect=document.getElementById('voiceSelect');
-const rateSelect=document.getElementById('rateSelect');
+var synth=window.speechSynthesis;
+var lines=document.getElementById('lines');
+var container=document.getElementById('container');
+var status=document.getElementById('status');
+var panel=document.getElementById('panel');
+var btnSpeak=document.getElementById('btnSpeak');
+var voiceSelect=document.getElementById('voiceSelect');
+var rateSelect=document.getElementById('rateSelect');
 
 /* Restore saved preferences */
 if(localStorage.getItem('voice'))selectedVoice=localStorage.getItem('voice');
@@ -784,15 +922,16 @@ if(localStorage.getItem('rate')){speechRate=parseFloat(localStorage.getItem('rat
 if(localStorage.getItem('speak')==='true'){speakEnabled=true;btnSpeak.classList.add('active');btnSpeak.innerHTML='&#128266;'}
 
 function populateVoices(){
-  const voices=synth.getVoices();
+  var voices=synth.getVoices();
   voiceSelect.innerHTML='';
-  const defOpt=document.createElement('option');defOpt.value='';defOpt.textContent='Default';voiceSelect.appendChild(defOpt);
-  voices.forEach(v=>{
-    const opt=document.createElement('option');opt.value=v.name;
+  var defOpt=document.createElement('option');defOpt.value='';defOpt.textContent=t('dfltVoice');voiceSelect.appendChild(defOpt);
+  for(var i=0;i<voices.length;i++){
+    var v=voices[i];
+    var opt=document.createElement('option');opt.value=v.name;
     opt.textContent=v.name+(v.lang?' ('+v.lang+')':'');
     if(v.name===selectedVoice)opt.selected=true;
     voiceSelect.appendChild(opt);
-  });
+  }
 }
 populateVoices();
 if(synth.onvoiceschanged!==undefined)synth.onvoiceschanged=populateVoices;
@@ -808,9 +947,9 @@ function toggleSpeak(){
 
 function speak(text){
   if(!speakEnabled||!synth||!text)return;
-  const utter=new SpeechSynthesisUtterance(text);
+  var utter=new SpeechSynthesisUtterance(text);
   utter.rate=speechRate;
-  if(selectedVoice){const v=synth.getVoices().find(x=>x.name===selectedVoice);if(v)utter.voice=v}
+  if(selectedVoice){var voices=synth.getVoices();for(var i=0;i<voices.length;i++){if(voices[i].name===selectedVoice){utter.voice=voices[i];break}}}
   synth.speak(utter);
 }
 
@@ -856,13 +995,13 @@ function updateCurrent(text){
   scrollBottom()
 }
 function connect(){
-  const proto=location.protocol==='https:'?'wss:':'ws:';
-  const ws=new WebSocket(proto+'//'+location.host+'/ws');
-  ws.onopen=()=>{status.textContent='Connected';status.className='connected'};
-  ws.onclose=()=>{status.textContent='Disconnected - reconnecting...';status.className='disconnected';setTimeout(connect,2000)};
-  ws.onerror=()=>{ws.close()};
-  ws.onmessage=(e)=>{
-    try{const msg=JSON.parse(e.data);
+  var proto=location.protocol==='https:'?'wss:':'ws:';
+  var ws=new WebSocket(proto+'//'+location.host+'/ws');
+  ws.onopen=function(){status.textContent=t('connected');status.className='connected'};
+  ws.onclose=function(){status.textContent=t('disconnected');status.className='disconnected';setTimeout(connect,2000)};
+  ws.onerror=function(){ws.close()};
+  ws.onmessage=function(e){
+    try{var msg=JSON.parse(e.data);
       if(msg.type==='commit')addCommitted(msg.text);
       else if(msg.type==='update')updateCurrent(msg.text);
     }catch(ex){}
@@ -897,7 +1036,6 @@ async function acquireWakeLock(){
 function releaseWakeLock(){
   wakeActive=false;
   if(wakeLockObj){try{wakeLockObj.release()}catch(e){}wakeLockObj=null}
-  if(window._noSleepAudio){try{window._noSleepAudio.pause()}catch(e){}}
   setWakeActive(false);
 }
 
@@ -909,46 +1047,66 @@ function showCertSetup(){
   var d=document.createElement('div');
   d.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;color:#fff;font-size:16px;line-height:1.6';
   var c=document.createElement('div');c.style.cssText='max-width:400px;text-align:left';
-  var h=document.createElement('h2');h.style.cssText='color:#ffdd57;margin-bottom:16px;text-align:center';h.textContent='Keep Screen On';c.appendChild(h);
-  var p0=document.createElement('p');p0.style.cssText='margin-bottom:16px;text-align:center';p0.textContent='A secure connection is needed (one-time setup):';c.appendChild(p0);
-  var steps=['Tap the button below','You will see a warning page \u2014 this is normal','Tap \u0022Advanced\u0022','Tap \u0022Proceed to '+location.hostname+'\u0022','Tap the screen wake button again'];
+  var h=document.createElement('h2');h.style.cssText='color:#ffdd57;margin-bottom:16px;text-align:center';h.textContent=t('wakeTitle');c.appendChild(h);
+  var p0=document.createElement('p');p0.style.cssText='margin-bottom:16px;text-align:center';p0.textContent=t('wakeDesc');c.appendChild(p0);
+  var isFF=navigator.userAgent.indexOf('Firefox')>-1;
+  var isSafari=/Safari/.test(navigator.userAgent)&&!/Chrome/.test(navigator.userAgent);
+  var steps;
+  if(isFF){steps=[t('stepTap'),t('stepWarn'),t('stepAdv'),t('stepAccept'),t('stepRetry')]}
+  else if(isSafari){steps=[t('stepTap'),t('stepWarn'),t('stepDetails'),t('stepVisit'),t('stepRetry')]}
+  else{steps=[t('stepTap'),t('stepWarn'),t('stepAdv'),t('stepProceed').replace('{0}',location.hostname),t('stepRetry')]}
   for(var i=0;i<steps.length;i++){var s=document.createElement('p');s.style.cssText='margin-bottom:8px;padding-left:8px';s.textContent=(i+1)+'. '+steps[i];c.appendChild(s)}
   var br=document.createElement('div');br.style.cssText='text-align:center;margin-top:20px';
-  var a1=document.createElement('a');a1.href=url;a1.textContent='Open Secure Page';a1.style.cssText='display:inline-block;background:#47f;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-size:18px;margin-bottom:16px';br.appendChild(a1);
+  var a1=document.createElement('a');a1.href=url;a1.textContent=t('openSecure');a1.style.cssText='display:inline-block;background:#47f;color:#fff;padding:14px 28px;border-radius:8px;text-decoration:none;font-size:18px;margin-bottom:16px';br.appendChild(a1);
   br.appendChild(document.createElement('br'));
-  var b2=document.createElement('button');b2.textContent='Cancel';b2.style.cssText='background:#333;color:#aaa;border:1px solid #555;padding:8px 20px;border-radius:6px;font-size:14px;cursor:pointer;margin-top:8px';b2.onclick=function(){d.remove()};br.appendChild(b2);
+  var b2=document.createElement('button');b2.textContent=t('cancel');b2.style.cssText='background:#333;color:#aaa;border:1px solid #555;padding:8px 20px;border-radius:6px;font-size:14px;cursor:pointer;margin-top:8px';b2.onclick=function(){d.remove()};br.appendChild(b2);
   c.appendChild(br);d.appendChild(c);document.body.appendChild(d);
 }
 
 document.addEventListener('visibilitychange',function(){
-  if(document.visibilityState==='visible'&&wakeActive){
-    if(!wakeLockObj)acquireWakeLock();
-    else if(window._noSleepAudio)window._noSleepAudio.play().catch(function(){});
-  }
+  if(document.visibilityState==='visible'&&wakeActive&&!wakeLockObj)acquireWakeLock();
 });
 
 /* Admin remote control */
-const adminPanel=document.getElementById('adminPanel');
-const adminStatus=document.getElementById('adminStatus');
+var adminPanel=document.getElementById('adminPanel');
+var adminStatus=document.getElementById('adminStatus');
 var adminPollTimer=null;
 function toggleAdmin(){
   if(adminPanel.style.display==='block'){adminPanel.style.display='none';if(adminPollTimer){clearInterval(adminPollTimer);adminPollTimer=null}}
   else{adminPanel.style.display='block';pollStatus();adminPollTimer=setInterval(pollStatus,3000)}
 }
 function sendCommand(action){
-  adminStatus.textContent='Sending...';
-  fetch('/api/control?action='+action).then(r=>r.json()).then(d=>{
-    adminStatus.textContent=action+' command sent';
+  adminStatus.textContent=t('sending');
+  fetch('/api/control?action='+action).then(function(r){return r.json()}).then(function(d){
+    adminStatus.textContent=action+t('cmdSent');
     setTimeout(pollStatus,1500);
-  }).catch(()=>adminStatus.textContent='Failed to send command');
+  }).catch(function(){adminStatus.textContent=t('cmdFail')});
 }
 function pollStatus(){
-  fetch('/api/control?action=status').then(r=>r.json()).then(d=>{
-    if(d.live){adminStatus.textContent='Live: RUNNING';adminStatus.style.color='#4f4'}
-    else if(d.sim){adminStatus.textContent='Simulation: RUNNING';adminStatus.style.color='#fa0'}
-    else{adminStatus.textContent='Status: STOPPED';adminStatus.style.color='#f44'}
-  }).catch(()=>{adminStatus.textContent='Unable to reach server';adminStatus.style.color='#888'});
+  fetch('/api/control?action=status').then(function(r){return r.json()}).then(function(d){
+    if(d.live){adminStatus.textContent=t('liveRun');adminStatus.style.color='#4f4'}
+    else if(d.sim){adminStatus.textContent=t('simRun');adminStatus.style.color='#fa0'}
+    else{adminStatus.textContent=t('stopped');adminStatus.style.color='#f44'}
+  }).catch(function(){adminStatus.textContent=t('noServer');adminStatus.style.color='#888'});
 }
+/* Apply i18n to HTML elements */
+document.title=t('title');
+status.textContent=t('connecting');
+document.getElementById('btnAdmin').title=t('remote');
+document.getElementById('btnSettings').title=t('settings');
+btnSpeak.title=t('readAloud');
+btnWake.title=t('keepScreen');
+document.getElementById('lblFont').textContent=t('font');
+document.getElementById('lblStyle').textContent=t('style');
+document.getElementById('lblColor').textContent=t('color');
+document.getElementById('btnBold').textContent=t('bold');
+document.getElementById('lblVoice').textContent=t('voice');
+document.getElementById('lblSpeed').textContent=t('speed');
+var rOpts=rateSelect.options;rOpts[0].textContent=t('slow');rOpts[1].textContent=t('normal');rOpts[2].textContent=t('fast');rOpts[3].textContent=t('vfast');
+adminStatus.textContent=t('checking');
+var admBtns=document.querySelectorAll('#adminPanel button');
+admBtns[0].innerHTML='&#9654; '+t('start');admBtns[1].innerHTML='&#9632; '+t('stop');
+admBtns[2].innerHTML='&#8635; '+t('restart');admBtns[3].innerHTML='&#9881; '+t('simulate');
 </script>
 </body>
 </html>").Replace("{{BG_COLOR}}", bg).Replace("{{FG_COLOR}}", fg)

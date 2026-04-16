@@ -107,11 +107,11 @@ The Live Translation tab provides real-time speech-to-text transcription from yo
 
 \pard\sa200\sl276\slmult1
 \fs24\b\cf2 Subtitle Server Tab\b0\cf0\fs20\par
-The Subtitle Server provides a web-based live caption overlay that can be viewed on any device (phone, tablet, second monitor) connected to the same network. When the server is running, it serves a web page that displays live transcription text via WebSocket, with an admin panel for remote control.\par
+The Subtitle Server provides a web-based live caption overlay that can be viewed on any device (phone, tablet, second monitor) connected to the same network. When the server is running, it serves a web page that displays live transcription text via WebSocket. The server runs on HTTP and also starts an HTTPS listener on the next port (e.g. 5081) to support the screen wake lock feature. New subtitle lines are briefly highlighted in yellow before fading to the chosen text colour.\par
 
 \b Server Settings\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Port\b0  \endash  The HTTP port the server listens on (default: 5080).\par
+\bullet\tab\b Port\b0  \endash  The HTTP port the server listens on (default: 5080). An HTTPS port is also opened automatically on port+1 (default: 5081) using a self-signed certificate.\par
 \bullet\tab\b Start / Stop / Restart Server\b0  \endash  Control the subtitle server.\par
 \bullet\tab\b Simulate\b0  \endash  Send sample text (John 3:16-18) to test the display without a live audio source.\par
 \bullet\tab\b Stop Sim\b0  \endash  Stop the simulation.\par
@@ -124,8 +124,17 @@ The Subtitle Server provides a web-based live caption overlay that can be viewed
 \bullet\tab\b Copy URL\b0  \endash  Copies the server URL to the clipboard so you can share it with other devices.\par
 
 \pard\sa200\sl276\slmult1
-\b Web Admin Panel\b0\par
-The served web page includes a gear icon button that opens an admin panel. From there you can remotely Start, Stop, Restart, or Simulate the live transcription without returning to the desktop application. The admin panel polls the server status every 3 seconds.\par
+\b Web Page Toolbar\b0\par
+The subtitle web page includes a toolbar in the top-right corner with the following buttons:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Remote Control\b0  (gear icon) \endash  Opens an admin panel to remotely Start, Stop, Restart, or Simulate the live transcription without returning to the desktop application. The panel polls the server status every 3 seconds.\par
+\bullet\tab\b Settings\b0  (Aa) \endash  Opens a settings panel to adjust font size, font family, bold, and text colour. Also includes voice selection and speed for the read-aloud feature. All preferences are saved locally in the browser.\par
+\bullet\tab\b Read Aloud\b0  (speaker icon) \endash  Toggles text-to-speech. When enabled, each new committed subtitle line is read aloud using the browser\rquote s speech synthesis. Voice and speed can be configured in the Settings panel.\par
+\bullet\tab\b Keep Screen On\b0  (light icon) \endash  Prevents the phone or tablet screen from dimming or locking. This uses the browser Wake Lock API, which requires a secure (HTTPS) connection. On first use from HTTP, a guided overlay explains how to accept the self-signed certificate warning in your browser (one-time setup). Once accepted, the screen stays on as long as the page is open.\par
+
+\pard\sa200\sl276\slmult1
+\b Localisation\b0\par
+The web page interface automatically detects the browser\rquote s language and displays all labels, buttons, and messages in the matching language. Supported languages: English, Spanish, French, German, Catalan, Portuguese, Japanese, and Chinese. If the browser language is not supported, English is used as a fallback.\par
 
 \fs24\b\cf2 Whisper Parameters Tab\b0\cf0\fs20\par
 Advanced settings for the whisper-cli speech recognition engine. These parameters apply to the batch processing modes only (not Live Translation). Most users can leave these at their defaults.\par

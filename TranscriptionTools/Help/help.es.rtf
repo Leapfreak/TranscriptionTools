@@ -107,11 +107,11 @@ La pesta\'f1a de Traducci\'f3n en Vivo proporciona transcripci\'f3n de voz a tex
 
 \pard\sa200\sl276\slmult1
 \fs24\b\cf2 Pesta\'f1a del Servidor de Subt\'edtulos\b0\cf0\fs20\par
-El Servidor de Subt\'edtulos proporciona una superposici\'f3n de subt\'edtulos en vivo basada en web que se puede ver en cualquier dispositivo (tel\'e9fono, tableta, segundo monitor) conectado a la misma red. Cuando el servidor est\'e1 en ejecuci\'f3n, sirve una p\'e1gina web que muestra el texto de transcripci\'f3n en vivo a trav\'e9s de WebSocket, con un panel de administraci\'f3n para control remoto.\par
+El Servidor de Subt\'edtulos proporciona una superposici\'f3n de subt\'edtulos en vivo basada en web que se puede ver en cualquier dispositivo (tel\'e9fono, tableta, segundo monitor) conectado a la misma red. Cuando el servidor est\'e1 en ejecuci\'f3n, sirve una p\'e1gina web que muestra el texto de transcripci\'f3n en vivo a trav\'e9s de WebSocket. El servidor funciona en HTTP y tambi\'e9n inicia un receptor HTTPS en el puerto siguiente (p. ej. 5081) para soportar la funci\'f3n de mantener la pantalla encendida. Las nuevas l\'edneas de subt\'edtulos se resaltan brevemente en amarillo antes de cambiar al color de texto elegido.\par
 
 \b Configuraci\'f3n del servidor\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Puerto\b0  \endash  El puerto HTTP en el que escucha el servidor (por defecto: 5080).\par
+\bullet\tab\b Puerto\b0  \endash  El puerto HTTP en el que escucha el servidor (por defecto: 5080). Un puerto HTTPS tambi\'e9n se abre autom\'e1ticamente en puerto+1 (por defecto: 5081) usando un certificado autofirmado.\par
 \bullet\tab\b Iniciar / Detener / Reiniciar Servidor\b0  \endash  Controlar el servidor de subt\'edtulos.\par
 \bullet\tab\b Simular\b0  \endash  Enviar texto de muestra (Juan 3:16-18) para probar la visualizaci\'f3n sin una fuente de audio en vivo.\par
 \bullet\tab\b Detener Sim\b0  \endash  Detener la simulaci\'f3n.\par
@@ -124,8 +124,17 @@ El Servidor de Subt\'edtulos proporciona una superposici\'f3n de subt\'edtulos e
 \bullet\tab\b Copiar URL\b0  \endash  Copia la URL del servidor al portapapeles para compartirla con otros dispositivos.\par
 
 \pard\sa200\sl276\slmult1
-\b Panel de administraci\'f3n web\b0\par
-La p\'e1gina web servida incluye un bot\'f3n con icono de engranaje que abre un panel de administraci\'f3n. Desde all\'ed puede iniciar, detener, reiniciar o simular remotamente la transcripci\'f3n en vivo sin volver a la aplicaci\'f3n de escritorio. El panel de administraci\'f3n consulta el estado del servidor cada 3 segundos.\par
+\b Barra de herramientas de la p\'e1gina web\b0\par
+La p\'e1gina web de subt\'edtulos incluye una barra de herramientas en la esquina superior derecha con los siguientes botones:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Control Remoto\b0  (icono de engranaje) \endash  Abre un panel de administraci\'f3n para iniciar, detener, reiniciar o simular remotamente la transcripci\'f3n en vivo sin volver a la aplicaci\'f3n de escritorio. El panel consulta el estado del servidor cada 3 segundos.\par
+\bullet\tab\b Ajustes\b0  (Aa) \endash  Abre un panel de ajustes para modificar el tama\'f1o de fuente, la familia tipogr\'e1fica, negrita y el color del texto. Tambi\'e9n incluye la selecci\'f3n de voz y velocidad para la funci\'f3n de lectura en voz alta. Todas las preferencias se guardan localmente en el navegador.\par
+\bullet\tab\b Leer en voz alta\b0  (icono de altavoz) \endash  Activa o desactiva la lectura en voz alta. Cuando est\'e1 activada, cada nueva l\'ednea de subt\'edtulos se lee en voz alta usando la s\'edntesis de voz del navegador. La voz y la velocidad se configuran en el panel de Ajustes.\par
+\bullet\tab\b Mantener pantalla encendida\b0  (icono de luz) \endash  Evita que la pantalla del tel\'e9fono o tableta se aten\'fae o bloquee. Utiliza la API Wake Lock del navegador, que requiere una conexi\'f3n segura (HTTPS). En el primer uso desde HTTP, una gu\'eda explica c\'f3mo aceptar la advertencia del certificado autofirmado en su navegador (configuraci\'f3n \'fanica). Una vez aceptado, la pantalla permanece encendida mientras la p\'e1gina est\'e9 abierta.\par
+
+\pard\sa200\sl276\slmult1
+\b Localizaci\'f3n\b0\par
+La interfaz de la p\'e1gina web detecta autom\'e1ticamente el idioma del navegador y muestra todas las etiquetas, botones y mensajes en el idioma correspondiente. Idiomas soportados: ingl\'e9s, espa\'f1ol, franc\'e9s, alem\'e1n, catal\'e1n, portugu\'e9s, japon\'e9s y chino. Si el idioma del navegador no est\'e1 soportado, se utiliza el ingl\'e9s como idioma predeterminado.\par
 
 \fs24\b\cf2 Pesta\'f1a de Par\'e1metros Whisper\b0\cf0\fs20\par
 Configuraci\'f3n avanzada para el motor de reconocimiento de voz whisper-cli. Estos par\'e1metros se aplican solo a los modos de procesamiento por lotes (no a la Traducci\'f3n en Vivo). La mayor\'eda de usuarios pueden dejar estos valores por defecto.\par

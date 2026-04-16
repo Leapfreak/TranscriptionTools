@@ -107,11 +107,11 @@ La pestanya de Traducci\'f3 en Directe proporciona transcripci\'f3 de veu a text
 
 \pard\sa200\sl276\slmult1
 \fs24\b\cf2 Pestanya del Servidor de Subt\'edtols\b0\cf0\fs20\par
-El Servidor de Subt\'edtols proporciona una superposici\'f3 de subt\'edtols en directe basada en web que es pot veure en qualsevol dispositiu (tel\'e8fon, tauleta, segon monitor) connectat a la mateixa xarxa. Quan el servidor est\'e0 en execuci\'f3, serveix una p\'e0gina web que mostra el text de transcripci\'f3 en directe a trav\'e9s de WebSocket, amb un panell d'administraci\'f3 per al control remot.\par
+El Servidor de Subt\'edtols proporciona una superposici\'f3 de subt\'edtols en directe basada en web que es pot veure en qualsevol dispositiu (tel\'e8fon, tauleta, segon monitor) connectat a la mateixa xarxa. Quan el servidor est\'e0 en execuci\'f3, serveix una p\'e0gina web que mostra el text de transcripci\'f3 en directe a trav\'e9s de WebSocket. El servidor funciona en HTTP i tamb\'e9 inicia un receptor HTTPS al port seg\'fcent (p. ex. 5081) per suportar la funci\'f3 de mantenir la pantalla encesa. Les noves l\'ednies de subt\'edtols es ressalten breument en groc abans de canviar al color de text triat.\par
 
 \b Configuraci\'f3 del servidor\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Port\b0  \endash  El port HTTP en qu\'e8 escolta el servidor (per defecte: 5080).\par
+\bullet\tab\b Port\b0  \endash  El port HTTP en qu\'e8 escolta el servidor (per defecte: 5080). Un port HTTPS tamb\'e9 s'obre autom\'e0ticament a port+1 (per defecte: 5081) utilitzant un certificat autofirmat.\par
 \bullet\tab\b Iniciar / Aturar / Reiniciar Servidor\b0  \endash  Controlar el servidor de subt\'edtols.\par
 \bullet\tab\b Simular\b0  \endash  Enviar text de mostra (Joan 3:16-18) per provar la visualitzaci\'f3 sense una font d'\'e0udio en directe.\par
 \bullet\tab\b Aturar Sim\b0  \endash  Aturar la simulaci\'f3.\par
@@ -124,8 +124,17 @@ El Servidor de Subt\'edtols proporciona una superposici\'f3 de subt\'edtols en d
 \bullet\tab\b Copiar URL\b0  \endash  Copia la URL del servidor al porta-retalls per compartir-la amb altres dispositius.\par
 
 \pard\sa200\sl276\slmult1
-\b Panell d'administraci\'f3 web\b0\par
-La p\'e0gina web servida inclou un bot\'f3 amb icona d'engranatge que obre un panell d'administraci\'f3. Des d'all\'e0 podeu iniciar, aturar, reiniciar o simular remotament la transcripci\'f3 en directe sense tornar a l'aplicaci\'f3 d'escriptori. El panell d'administraci\'f3 consulta l'estat del servidor cada 3 segons.\par
+\b Barra d'eines de la p\'e0gina web\b0\par
+La p\'e0gina web de subt\'edtols inclou una barra d'eines a la cantonada superior dreta amb els seg\'fcents botons:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Control Remot\b0  (icona d'engranatge) \endash  Obre un panell d'administraci\'f3 per iniciar, aturar, reiniciar o simular remotament la transcripci\'f3 en directe sense tornar a l'aplicaci\'f3 d'escriptori. El panell consulta l'estat del servidor cada 3 segons.\par
+\bullet\tab\b Ajustos\b0  (Aa) \endash  Obre un panell d'ajustos per modificar la mida de la lletra, la fam\'edlia tipogr\'e0fica, negreta i el color del text. Tamb\'e9 inclou la selecci\'f3 de veu i velocitat per a la funci\'f3 de lectura en veu alta. Totes les prefer\'e8ncies es desen localment al navegador.\par
+\bullet\tab\b Llegir en veu alta\b0  (icona d'altaveu) \endash  Activa o desactiva la lectura en veu alta. Quan est\'e0 activada, cada nova l\'ednia de subt\'edtols es llegeix en veu alta utilitzant la s\'edntesi de veu del navegador. La veu i la velocitat es configuren al panell d'Ajustos.\par
+\bullet\tab\b Mantenir pantalla encesa\b0  (icona de llum) \endash  Evita que la pantalla del tel\'e8fon o tauleta s'aten\'fci o es bloquegi. Utilitza l'API Wake Lock del navegador, que requereix una connexi\'f3 segura (HTTPS). En el primer \'fas des d'HTTP, una guia explica com acceptar l'av\'eds del certificat autofirmat al navegador (configuraci\'f3 \'fanica). Un cop acceptat, la pantalla roman encesa mentre la p\'e0gina estigui oberta.\par
+
+\pard\sa200\sl276\slmult1
+\b Localitzaci\'f3\b0\par
+La interf\'edcie de la p\'e0gina web detecta autom\'e0ticament l'idioma del navegador i mostra totes les etiquetes, botons i missatges en l'idioma corresponent. Idiomes suportats: angl\'e8s, castell\'e0, franc\'e8s, alemany, catal\'e0, portugu\'e8s, japon\'e8s i xin\'e8s. Si l'idioma del navegador no est\'e0 suportat, s'utilitza l'angl\'e8s com a idioma predeterminat.\par
 
 \fs24\b\cf2 Pestanya de Par\'e0metres Whisper\b0\cf0\fs20\par
 Configuraci\'f3 avan\'e7ada per al motor de reconeixement de veu whisper-cli. Aquests par\'e0metres s'apliquen nom\'e9s als modes de processament per lots (no a la Traducci\'f3 en Directe). La majoria d'usuaris poden deixar aquests valors per defecte.\par
