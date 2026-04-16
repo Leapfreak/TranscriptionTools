@@ -217,6 +217,8 @@ Namespace Pipeline
                     If ctx.Request.IsWebSocketRequest Then
                         ' WebSocket upgrade (fire-and-forget per client)
                         Dim unused = Task.Run(Sub() HandleWebSocket(ctx, ct), ct)
+                    ElseIf ctx.Request.Url.AbsolutePath = "/nosleep.mp4" Then
+                        ServeNoSleepVideo(ctx)
                     ElseIf ctx.Request.Url.AbsolutePath.StartsWith("/api/control") Then
                         HandleApiControl(ctx)
                     Else
@@ -322,6 +324,193 @@ Namespace Pipeline
             End Try
         End Sub
 
+        Private Sub ServeNoSleepVideo(ctx As HttpListenerContext)
+            Dim mp4 = BuildSilentMp4()
+            ctx.Response.ContentType = "video/mp4"
+            ctx.Response.ContentLength64 = mp4.Length
+            Try
+                ctx.Response.OutputStream.Write(mp4, 0, mp4.Length)
+                ctx.Response.OutputStream.Close()
+            Catch
+            End Try
+        End Sub
+
+        Private Shared Function BuildSilentMp4() As Byte()
+            ' Build a minimal valid MP4 with a 1-second silent audio track
+            Using ms As New MemoryStream()
+                Using w As New BinaryWriter(ms)
+                    ' ftyp box
+                    WriteBox(w, "ftyp", Sub()
+                        w.Write(ToBytes("isom"))       ' major brand
+                        w.Write(BEInt(512))            ' minor version
+                        w.Write(ToBytes("isomiso2mp41")) ' compatible brands
+                    End Sub)
+
+                    ' mdat box (empty)
+                    WriteBox(w, "mdat", Nothing)
+
+                    ' Build moov from inside out
+                    Dim stsd = FullBox("stsd", 0, 0, Sub()
+                        w.Write(BEInt(1))  ' entry count
+                        ' mp4a sample entry
+                        WriteBox(w, "mp4a", Sub()
+                            w.Write(New Byte(5) {})       ' reserved
+                            w.Write(BEShort(1))           ' data_reference_index
+                            w.Write(New Byte(7) {})       ' reserved
+                            w.Write(BEShort(1))           ' channel count
+                            w.Write(BEShort(16))          ' sample size
+                            w.Write(BEShort(0))           ' pre_defined
+                            w.Write(BEShort(0))           ' reserved
+                            w.Write(BEInt(&HAC440000))    ' sample rate 44100 (16.16 fixed)
+                        End Sub)
+                    End Sub)
+
+                    Dim stts = FullBox("stts", 0, 0, Sub() w.Write(BEInt(0)))
+                    Dim stsc = FullBox("stsc", 0, 0, Sub() w.Write(BEInt(0)))
+                    Dim stsz = FullBox("stsz", 0, 0, Sub()
+                        w.Write(BEInt(0))  ' sample size
+                        w.Write(BEInt(0))  ' sample count
+                    End Sub)
+                    Dim stco = FullBox("stco", 0, 0, Sub() w.Write(BEInt(0)))
+
+                    Dim smhd = FullBox("smhd", 0, 0, Sub()
+                        w.Write(BEShort(0))  ' balance
+                        w.Write(BEShort(0))  ' reserved
+                    End Sub)
+
+                    Dim drefUrl = FullBox("url ", 0, 1, Nothing) ' flag 1 = self-contained
+                    Dim dref = FullBox("dref", 0, 0, Sub()
+                        w.Write(BEInt(1)) ' entry count
+                        w.Write(drefUrl)
+                    End Sub)
+                    Dim dinf = ContainerBox("dinf", dref)
+                    Dim stbl = ContainerBox("stbl", stsd, stts, stsc, stsz, stco)
+                    Dim minf = ContainerBox("minf", smhd, dinf, stbl)
+
+                    Dim mdhd = FullBox("mdhd", 0, 0, Sub()
+                        w.Write(BEInt(0))       ' creation time
+                        w.Write(BEInt(0))       ' modification time
+                        w.Write(BEInt(1000))    ' timescale
+                        w.Write(BEInt(1000))    ' duration (1 second)
+                        w.Write(BEShort(&H55C4)) ' language (undetermined)
+                        w.Write(BEShort(0))     ' pre_defined
+                    End Sub)
+
+                    Dim hdlr = FullBox("hdlr", 0, 0, Sub()
+                        w.Write(BEInt(0))              ' pre_defined
+                        w.Write(ToBytes("soun"))       ' handler type
+                        w.Write(New Byte(11) {})       ' reserved
+                        w.Write(Encoding.ASCII.GetBytes("SoundHandler"))
+                        w.Write(CByte(0))              ' null terminator
+                    End Sub)
+
+                    Dim mdia = ContainerBox("mdia", mdhd, hdlr, minf)
+
+                    Dim tkhd = FullBox("tkhd", 0, 3, Sub() ' flags: enabled+in_movie
+                        w.Write(BEInt(0))       ' creation time
+                        w.Write(BEInt(0))       ' modification time
+                        w.Write(BEInt(1))       ' track ID
+                        w.Write(BEInt(0))       ' reserved
+                        w.Write(BEInt(1000))    ' duration
+                        w.Write(New Byte(7) {}) ' reserved
+                        w.Write(BEShort(0))     ' layer
+                        w.Write(BEShort(0))     ' alternate group
+                        w.Write(BEShort(&H100)) ' volume (1.0 fixed 8.8)
+                        w.Write(BEShort(0))     ' reserved
+                        ' identity matrix
+                        w.Write(BEInt(&H10000)) : w.Write(BEInt(0)) : w.Write(BEInt(0))
+                        w.Write(BEInt(0)) : w.Write(BEInt(&H10000)) : w.Write(BEInt(0))
+                        w.Write(BEInt(0)) : w.Write(BEInt(0)) : w.Write(BEInt(&H40000000))
+                        w.Write(BEInt(0))       ' width
+                        w.Write(BEInt(0))       ' height
+                    End Sub)
+
+                    Dim trak = ContainerBox("trak", tkhd, mdia)
+
+                    Dim mvhd = FullBox("mvhd", 0, 0, Sub()
+                        w.Write(BEInt(0))       ' creation time
+                        w.Write(BEInt(0))       ' modification time
+                        w.Write(BEInt(1000))    ' timescale
+                        w.Write(BEInt(1000))    ' duration
+                        w.Write(BEInt(&H10000)) ' rate (1.0 fixed 16.16)
+                        w.Write(BEShort(&H100)) ' volume (1.0 fixed 8.8)
+                        w.Write(New Byte(9) {}) ' reserved
+                        ' identity matrix
+                        w.Write(BEInt(&H10000)) : w.Write(BEInt(0)) : w.Write(BEInt(0))
+                        w.Write(BEInt(0)) : w.Write(BEInt(&H10000)) : w.Write(BEInt(0))
+                        w.Write(BEInt(0)) : w.Write(BEInt(0)) : w.Write(BEInt(&H40000000))
+                        w.Write(New Byte(23) {}) ' pre_defined
+                        w.Write(BEInt(2))        ' next track ID
+                    End Sub)
+
+                    ' Write moov container
+                    WriteBox(w, "moov", Sub()
+                        w.Write(mvhd)
+                        w.Write(trak)
+                    End Sub)
+                End Using
+                Return ms.ToArray()
+            End Using
+        End Function
+
+        ' ---- MP4 box helpers ----
+
+        Private Shared Function BEInt(value As Integer) As Byte()
+            Dim b = BitConverter.GetBytes(value)
+            If BitConverter.IsLittleEndian Then Array.Reverse(b)
+            Return b
+        End Function
+
+        Private Shared Function BEShort(value As Short) As Byte()
+            Dim b = BitConverter.GetBytes(value)
+            If BitConverter.IsLittleEndian Then Array.Reverse(b)
+            Return b
+        End Function
+
+        Private Shared Function ToBytes(fourCC As String) As Byte()
+            Return Encoding.ASCII.GetBytes(fourCC)
+        End Function
+
+        Private Shared Sub WriteBox(w As BinaryWriter, boxType As String, writeContent As Action)
+            Dim startPos = w.BaseStream.Position
+            w.Write(BEInt(0))           ' placeholder for size
+            w.Write(ToBytes(boxType))
+            writeContent?.Invoke()
+            Dim endPos = w.BaseStream.Position
+            Dim size = CInt(endPos - startPos)
+            w.BaseStream.Position = startPos
+            w.Write(BEInt(size))
+            w.BaseStream.Position = endPos
+        End Sub
+
+        Private Shared Function FullBox(boxType As String, version As Byte, flags As Integer, writeContent As Action) As Byte()
+            Using ms As New MemoryStream()
+                Using w As New BinaryWriter(ms)
+                    WriteBox(w, boxType, Sub()
+                        w.Write(CByte(version))
+                        Dim fb = BitConverter.GetBytes(flags)
+                        If BitConverter.IsLittleEndian Then Array.Reverse(fb)
+                        w.Write(fb, 1, 3) ' 3 bytes of flags
+                        writeContent?.Invoke()
+                    End Sub)
+                End Using
+                Return ms.ToArray()
+            End Using
+        End Function
+
+        Private Shared Function ContainerBox(boxType As String, ParamArray children As Byte()()) As Byte()
+            Using ms As New MemoryStream()
+                Using w As New BinaryWriter(ms)
+                    WriteBox(w, boxType, Sub()
+                        For Each child In children
+                            w.Write(child)
+                        Next
+                    End Sub)
+                End Using
+                Return ms.ToArray()
+            End Using
+        End Function
+
         Private Sub ServeHtml(ctx As HttpListenerContext)
             Dim html = GetHtmlPage()
             Dim buffer = Encoding.UTF8.GetBytes(html)
@@ -354,7 +543,7 @@ body{background:{{BG_COLOR}};color:{{FG_COLOR}};font-family:'Segoe UI',Arial,san
 #lines{display:flex;flex-direction:column;min-height:100%}
 #spacer{flex:1}
 .line{font-size:28px;line-height:1.4;padding:4px 0;color:{{FG_COLOR}};word-wrap:break-word}
-.line.in-progress{color:#ff6b6b;opacity:0.85}
+.line.in-progress{color:#ff6b6b !important;opacity:0.85}
 .line.new-line{color:#ffdd57 !important}
 #toolbar{position:fixed;top:0;right:0;padding:8px;z-index:10;display:flex;gap:4px}
 #toolbar button{background:#222;color:#aaa;border:1px solid #444;border-radius:4px;
@@ -496,11 +685,6 @@ container.addEventListener('scroll',function(){
 });
 function scrollBottom(){if(!userScrolled){container.scrollTop=container.scrollHeight}}
 function styleEl(el,inProgress){el.style.fontSize=fontSize+'px';el.style.fontFamily=fontFamily;el.style.fontWeight=isBold?'bold':'normal';if(!inProgress&&!el.classList.contains('new-line'))el.style.color=textColor}
-var highlightedEls=[];
-function fadeAllHighlighted(){
-  for(var i=0;i<highlightedEls.length;i++){highlightedEls[i].classList.remove('new-line')}
-  highlightedEls=[];
-}
 function addCommitted(text){
   var el;
   if(currentEl){el=currentEl;currentEl=null}
@@ -508,13 +692,13 @@ function addCommitted(text){
   el.textContent=text;
   el.className='line new-line';
   styleEl(el,false);
-  highlightedEls.push(el);
+  setTimeout(function(){el.classList.remove('new-line')},5000);
   scrollBottom();
   while(lines.children.length>201){lines.removeChild(lines.children[1])}
   speak(text);
 }
 function updateCurrent(text){
-  if(!currentEl){fadeAllHighlighted();currentEl=document.createElement('div');currentEl.className='line in-progress';styleEl(currentEl,true);lines.appendChild(currentEl)}
+  if(!currentEl){currentEl=document.createElement('div');currentEl.className='line in-progress';styleEl(currentEl,true);lines.appendChild(currentEl)}
   currentEl.textContent=text;
   scrollBottom()
 }
@@ -533,38 +717,24 @@ function connect(){
 }
 connect();
 
-/* Keep screen on (mobile) */
-var noSleepCtx=null;var noSleepSource=null;var noSleepTimer=null;
+/* Keep screen on (mobile) - plays a tiny silent video on loop */
+var noSleepVideo=null;
 function enableNoSleep(){
-  if(noSleepCtx)return;
-  try{
-    noSleepCtx=new(window.AudioContext||window.webkitAudioContext)();
-    /* Create silent oscillator to keep audio session alive */
-    noSleepSource=noSleepCtx.createOscillator();
-    var gain=noSleepCtx.createGain();
-    gain.gain.value=0.001;
-    noSleepSource.connect(gain);gain.connect(noSleepCtx.destination);
-    noSleepSource.start(0);
-    /* Also toggle a hidden video to cover all browsers */
-    var v=document.createElement('video');
-    v.setAttribute('playsinline','');v.setAttribute('webkit-playsinline','');
-    v.muted=true;v.loop=true;
-    v.style.cssText='position:fixed;top:-1px;left:-1px;width:1px;height:1px;opacity:0.01';
-    /* Create a tiny MediaSource blob as video src */
-    if(window.MediaSource){
-      try{
-        var ms=new MediaSource();v.src=URL.createObjectURL(ms);
-        ms.addEventListener('sourceopen',function(){try{ms.endOfStream()}catch(e){}});
-      }catch(e){v.src='about:blank'}
-    }
-    document.body.appendChild(v);
-    v.play().catch(function(){});
-  }catch(e){}
+  if(noSleepVideo)return;
+  noSleepVideo=document.createElement('video');
+  noSleepVideo.setAttribute('playsinline','');
+  noSleepVideo.setAttribute('webkit-playsinline','');
+  noSleepVideo.muted=true;
+  noSleepVideo.loop=true;
+  noSleepVideo.style.cssText='position:fixed;top:-1px;left:-1px;width:1px;height:1px;opacity:0.01';
+  noSleepVideo.src='/nosleep.mp4';
+  document.body.appendChild(noSleepVideo);
+  noSleepVideo.play().catch(function(){});
 }
 document.addEventListener('click',enableNoSleep,{once:true});
 document.addEventListener('touchstart',enableNoSleep,{once:true});
 document.addEventListener('visibilitychange',function(){
-  if(document.visibilityState==='visible'&&noSleepCtx&&noSleepCtx.state==='suspended')noSleepCtx.resume().catch(function(){});
+  if(document.visibilityState==='visible'&&noSleepVideo)noSleepVideo.play().catch(function(){});
 });
 
 /* Admin remote control */
