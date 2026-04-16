@@ -1952,7 +1952,9 @@ del ""%~f0""
             _subtitleServer.Start(port, _config.AllowFirewall)
             UpdateServerUi(True)
             AppendServerLog($"Subtitle server started on port {port}")
-            AppendServerLog($"Phones should open: http://{GetLocalIpAddress()}:{port}")
+            Dim localIp = GetLocalIpAddress()
+            AppendServerLog($"Phones should open: https://{localIp}:{_subtitleServer.HttpsPort}")
+            AppendServerLog($"(Accept the certificate warning on first visit)")
         Catch ex As Exception
             AppendServerLog($"ERROR: {ex.Message}")
             AppendServerLog("Tip: Try running as Administrator, or use a different port.")
@@ -2180,9 +2182,11 @@ del ""%~f0""
 
     Private Shared Sub EnsureFirewallRule(port As Integer)
         Const ruleName As String = "TranscriptionTools Subtitle Server"
+        Dim httpsPort = port + 1
 
-        ' Build a single command that deletes the old rule then adds the new one
-        Dim cmd = $"advfirewall firewall delete rule name=""{ruleName}"" & netsh advfirewall firewall add rule name=""{ruleName}"" dir=in action=allow protocol=TCP localport={port}"
+        ' Build a single command that deletes old rules then adds new ones (HTTP + HTTPS)
+        Dim cmd = $"advfirewall firewall delete rule name=""{ruleName}"" & " &
+                  $"netsh advfirewall firewall add rule name=""{ruleName}"" dir=in action=allow protocol=TCP localport={port},{httpsPort}"
 
         ' First try without elevation
         Try
@@ -2202,7 +2206,8 @@ del ""%~f0""
 
         ' Non-elevated failed — try with UAC elevation via cmd /c
         Try
-            Dim fullCmd = $"/c netsh advfirewall firewall delete rule name=""{ruleName}"" & netsh advfirewall firewall add rule name=""{ruleName}"" dir=in action=allow protocol=TCP localport={port}"
+            Dim fullCmd = $"/c netsh advfirewall firewall delete rule name=""{ruleName}"" & " &
+                          $"netsh advfirewall firewall add rule name=""{ruleName}"" dir=in action=allow protocol=TCP localport={port},{httpsPort}"
             Dim psi As New ProcessStartInfo() With {
                 .FileName = "cmd.exe",
                 .Arguments = fullCmd,
