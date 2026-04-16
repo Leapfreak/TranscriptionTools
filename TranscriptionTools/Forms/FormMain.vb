@@ -196,29 +196,45 @@ Public Class FormMain
         Dim update = Await Models.UpdateChecker.CheckForUpdateAsync()
         If update Is Nothing Then Return
 
-        If String.IsNullOrWhiteSpace(update.InstallerUrl) Then
-            ' No installer asset found — fall back to opening the release page
-            Dim result = MessageBox.Show(
-                $"{GetString("Msg_NewVersionAvailable")} {update.TagName}" & vbCrLf & vbCrLf &
-                GetString("Msg_DownloadUpdate"),
-                GetString("Msg_UpdateAvailable"),
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Information)
-            If result = DialogResult.Yes Then
-                Process.Start(New ProcessStartInfo(update.HtmlUrl) With {.UseShellExecute = True})
-            End If
-            Return
-        End If
+        ' Try modular (app-only) update first, fall back to full installer
+        Dim canModularUpdate = Not String.IsNullOrWhiteSpace(update.AppZipUrl)
+        Dim needsWhisper = update.NeedsWhisperUpdate AndAlso Not String.IsNullOrWhiteSpace(update.WhisperZipUrl)
+
+        Dim updateDesc = If(canModularUpdate AndAlso Not needsWhisper,
+            "A small app update is available.",
+            "An update is available.")
 
         Dim confirm = MessageBox.Show(
             $"{GetString("Msg_NewVersionAvailable")} {update.TagName}" & vbCrLf & vbCrLf &
-            GetString("Msg_DownloadUpdate"),
+            updateDesc & vbCrLf & GetString("Msg_DownloadUpdate"),
             GetString("Msg_UpdateAvailable"),
             MessageBoxButtons.YesNo,
             MessageBoxIcon.Information)
         If confirm <> DialogResult.Yes Then Return
 
-        ' Download installer to temp folder
+        ' Modular update: download zips and extract in-place
+        If canModularUpdate Then
+            Try
+                Await ApplyModularUpdateAsync(update)
+                Return
+            Catch ex As Exception
+                ' Modular update failed — fall back to installer
+                If String.IsNullOrWhiteSpace(update.InstallerUrl) Then
+                    MessageBox.Show($"Update failed: {ex.Message}" & vbCrLf & vbCrLf &
+                                   "Opening release page instead.",
+                                   GetString("Msg_Error"), MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                    Process.Start(New ProcessStartInfo(update.HtmlUrl) With {.UseShellExecute = True})
+                    Return
+                End If
+            End Try
+        End If
+
+        ' Full installer fallback
+        If String.IsNullOrWhiteSpace(update.InstallerUrl) Then
+            Process.Start(New ProcessStartInfo(update.HtmlUrl) With {.UseShellExecute = True})
+            Return
+        End If
+
         Try
             Dim tempPath = Path.Combine(Path.GetTempPath(), $"TranscriptionTools_Setup_{update.TagName}.exe")
             Using client As New Net.Http.HttpClient()
@@ -231,7 +247,6 @@ Public Class FormMain
                 End Using
             End Using
 
-            ' Launch installer and exit
             Process.Start(New ProcessStartInfo(tempPath) With {.UseShellExecute = True})
             _exitForReal = True
             Application.Exit()
@@ -242,6 +257,74 @@ Public Class FormMain
             Process.Start(New ProcessStartInfo(update.HtmlUrl) With {.UseShellExecute = True})
         End Try
     End Sub
+
+    Private Async Function ApplyModularUpdateAsync(update As Models.UpdateInfo) As Task
+        Dim appDir = AppDomain.CurrentDomain.BaseDirectory
+        Dim tempDir = Path.Combine(Path.GetTempPath(), $"TranscriptionTools_Update_{update.TagName}")
+
+        If Directory.Exists(tempDir) Then Directory.Delete(tempDir, True)
+        Directory.CreateDirectory(tempDir)
+
+        Using client As New Net.Http.HttpClient()
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("TranscriptionTools-Updater")
+            client.Timeout = TimeSpan.FromMinutes(10)
+
+            ' Download app zip
+            Dim appZipPath = Path.Combine(tempDir, "app.zip")
+            Using response = Await client.GetAsync(update.AppZipUrl)
+                response.EnsureSuccessStatusCode()
+                Using fs As New FileStream(appZipPath, FileMode.Create, FileAccess.Write, FileShare.None)
+                    Await response.Content.CopyToAsync(fs)
+                End Using
+            End Using
+
+            ' Download whisper zip if needed
+            Dim whisperZipPath = ""
+            If update.NeedsWhisperUpdate AndAlso Not String.IsNullOrWhiteSpace(update.WhisperZipUrl) Then
+                whisperZipPath = Path.Combine(tempDir, "whisper.zip")
+                Using response = Await client.GetAsync(update.WhisperZipUrl)
+                    response.EnsureSuccessStatusCode()
+                    Using fs As New FileStream(whisperZipPath, FileMode.Create, FileAccess.Write, FileShare.None)
+                        Await response.Content.CopyToAsync(fs)
+                    End Using
+                End Using
+            End If
+
+            ' Write a batch script that waits for us to exit, extracts, and relaunches
+            Dim batchPath = Path.Combine(tempDir, "apply-update.cmd")
+            Dim exeName = Path.GetFileName(Application.ExecutablePath)
+            Dim whisperExtract = ""
+            If Not String.IsNullOrEmpty(whisperZipPath) Then
+                whisperExtract = $"powershell -NoProfile -Command ""Expand-Archive -Path '{whisperZipPath}' -DestinationPath '{appDir}whisper' -Force""" & vbCrLf
+            End If
+
+            Dim batchContent = $"@echo off
+echo Waiting for Transcription Tools to close...
+:wait
+tasklist /FI ""PID eq %1"" 2>NUL | find ""%1"" >NUL
+if not errorlevel 1 (
+    timeout /t 1 /nobreak >NUL
+    goto wait
+)
+echo Applying update...
+powershell -NoProfile -Command ""Expand-Archive -Path '{appZipPath}' -DestinationPath '{appDir}' -Force""
+{whisperExtract}echo Update complete. Launching...
+start """" ""{Path.Combine(appDir, exeName)}""
+del ""%~f0""
+"
+            IO.File.WriteAllText(batchPath, batchContent)
+
+            ' Launch the batch script with our PID, then exit
+            Dim myPid = Process.GetCurrentProcess().Id
+            Process.Start(New ProcessStartInfo("cmd.exe", $"/c ""{batchPath}"" {myPid}") With {
+                .CreateNoWindow = True,
+                .UseShellExecute = False
+            })
+
+            _exitForReal = True
+            Application.Exit()
+        End Using
+    End Function
 
     Private Async Sub CheckDependenciesAsync(Optional manualCheck As Boolean = False)
         Try

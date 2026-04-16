@@ -115,6 +115,13 @@ jobs:
           Write-Host "Whisper binaries:"
           Get-ChildItem "whisper-bin"
 
+      - name: Write component versions
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart("v")
+          $json = @{ app = $version; whisper = "1.8.4-cuda12.4-v2" } | ConvertTo-Json
+          Set-Content -Path "TranscriptionTools/bin/Publish/component-versions.json" -Value $json
+
       - name: Install Inno Setup
         run: choco install innosetup -y
 
@@ -124,11 +131,40 @@ jobs:
           $env:APP_VERSION = "${{ github.ref_name }}".TrimStart("v")
           iscc setup.iss
 
-      - name: Create Zip
+      - name: Create Zips and Manifest
+        shell: pwsh
         run: |
+          $version = "${{ github.ref_name }}".TrimStart("v")
+          $whisperVersion = "1.8.4-cuda12.4-v2"
+
+          # Full zip (installer alternative)
           New-Item -ItemType Directory -Force -Path "TranscriptionTools/bin/Publish/whisper"
           Copy-Item -Path "whisper-bin/*" -Destination "TranscriptionTools/bin/Publish/whisper/" -Force
           Compress-Archive -Path TranscriptionTools/bin/Publish/* -DestinationPath "Output/TranscriptionTools_${{ github.ref_name }}.zip"
+
+          # App-only zip (everything except whisper/ subdir)
+          $appStage = "app-stage"
+          New-Item -ItemType Directory -Force -Path $appStage
+          Get-ChildItem "TranscriptionTools/bin/Publish" -Exclude "whisper" | Copy-Item -Destination $appStage -Recurse -Force
+          Compress-Archive -Path "$appStage/*" -DestinationPath "Output/TranscriptionTools_App_${{ github.ref_name }}.zip"
+
+          # Whisper-only zip
+          Compress-Archive -Path whisper-bin/* -DestinationPath "Output/TranscriptionTools_Whisper_${{ github.ref_name }}.zip"
+
+          # Manifest
+          $manifest = @{
+            app = $version
+            whisper = $whisperVersion
+            files = @{
+              full = "TranscriptionTools_${{ github.ref_name }}.zip"
+              app = "TranscriptionTools_App_${{ github.ref_name }}.zip"
+              whisper = "TranscriptionTools_Whisper_${{ github.ref_name }}.zip"
+              installer = "TranscriptionTools_Setup_${version}.exe"
+            }
+          } | ConvertTo-Json
+          Set-Content -Path "Output/manifest.json" -Value $manifest
+          Write-Host "Manifest:"
+          Write-Host $manifest
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -137,3 +173,6 @@ jobs:
           files: |
             Output/TranscriptionTools_Setup_*.exe
             Output/TranscriptionTools_${{ github.ref_name }}.zip
+            Output/TranscriptionTools_App_${{ github.ref_name }}.zip
+            Output/TranscriptionTools_Whisper_${{ github.ref_name }}.zip
+            Output/manifest.json

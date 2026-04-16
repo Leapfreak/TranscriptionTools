@@ -53,6 +53,7 @@ Source: "{#AppPublishDir}\TranscriptionTools.exe"; DestDir: "{app}"; Flags: igno
 Source: "{#AppPublishDir}\TranscriptionTools.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#AppPublishDir}\TranscriptionTools.deps.json"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#AppPublishDir}\TranscriptionTools.runtimeconfig.json"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#AppPublishDir}\component-versions.json"; DestDir: "{app}"; Flags: ignoreversion
 ; Help files
 Source: "{#AppPublishDir}\Help\*"; DestDir: "{app}\Help"; Flags: ignoreversion recursesubdirs
 ; --- Whisper CUDA binaries ---
