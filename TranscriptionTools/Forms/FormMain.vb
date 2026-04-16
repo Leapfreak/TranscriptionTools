@@ -381,6 +381,8 @@ Public Class FormMain
         _config.PathOutputRoot = toolsDir
         Models.ConfigManager.Save(_config)
         LoadConfigToUi()
+        PopulateModelDropdown()
+        PopulateLiveModelDropdown()
     End Sub
 
     Private Sub btnCheckToolUpdates_Click(sender As Object, e As EventArgs) Handles btnCheckToolUpdates.Click

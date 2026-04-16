@@ -497,8 +497,9 @@ container.addEventListener('scroll',function(){
 function scrollBottom(){if(!userScrolled){container.scrollTop=container.scrollHeight}}
 function styleEl(el,inProgress){el.style.fontSize=fontSize+'px';el.style.fontFamily=fontFamily;el.style.fontWeight=isBold?'bold':'normal';if(!inProgress)el.style.color=textColor}
 var lastCommittedEl=null;
+function fadeOut(el){requestAnimationFrame(function(){el.style.color=textColor;el.classList.remove('new-line')})}
 function addCommitted(text){
-  if(lastCommittedEl){lastCommittedEl.style.color=textColor;lastCommittedEl.classList.remove('new-line');lastCommittedEl=null}
+  if(lastCommittedEl){fadeOut(lastCommittedEl);lastCommittedEl=null}
   var el;
   if(currentEl){el=currentEl;el.textContent=text;el.className='line new-line';currentEl=null}
   else{el=document.createElement('div');el.className='line new-line';el.textContent=text;lines.appendChild(el)}
