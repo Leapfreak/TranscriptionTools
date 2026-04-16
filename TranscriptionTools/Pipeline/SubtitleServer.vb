@@ -1,6 +1,8 @@
 Imports System.Collections.Concurrent
 Imports System.IO
 Imports System.Net
+Imports System.Net.Security
+Imports System.Net.Sockets
 Imports System.Net.WebSockets
 Imports System.Security.Cryptography
 Imports System.Security.Cryptography.X509Certificates
@@ -14,13 +16,13 @@ Namespace Pipeline
         Public Event RemoteCommand As EventHandler(Of String)
 
         Private _listener As HttpListener
-        Private _httpsListener As HttpListener
+        Private _httpsListener As TcpListener
+        Private _httpsCert As X509Certificate2
         Private _cts As CancellationTokenSource
         Private ReadOnly _clients As New ConcurrentDictionary(Of String, WebSocket)()
         Private _port As Integer = 5080
         Private _httpsPort As Integer = 5081
         Private _isRunning As Boolean = False
-        Private Const CertAppId As String = "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
         Private Const CertPassword As String = "transcription-tools-cert"
         Private _currentLine As String = ""
         Private ReadOnly _committedLines As New ConcurrentQueue(Of String)()
@@ -150,44 +152,191 @@ Namespace Pipeline
         End Function
 
         ''' <summary>
-        ''' Try to start an HTTPS listener so the Wake Lock API works on phones.
-        ''' This is best-effort — if it fails, HTTP still works.
+        ''' Start an HTTPS server using raw TcpListener + SslStream.
+        ''' No admin privileges, no netsh, no cert store — just works.
         ''' </summary>
         Private Sub TryStartHttps()
             Try
-                Dim cert = GetOrCreateCertificate()
-                If cert Is Nothing Then
+                _httpsCert = GetOrCreateCertificate()
+                If _httpsCert Is Nothing Then
                     RaiseEvent StatusChanged(Me, "HTTPS: could not create certificate")
                     Return
                 End If
 
-                ' Try starting HTTPS listener directly (works if already configured)
-                If TryStartHttpsListener() Then Return
-
-                ' Not configured yet — set up cert binding + URL ACL via elevated command
-                If SetupHttpsBinding(cert) Then
-                    If TryStartHttpsListener() Then Return
-                End If
-
-                RaiseEvent StatusChanged(Me, "HTTPS not available — phone screen wake may not work")
+                _httpsListener = New TcpListener(IPAddress.Any, _httpsPort)
+                _httpsListener.Start()
+                Task.Run(Sub() HttpsAcceptLoop(_cts.Token), _cts.Token)
+                RaiseEvent StatusChanged(Me, $"HTTPS enabled on port {_httpsPort}")
             Catch ex As Exception
-                RaiseEvent StatusChanged(Me, $"HTTPS setup failed: {ex.Message}")
+                RaiseEvent StatusChanged(Me, $"HTTPS failed: {ex.Message}")
+                Try : _httpsListener?.Stop() : Catch : End Try
+                _httpsListener = Nothing
             End Try
         End Sub
 
-        Private Function TryStartHttpsListener() As Boolean
+        Private Async Sub HttpsAcceptLoop(ct As CancellationToken)
+            While Not ct.IsCancellationRequested
+                Try
+                    Dim client = Await _httpsListener.AcceptTcpClientAsync(ct).ConfigureAwait(False)
+                    Dim unused = Task.Run(Sub() HandleHttpsClient(client, ct), ct)
+                Catch ex As OperationCanceledException
+                    Exit While
+                Catch ex As ObjectDisposedException
+                    Exit While
+                Catch
+                    If ct.IsCancellationRequested Then Exit While
+                End Try
+            End While
+        End Sub
+
+        Private Async Sub HandleHttpsClient(client As TcpClient, ct As CancellationToken)
             Try
-                _httpsListener = New HttpListener()
-                _httpsListener.Prefixes.Add($"https://+:{_httpsPort}/")
-                _httpsListener.Start()
-                Task.Run(Sub() AcceptLoop(_httpsListener, _cts.Token), _cts.Token)
-                RaiseEvent StatusChanged(Me, $"HTTPS enabled on port {_httpsPort}")
-                Return True
+                client.NoDelay = True
+                Dim sslStream As New SslStream(client.GetStream(), False)
+                Try
+                    Await sslStream.AuthenticateAsServerAsync(_httpsCert).ConfigureAwait(False)
+                Catch
+                    sslStream.Dispose()
+                    client.Dispose()
+                    Return
+                End Try
+
+                ' Read the HTTP request line + headers
+                Dim headerText = Await ReadHttpHeaders(sslStream, ct).ConfigureAwait(False)
+                If headerText Is Nothing Then
+                    sslStream.Dispose()
+                    client.Dispose()
+                    Return
+                End If
+
+                ' Parse request line and headers
+                Dim lines = headerText.Split({vbCrLf}, StringSplitOptions.None)
+                Dim requestLine = If(lines.Length > 0, lines(0), "")
+                Dim path = "/"
+                Dim parts = requestLine.Split(" "c)
+                If parts.Length >= 2 Then path = parts(1)
+
+                Dim headers As New Dictionary(Of String, String)(StringComparer.OrdinalIgnoreCase)
+                For i = 1 To lines.Length - 1
+                    Dim colonIdx = lines(i).IndexOf(":"c)
+                    If colonIdx > 0 Then
+                        headers(lines(i).Substring(0, colonIdx).Trim()) = lines(i).Substring(colonIdx + 1).Trim()
+                    End If
+                Next
+
+                ' Route the request
+                If headers.ContainsKey("Upgrade") AndAlso
+                   headers("Upgrade").Equals("websocket", StringComparison.OrdinalIgnoreCase) Then
+                    ' WebSocket upgrade
+                    Dim wsKey = If(headers.ContainsKey("Sec-WebSocket-Key"), headers("Sec-WebSocket-Key"), "")
+                    Dim acceptKey = ComputeWebSocketAccept(wsKey)
+                    Dim response = "HTTP/1.1 101 Switching Protocols" & vbCrLf &
+                                   "Upgrade: websocket" & vbCrLf &
+                                   "Connection: Upgrade" & vbCrLf &
+                                   "Sec-WebSocket-Accept: " & acceptKey & vbCrLf & vbCrLf
+                    Dim respBytes = Encoding.ASCII.GetBytes(response)
+                    Await sslStream.WriteAsync(respBytes, 0, respBytes.Length, ct).ConfigureAwait(False)
+                    Await sslStream.FlushAsync(ct).ConfigureAwait(False)
+
+                    ' Create managed WebSocket from the SSL stream
+                    Dim ws = WebSocket.CreateFromStream(sslStream, New WebSocketCreationOptions With {
+                        .IsServer = True,
+                        .KeepAliveInterval = TimeSpan.FromSeconds(30)
+                    })
+                    Await HandleWebSocketStream(ws, ct).ConfigureAwait(False)
+                    ' sslStream/client are owned by the WebSocket now — disposed when ws is disposed
+                ElseIf path = "/nosleep.mp4" Then
+                    Dim mp4 = BuildSilentMp4()
+                    Dim header = "HTTP/1.1 200 OK" & vbCrLf &
+                                 "Content-Type: video/mp4" & vbCrLf &
+                                 $"Content-Length: {mp4.Length}" & vbCrLf &
+                                 "Cache-Control: public, max-age=86400" & vbCrLf &
+                                 "Connection: close" & vbCrLf & vbCrLf
+                    Dim hdrBytes = Encoding.ASCII.GetBytes(header)
+                    Await sslStream.WriteAsync(hdrBytes, 0, hdrBytes.Length, ct).ConfigureAwait(False)
+                    Await sslStream.WriteAsync(mp4, 0, mp4.Length, ct).ConfigureAwait(False)
+                    sslStream.Dispose()
+                    client.Dispose()
+                Else
+                    ' Serve the HTML page
+                    Dim html = GetHtmlPage()
+                    Dim htmlBytes = Encoding.UTF8.GetBytes(html)
+                    Dim header = "HTTP/1.1 200 OK" & vbCrLf &
+                                 "Content-Type: text/html; charset=utf-8" & vbCrLf &
+                                 $"Content-Length: {htmlBytes.Length}" & vbCrLf &
+                                 "Cache-Control: no-store, no-cache, must-revalidate" & vbCrLf &
+                                 "Pragma: no-cache" & vbCrLf &
+                                 "Connection: close" & vbCrLf & vbCrLf
+                    Dim hdrBytes = Encoding.ASCII.GetBytes(header)
+                    Await sslStream.WriteAsync(hdrBytes, 0, hdrBytes.Length, ct).ConfigureAwait(False)
+                    Await sslStream.WriteAsync(htmlBytes, 0, htmlBytes.Length, ct).ConfigureAwait(False)
+                    sslStream.Dispose()
+                    client.Dispose()
+                End If
             Catch
-                Try : _httpsListener?.Close() : Catch : End Try
-                _httpsListener = Nothing
-                Return False
+                Try : client?.Dispose() : Catch : End Try
             End Try
+        End Sub
+
+        Private Shared Async Function ReadHttpHeaders(stream As Stream, ct As CancellationToken) As Task(Of String)
+            Dim sb As New StringBuilder()
+            Dim buf = New Byte(0) {}
+            Dim endMarker = vbCrLf & vbCrLf
+            While sb.Length < 8192
+                Dim bytesRead = Await stream.ReadAsync(buf, 0, 1, ct).ConfigureAwait(False)
+                If bytesRead = 0 Then Return Nothing
+                sb.Append(ChrW(buf(0)))
+                If sb.Length >= 4 AndAlso sb.ToString().EndsWith(endMarker) Then
+                    Return sb.ToString(0, sb.Length - endMarker.Length)
+                End If
+            End While
+            Return Nothing
+        End Function
+
+        Private Shared Function ComputeWebSocketAccept(key As String) As String
+            Dim magic = key & "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+            Using sha1 As System.Security.Cryptography.SHA1 = System.Security.Cryptography.SHA1.Create()
+                Return Convert.ToBase64String(sha1.ComputeHash(Encoding.ASCII.GetBytes(magic)))
+            End Using
+        End Function
+
+        ''' <summary>
+        ''' Handle a WebSocket connection from the HTTPS TcpListener path.
+        ''' Same logic as HandleWebSocket but uses a WebSocket directly instead of HttpListenerContext.
+        ''' </summary>
+        Private Async Function HandleWebSocketStream(ws As WebSocket, ct As CancellationToken) As Task
+            Dim clientId = Guid.NewGuid().ToString()
+            _clients.TryAdd(clientId, ws)
+            RaiseEvent StatusChanged(Me, $"Client connected ({_clients.Count} total)")
+
+            ' Send history
+            Try
+                For Each line In _committedLines
+                    Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(line)}}}"
+                    Dim buf = Encoding.UTF8.GetBytes(json)
+                    Await ws.SendAsync(New ArraySegment(Of Byte)(buf), WebSocketMessageType.Text, True, ct).ConfigureAwait(False)
+                Next
+                If _currentLine.Length > 0 Then
+                    Dim json = $"{{""type"":""update"",""text"":{EscapeJson(_currentLine)}}}"
+                    Dim buf = Encoding.UTF8.GetBytes(json)
+                    Await ws.SendAsync(New ArraySegment(Of Byte)(buf), WebSocketMessageType.Text, True, ct).ConfigureAwait(False)
+                End If
+            Catch
+            End Try
+
+            ' Keep alive by reading
+            Dim recvBuf = New Byte(1023) {}
+            Try
+                While ws.State = WebSocketState.Open AndAlso Not ct.IsCancellationRequested
+                    Await ws.ReceiveAsync(New ArraySegment(Of Byte)(recvBuf), ct).ConfigureAwait(False)
+                End While
+            Catch
+            End Try
+
+            Dim removed As WebSocket = Nothing
+            _clients.TryRemove(clientId, removed)
+            removed?.Dispose()
+            RaiseEvent StatusChanged(Me, $"Client disconnected ({_clients.Count} total)")
         End Function
 
         Private Function GetOrCreateCertificate() As X509Certificate2
@@ -197,7 +346,7 @@ Namespace Pipeline
             ' Try to load existing cert
             If File.Exists(certPath) Then
                 Try
-                    Dim cert As New X509Certificate2(certPath, CertPassword, X509KeyStorageFlags.PersistKeySet Or X509KeyStorageFlags.Exportable)
+                    Dim cert As New X509Certificate2(certPath, CertPassword, X509KeyStorageFlags.Exportable)
                     If cert.NotAfter > DateTime.Now.AddDays(30) Then Return cert
                     cert.Dispose()
                 Catch
@@ -217,7 +366,7 @@ Namespace Pipeline
                 san.AddDnsName("localhost")
                 Try
                     For Each addr In Dns.GetHostAddresses(Dns.GetHostName())
-                        If addr.AddressFamily = Sockets.AddressFamily.InterNetwork Then
+                        If addr.AddressFamily = Net.Sockets.AddressFamily.InterNetwork Then
                             san.AddIpAddress(addr)
                         End If
                     Next
@@ -228,42 +377,8 @@ Namespace Pipeline
                 Dim cert = req.CreateSelfSigned(DateTimeOffset.Now, DateTimeOffset.Now.AddYears(10))
                 Dim pfxBytes = cert.Export(X509ContentType.Pfx, CertPassword)
                 File.WriteAllBytes(certPath, pfxBytes)
-                Return New X509Certificate2(pfxBytes, CertPassword, X509KeyStorageFlags.PersistKeySet Or X509KeyStorageFlags.Exportable)
+                Return New X509Certificate2(pfxBytes, CertPassword, X509KeyStorageFlags.Exportable)
             End Using
-        End Function
-
-        Private Function SetupHttpsBinding(cert As X509Certificate2) As Boolean
-            Try
-                Dim certDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TranscriptionTools")
-                Dim certPath = Path.Combine(certDir, "subtitle-server.pfx")
-                Dim thumbprint = cert.Thumbprint
-
-                ' Build a cmd that: imports cert to LocalMachine store, adds URL ACL, binds SSL
-                Dim cmd = $"/c certutil -f -p ""{CertPassword}"" -importpfx ""{certPath}"" & " &
-                          $"netsh http delete urlacl url=https://+:{_httpsPort}/ >nul 2>&1 & " &
-                          $"netsh http add urlacl url=https://+:{_httpsPort}/ user=Everyone & " &
-                          $"netsh http delete sslcert ipport=0.0.0.0:{_httpsPort} >nul 2>&1 & " &
-                          $"netsh http add sslcert ipport=0.0.0.0:{_httpsPort} certhash={thumbprint} appid={CertAppId}"
-
-                RaiseEvent StatusChanged(Me, "Setting up HTTPS — you may see a UAC prompt...")
-
-                Dim psi As New ProcessStartInfo() With {
-                    .FileName = "cmd.exe",
-                    .Arguments = cmd,
-                    .Verb = "runas",
-                    .UseShellExecute = True,
-                    .CreateNoWindow = True,
-                    .WindowStyle = ProcessWindowStyle.Hidden
-                }
-                Dim proc = Process.Start(psi)
-                proc.WaitForExit(15000)
-                Dim success = proc.ExitCode = 0
-                proc.Dispose()
-                Return success
-            Catch
-                ' User declined UAC or other error
-                Return False
-            End Try
         End Function
 
         Public Sub [Stop]()
@@ -292,9 +407,11 @@ Namespace Pipeline
 
             Try
                 _httpsListener?.Stop()
-                _httpsListener?.Close()
             Catch
             End Try
+
+            _httpsCert?.Dispose()
+            _httpsCert = Nothing
 
             _isRunning = False
             RaiseEvent StatusChanged(Me, "Server stopped")
