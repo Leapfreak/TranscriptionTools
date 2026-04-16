@@ -543,8 +543,7 @@ body{background:{{BG_COLOR}};color:{{FG_COLOR}};font-family:'Segoe UI',Arial,san
 #lines{display:flex;flex-direction:column;min-height:100%}
 #spacer{flex:1}
 .line{font-size:28px;line-height:1.4;padding:4px 0;color:{{FG_COLOR}};word-wrap:break-word}
-.line.in-progress{color:#ff6b6b !important;opacity:0.85}
-.line.new-line{color:#ffdd57 !important}
+.line.in-progress{color:#ff6b6b;opacity:0.85}
 #toolbar{position:fixed;top:0;right:0;padding:8px;z-index:10;display:flex;gap:4px}
 #toolbar button{background:#222;color:#aaa;border:1px solid #444;border-radius:4px;
                 padding:6px 10px;font-size:18px;cursor:pointer;min-width:40px}
@@ -671,7 +670,7 @@ if(localStorage.getItem('fontSize'))fontSize=parseInt(localStorage.getItem('font
   document.getElementById('colorPicker').value=textColor;
 })();
 function applyStylesToAll(){
-  document.querySelectorAll('.line').forEach(function(el){el.style.fontSize=fontSize+'px';el.style.fontFamily=fontFamily;el.style.fontWeight=isBold?'bold':'normal';if(!el.classList.contains('in-progress')&&!el.classList.contains('new-line'))el.style.color=textColor});
+  document.querySelectorAll('.line').forEach(function(el){el.style.fontSize=fontSize+'px';el.style.fontFamily=fontFamily;el.style.fontWeight=isBold?'bold':'normal';if(!el.classList.contains('in-progress')&&!el.dataset.highlighted)el.style.color=textColor});
   if(currentEl){currentEl.style.fontSize=fontSize+'px';currentEl.style.fontFamily=fontFamily;currentEl.style.fontWeight=isBold?'bold':'normal'}
   scrollBottom()}
 function changeFontSize(d){fontSize=Math.max(12,Math.min(80,fontSize+d));localStorage.setItem('fontSize',fontSize);applyStylesToAll()}
@@ -684,21 +683,22 @@ container.addEventListener('scroll',function(){
   userScrolled=!atBottom;
 });
 function scrollBottom(){if(!userScrolled){container.scrollTop=container.scrollHeight}}
-function styleEl(el,inProgress){el.style.fontSize=fontSize+'px';el.style.fontFamily=fontFamily;el.style.fontWeight=isBold?'bold':'normal';if(!inProgress&&!el.classList.contains('new-line'))el.style.color=textColor}
 function addCommitted(text){
   var el;
   if(currentEl){el=currentEl;currentEl=null}
   else{el=document.createElement('div');lines.appendChild(el)}
   el.textContent=text;
-  el.className='line new-line';
-  styleEl(el,false);
-  setTimeout(function(){el.classList.remove('new-line')},5000);
+  el.className='line';
+  el.style.fontSize=fontSize+'px';el.style.fontFamily=fontFamily;el.style.fontWeight=isBold?'bold':'normal';
+  el.style.color='#ffdd57';
+  el.dataset.highlighted='1';
+  setTimeout(function(){el.style.color=textColor;delete el.dataset.highlighted},5000);
   scrollBottom();
   while(lines.children.length>201){lines.removeChild(lines.children[1])}
   speak(text);
 }
 function updateCurrent(text){
-  if(!currentEl){currentEl=document.createElement('div');currentEl.className='line in-progress';styleEl(currentEl,true);lines.appendChild(currentEl)}
+  if(!currentEl){currentEl=document.createElement('div');currentEl.className='line in-progress';currentEl.style.fontSize=fontSize+'px';currentEl.style.fontFamily=fontFamily;currentEl.style.fontWeight=isBold?'bold':'normal';lines.appendChild(currentEl)}
   currentEl.textContent=text;
   scrollBottom()
 }
@@ -717,25 +717,49 @@ function connect(){
 }
 connect();
 
-/* Keep screen on (mobile) - plays a tiny silent video on loop */
-var noSleepVideo=null;
+/* Keep screen on (mobile) */
+var noSleepActive=false;
 function enableNoSleep(){
-  if(noSleepVideo)return;
-  noSleepVideo=document.createElement('video');
-  noSleepVideo.setAttribute('playsinline','');
-  noSleepVideo.setAttribute('webkit-playsinline','');
-  noSleepVideo.muted=true;
-  noSleepVideo.loop=true;
-  noSleepVideo.style.cssText='position:fixed;top:-1px;left:-1px;width:1px;height:1px;opacity:0.01';
-  noSleepVideo.src='/nosleep.mp4';
-  document.body.appendChild(noSleepVideo);
-  noSleepVideo.play().catch(function(){});
+  if(noSleepActive)return;
+  noSleepActive=true;
+  /* Try Wake Lock API first (secure contexts) */
+  if('wakeLock' in navigator){
+    navigator.wakeLock.request('screen').then(function(lock){
+      document.addEventListener('visibilitychange',function(){
+        if(document.visibilityState==='visible')navigator.wakeLock.request('screen').catch(function(){})
+      });
+    }).catch(function(){startVideoNoSleep()});
+    return;
+  }
+  startVideoNoSleep();
+}
+function startVideoNoSleep(){
+  var v=document.createElement('video');
+  v.setAttribute('playsinline','');v.setAttribute('webkit-playsinline','');
+  v.loop=true;v.muted=true;
+  v.style.cssText='position:fixed;top:-1px;left:-1px;width:1px;height:1px;opacity:0.01';
+  document.body.appendChild(v);
+  /* Record a tiny video from canvas — guaranteed valid by the browser */
+  try{
+    var c=document.createElement('canvas');c.width=2;c.height=2;
+    var ctx=c.getContext('2d');ctx.fillRect(0,0,2,2);
+    var stream=c.captureStream(1);
+    var rec=new MediaRecorder(stream);
+    var chunks=[];
+    rec.ondataavailable=function(e){if(e.data.size>0)chunks.push(e.data)};
+    rec.onstop=function(){
+      v.src=URL.createObjectURL(new Blob(chunks,{type:rec.mimeType}));
+      v.play().catch(function(){});
+    };
+    rec.start();setTimeout(function(){rec.stop()},500);
+  }catch(e){
+    /* Last resort: server-generated MP4 */
+    v.src='/nosleep.mp4';v.play().catch(function(){});
+  }
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')v.play().catch(function(){})});
 }
 document.addEventListener('click',enableNoSleep,{once:true});
 document.addEventListener('touchstart',enableNoSleep,{once:true});
-document.addEventListener('visibilitychange',function(){
-  if(document.visibilityState==='visible'&&noSleepVideo)noSleepVideo.play().catch(function(){});
-});
 
 /* Admin remote control */
 const adminPanel=document.getElementById('adminPanel');
