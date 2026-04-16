@@ -1,52 +1,33 @@
-name: Build and Release
+name: Cache Whisper Binaries
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [main]
+    paths:
+      - 'patches/**'
+      - '.github/workflows/cache-whisper.yml'
+      - '.github/workflows/release.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  build:
+  cache:
     runs-on: windows-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
-
-      - name: Publish
-        run: dotnet publish TranscriptionTools/TranscriptionTools.vbproj -c Release -o TranscriptionTools/bin/Publish
-
-      - name: Restore whisper binaries cache
+      - name: Check existing cache
         id: whisper-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache@v4
         with:
           path: whisper-bin
           key: whisper-v1.8.4-cuda12.4-v2-${{ hashFiles('patches/stream.cpp') }}
-          restore-keys: |
-            whisper-v1.8.4-cuda12.4-v2-
-
-      - name: Check cache contents
-        id: cache-check
-        shell: pwsh
-        run: |
-          if (Test-Path "whisper-bin/whisper-cli.exe") {
-            echo "has_binaries=true" >> $env:GITHUB_OUTPUT
-            Write-Host "Cache hit - whisper binaries found"
-          } else {
-            echo "has_binaries=false" >> $env:GITHUB_OUTPUT
-            Write-Host "Cache miss - need to build"
-          }
+          lookup-only: true
 
       - name: Install CUDA Toolkit
-        if: steps.cache-check.outputs.has_binaries != 'true'
+        if: steps.whisper-cache.outputs.cache-hit != 'true'
         run: |
           $url = "https://developer.download.nvidia.com/compute/cuda/12.4.0/network_installers/cuda_12.4.0_windows_network.exe"
           Invoke-WebRequest -Uri $url -OutFile "cuda_installer.exe"
@@ -57,17 +38,15 @@ jobs:
           echo "$cudaPath\bin" >> $env:GITHUB_PATH
 
       - name: Clone whisper.cpp
-        if: steps.cache-check.outputs.has_binaries != 'true'
-        run: |
-          git clone --depth 1 --branch v1.8.4 https://github.com/ggml-org/whisper.cpp.git whisper-src
+        if: steps.whisper-cache.outputs.cache-hit != 'true'
+        run: git clone --depth 1 --branch v1.8.4 https://github.com/ggml-org/whisper.cpp.git whisper-src
 
       - name: Apply patches
-        if: steps.cache-check.outputs.has_binaries != 'true'
-        run: |
-          Copy-Item -Path "patches/stream.cpp" -Destination "whisper-src/examples/stream/stream.cpp" -Force
+        if: steps.whisper-cache.outputs.cache-hit != 'true'
+        run: Copy-Item -Path "patches/stream.cpp" -Destination "whisper-src/examples/stream/stream.cpp" -Force
 
       - name: Download SDL2
-        if: steps.cache-check.outputs.has_binaries != 'true'
+        if: steps.whisper-cache.outputs.cache-hit != 'true'
         run: |
           Invoke-WebRequest -Uri "https://github.com/libsdl-org/SDL/releases/download/release-2.30.11/SDL2-devel-2.30.11-VC.zip" -OutFile "sdl2.zip"
           Expand-Archive -Path "sdl2.zip" -DestinationPath "sdl2-temp" -Force
@@ -77,7 +56,7 @@ jobs:
           Remove-Item "sdl2-temp" -Recurse -Force
 
       - name: Build whisper.cpp with CUDA
-        if: steps.cache-check.outputs.has_binaries != 'true'
+        if: steps.whisper-cache.outputs.cache-hit != 'true'
         run: |
           $cudaPath = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4"
           $env:CUDA_PATH = $cudaPath
@@ -95,7 +74,7 @@ jobs:
           cmake --build . --config Release
 
       - name: Collect whisper binaries
-        if: steps.cache-check.outputs.has_binaries != 'true'
+        if: steps.whisper-cache.outputs.cache-hit != 'true'
         run: |
           New-Item -ItemType Directory -Force -Path "whisper-bin"
           $binDir = "whisper-src/build/bin/Release"
@@ -107,7 +86,6 @@ jobs:
           Copy-Item "$binDir/ggml-cpu.dll" "whisper-bin/"
           Copy-Item "$binDir/ggml-cuda.dll" "whisper-bin/"
           Copy-Item "${{ github.workspace }}/SDL2/lib/x64/SDL2.dll" "whisper-bin/"
-          # Bundle CUDA runtime DLLs so users don't need CUDA toolkit installed
           $cudaBin = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4\bin"
           Copy-Item "$cudaBin/cublas64_12.dll" "whisper-bin/"
           Copy-Item "$cudaBin/cublasLt64_12.dll" "whisper-bin/"
@@ -115,21 +93,9 @@ jobs:
           Write-Host "Whisper binaries:"
           Get-ChildItem "whisper-bin"
 
-      - name: Install Inno Setup
-        run: choco install innosetup -y
-
-      - name: Build Installer
-        run: iscc setup.iss
-
-      - name: Create Zip
-        run: |
-          Copy-Item -Path "whisper-bin/*" -Destination "TranscriptionTools/bin/Publish/" -Force
-          Compress-Archive -Path TranscriptionTools/bin/Publish/* -DestinationPath "Output/TranscriptionTools_${{ github.ref_name }}.zip"
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
+      - name: Save cache
+        if: steps.whisper-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
         with:
-          generate_release_notes: true
-          files: |
-            Output/TranscriptionTools_Setup_*.exe
-            Output/TranscriptionTools_${{ github.ref_name }}.zip
+          path: whisper-bin
+          key: whisper-v1.8.4-cuda12.4-v2-${{ hashFiles('patches/stream.cpp') }}
