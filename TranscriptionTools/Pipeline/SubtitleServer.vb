@@ -496,10 +496,12 @@ container.addEventListener('scroll',function(){
 });
 function scrollBottom(){if(!userScrolled){container.scrollTop=container.scrollHeight}}
 function styleEl(el,inProgress){el.style.fontSize=fontSize+'px';el.style.fontFamily=fontFamily;el.style.fontWeight=isBold?'bold':'normal';if(!inProgress)el.style.color=textColor}
-var lastCommittedEl=null;
-function fadeOut(el){requestAnimationFrame(function(){el.style.color=textColor;el.classList.remove('new-line')})}
+var highlightedEls=[];
+function fadeAllHighlighted(){
+  for(var i=0;i<highlightedEls.length;i++){var h=highlightedEls[i];h.style.color=textColor;h.classList.remove('new-line')}
+  highlightedEls=[];
+}
 function addCommitted(text){
-  if(lastCommittedEl){fadeOut(lastCommittedEl);lastCommittedEl=null}
   var el;
   if(currentEl){el=currentEl;el.textContent=text;el.className='line new-line';currentEl=null}
   else{el=document.createElement('div');el.className='line new-line';el.textContent=text;lines.appendChild(el)}
@@ -507,13 +509,13 @@ function addCommitted(text){
   styleEl(el,false);el.style.color='#ffdd57';
   el.offsetHeight;
   el.style.transition='';
-  lastCommittedEl=el;
+  highlightedEls.push(el);
   scrollBottom();
   while(lines.children.length>201){lines.removeChild(lines.children[1])}
   speak(text);
 }
 function updateCurrent(text){
-  if(!currentEl){currentEl=document.createElement('div');currentEl.className='line in-progress';styleEl(currentEl,true);lines.appendChild(currentEl)}
+  if(!currentEl){fadeAllHighlighted();currentEl=document.createElement('div');currentEl.className='line in-progress';styleEl(currentEl,true);lines.appendChild(currentEl)}
   currentEl.textContent=text;currentEl.className='line in-progress';
   scrollBottom()
 }
@@ -532,10 +534,24 @@ function connect(){
 }
 connect();
 
-/* Keep screen on (mobile) */
-var wakeLock=null;
-async function requestWakeLock(){try{wakeLock=await navigator.wakeLock.request('screen')}catch(e){}}
-if('wakeLock' in navigator){requestWakeLock();document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')requestWakeLock()})}
+/* Keep screen on (mobile) - canvas video trick works over plain HTTP */
+var noSleepVideo=null;
+function enableNoSleep(){
+  if(noSleepVideo)return;
+  var canvas=document.createElement('canvas');canvas.width=1;canvas.height=1;
+  var ctx=canvas.getContext('2d');ctx.fillRect(0,0,1,1);
+  var stream=canvas.captureStream(1);
+  noSleepVideo=document.createElement('video');
+  noSleepVideo.setAttribute('playsinline','');
+  noSleepVideo.muted=true;noSleepVideo.loop=true;
+  noSleepVideo.style.cssText='position:fixed;top:-1px;left:-1px;width:1px;height:1px;opacity:0.01';
+  noSleepVideo.srcObject=stream;
+  document.body.appendChild(noSleepVideo);
+  noSleepVideo.play().catch(function(){});
+}
+document.addEventListener('click',enableNoSleep,{once:true});
+document.addEventListener('touchstart',enableNoSleep,{once:true});
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&noSleepVideo)noSleepVideo.play().catch(function(){})});
 
 /* Admin remote control */
 const adminPanel=document.getElementById('adminPanel');
