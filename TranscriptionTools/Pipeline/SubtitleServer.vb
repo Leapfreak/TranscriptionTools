@@ -353,9 +353,9 @@ body{background:{{BG_COLOR}};color:{{FG_COLOR}};font-family:'Segoe UI',Arial,san
 #container{flex:1;overflow-y:auto;padding:16px}
 #lines{display:flex;flex-direction:column;min-height:100%}
 #spacer{flex:1}
-.line{font-size:28px;line-height:1.4;padding:4px 0;color:{{FG_COLOR}};word-wrap:break-word;transition:color 1.5s ease}
+.line{font-size:28px;line-height:1.4;padding:4px 0;color:{{FG_COLOR}};word-wrap:break-word}
 .line.in-progress{color:#ff6b6b;opacity:0.85}
-.line.new-line{color:#ffdd57}
+.line.new-line{color:#ffdd57 !important}
 #toolbar{position:fixed;top:0;right:0;padding:8px;z-index:10;display:flex;gap:4px}
 #toolbar button{background:#222;color:#aaa;border:1px solid #444;border-radius:4px;
                 padding:6px 10px;font-size:18px;cursor:pointer;min-width:40px}
@@ -482,7 +482,7 @@ if(localStorage.getItem('fontSize'))fontSize=parseInt(localStorage.getItem('font
   document.getElementById('colorPicker').value=textColor;
 })();
 function applyStylesToAll(){
-  document.querySelectorAll('.line').forEach(function(el){el.style.fontSize=fontSize+'px';el.style.fontFamily=fontFamily;el.style.fontWeight=isBold?'bold':'normal';if(!el.classList.contains('in-progress'))el.style.color=textColor});
+  document.querySelectorAll('.line').forEach(function(el){el.style.fontSize=fontSize+'px';el.style.fontFamily=fontFamily;el.style.fontWeight=isBold?'bold':'normal';if(!el.classList.contains('in-progress')&&!el.classList.contains('new-line'))el.style.color=textColor});
   if(currentEl){currentEl.style.fontSize=fontSize+'px';currentEl.style.fontFamily=fontFamily;currentEl.style.fontWeight=isBold?'bold':'normal'}
   scrollBottom()}
 function changeFontSize(d){fontSize=Math.max(12,Math.min(80,fontSize+d));localStorage.setItem('fontSize',fontSize);applyStylesToAll()}
@@ -495,20 +495,19 @@ container.addEventListener('scroll',function(){
   userScrolled=!atBottom;
 });
 function scrollBottom(){if(!userScrolled){container.scrollTop=container.scrollHeight}}
-function styleEl(el,inProgress){el.style.fontSize=fontSize+'px';el.style.fontFamily=fontFamily;el.style.fontWeight=isBold?'bold':'normal';if(!inProgress)el.style.color=textColor}
+function styleEl(el,inProgress){el.style.fontSize=fontSize+'px';el.style.fontFamily=fontFamily;el.style.fontWeight=isBold?'bold':'normal';if(!inProgress&&!el.classList.contains('new-line'))el.style.color=textColor}
 var highlightedEls=[];
 function fadeAllHighlighted(){
-  for(var i=0;i<highlightedEls.length;i++){var h=highlightedEls[i];h.style.color=textColor;h.classList.remove('new-line')}
+  for(var i=0;i<highlightedEls.length;i++){highlightedEls[i].classList.remove('new-line')}
   highlightedEls=[];
 }
 function addCommitted(text){
   var el;
-  if(currentEl){el=currentEl;el.textContent=text;el.className='line new-line';currentEl=null}
-  else{el=document.createElement('div');el.className='line new-line';el.textContent=text;lines.appendChild(el)}
-  el.style.transition='none';
-  styleEl(el,false);el.style.color='#ffdd57';
-  el.offsetHeight;
-  el.style.transition='';
+  if(currentEl){el=currentEl;currentEl=null}
+  else{el=document.createElement('div');lines.appendChild(el)}
+  el.textContent=text;
+  el.className='line new-line';
+  styleEl(el,false);
   highlightedEls.push(el);
   scrollBottom();
   while(lines.children.length>201){lines.removeChild(lines.children[1])}
@@ -516,7 +515,7 @@ function addCommitted(text){
 }
 function updateCurrent(text){
   if(!currentEl){fadeAllHighlighted();currentEl=document.createElement('div');currentEl.className='line in-progress';styleEl(currentEl,true);lines.appendChild(currentEl)}
-  currentEl.textContent=text;currentEl.className='line in-progress';
+  currentEl.textContent=text;
   scrollBottom()
 }
 function connect(){
@@ -534,24 +533,39 @@ function connect(){
 }
 connect();
 
-/* Keep screen on (mobile) - canvas video trick works over plain HTTP */
-var noSleepVideo=null;
+/* Keep screen on (mobile) */
+var noSleepCtx=null;var noSleepSource=null;var noSleepTimer=null;
 function enableNoSleep(){
-  if(noSleepVideo)return;
-  var canvas=document.createElement('canvas');canvas.width=1;canvas.height=1;
-  var ctx=canvas.getContext('2d');ctx.fillRect(0,0,1,1);
-  var stream=canvas.captureStream(1);
-  noSleepVideo=document.createElement('video');
-  noSleepVideo.setAttribute('playsinline','');
-  noSleepVideo.muted=true;noSleepVideo.loop=true;
-  noSleepVideo.style.cssText='position:fixed;top:-1px;left:-1px;width:1px;height:1px;opacity:0.01';
-  noSleepVideo.srcObject=stream;
-  document.body.appendChild(noSleepVideo);
-  noSleepVideo.play().catch(function(){});
+  if(noSleepCtx)return;
+  try{
+    noSleepCtx=new(window.AudioContext||window.webkitAudioContext)();
+    /* Create silent oscillator to keep audio session alive */
+    noSleepSource=noSleepCtx.createOscillator();
+    var gain=noSleepCtx.createGain();
+    gain.gain.value=0.001;
+    noSleepSource.connect(gain);gain.connect(noSleepCtx.destination);
+    noSleepSource.start(0);
+    /* Also toggle a hidden video to cover all browsers */
+    var v=document.createElement('video');
+    v.setAttribute('playsinline','');v.setAttribute('webkit-playsinline','');
+    v.muted=true;v.loop=true;
+    v.style.cssText='position:fixed;top:-1px;left:-1px;width:1px;height:1px;opacity:0.01';
+    /* Create a tiny MediaSource blob as video src */
+    if(window.MediaSource){
+      try{
+        var ms=new MediaSource();v.src=URL.createObjectURL(ms);
+        ms.addEventListener('sourceopen',function(){try{ms.endOfStream()}catch(e){}});
+      }catch(e){v.src='about:blank'}
+    }
+    document.body.appendChild(v);
+    v.play().catch(function(){});
+  }catch(e){}
 }
 document.addEventListener('click',enableNoSleep,{once:true});
 document.addEventListener('touchstart',enableNoSleep,{once:true});
-document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&noSleepVideo)noSleepVideo.play().catch(function(){})});
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState==='visible'&&noSleepCtx&&noSleepCtx.state==='suspended')noSleepCtx.resume().catch(function(){});
+});
 
 /* Admin remote control */
 const adminPanel=document.getElementById('adminPanel');
