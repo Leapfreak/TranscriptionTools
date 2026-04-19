@@ -27,6 +27,7 @@ app = FastAPI()
 # ---------------------------------------------------------------------------
 translator = None
 sp_model = None
+punct_model = None
 device_in_use = "cpu"
 model_path_global = ""
 glossary_path_global = ""
@@ -157,19 +158,62 @@ class StatusResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # Translation helpers
 # ---------------------------------------------------------------------------
+def _restore_punctuation(text: str) -> str:
+    """Restore punctuation using the token-classification pipeline."""
+    if punct_model is None or not text.strip():
+        return text
+    try:
+        results = punct_model(text)
+        output = []
+        last_end = 0
+        for entity in results:
+            word = entity.get("word", "")
+            label = entity.get("entity_group", "0")
+            start = entity.get("start", last_end)
+            end = entity.get("end", start + len(word))
+            # Add any whitespace between entities
+            if start > last_end:
+                output.append(text[last_end:start])
+            output.append(text[start:end])
+            # Append punctuation based on label
+            if label == ".":
+                output.append(".")
+            elif label == ",":
+                output.append(",")
+            elif label == "?":
+                output.append("?")
+            elif label == "-":
+                output.append("-")
+            last_end = end
+        # Add any trailing text
+        if last_end < len(text):
+            output.append(text[last_end:])
+        restored = "".join(output).strip()
+        # Capitalize first letter of sentences
+        if restored:
+            restored = restored[0].upper() + restored[1:]
+        return restored if restored else text
+    except Exception as e:
+        logger.warning("Punctuation restoration failed: %s", e)
+        return text
+
+
 def _translate_single(text: str, source_lang: str, target_lang: str) -> str:
     """Translate text from source_lang to target_lang using the loaded model."""
-    cache_key = (text, source_lang, target_lang)
+    # Restore punctuation before translation for better NLLB input
+    cleaned = _restore_punctuation(text)
+
+    cache_key = (cleaned, source_lang, target_lang)
     cached = cache.get(cache_key)
     if cached is not None:
         return cached
 
     # Tokenize with SentencePiece
     sp_model.set_encode_extra_options("")
-    tokens = sp_model.encode(text, out_type=str)
+    tokens = sp_model.encode(cleaned, out_type=str)
 
-    # Prepend source language token
-    tokens = [source_lang] + tokens
+    # Prepend source language token and append EOS (required by NLLB)
+    tokens = [source_lang] + tokens + ["</s>"]
 
     # Translate
     results = translator.translate_batch(
@@ -189,14 +233,41 @@ def _translate_single(text: str, source_lang: str, target_lang: str) -> str:
     return translated
 
 
+def _reload_on_cpu():
+    """Reload model on CPU after a CUDA runtime failure."""
+    global translator, device_in_use
+    logger.warning("CUDA runtime error during translation, reloading model on CPU...")
+    try:
+        translator = ctranslate2.Translator(
+            model_path_global, device="cpu", compute_type="float32"
+        )
+        device_in_use = "cpu"
+        logger.info("Model reloaded on CPU successfully")
+    except Exception as e2:
+        logger.error("CPU reload also failed: %s", e2)
+        translator = None
+
+
 def _translate_to_targets(text: str, source_lang: str, target_langs: list[str]) -> dict[str, str]:
     """Translate to all target languages, then apply glossary fixes."""
+    global translator
     results = {}
     for tl in target_langs:
         try:
             translated = _translate_single(text, source_lang, tl)
             results[tl] = glossary.apply(text, source_lang, tl, translated)
         except Exception as e:
+            err_msg = str(e)
+            if "cublas" in err_msg.lower() or "cuda" in err_msg.lower():
+                _reload_on_cpu()
+                if translator is not None:
+                    try:
+                        translated = _translate_single(text, source_lang, tl)
+                        results[tl] = glossary.apply(text, source_lang, tl, translated)
+                        continue
+                    except Exception as e2:
+                        logger.warning("Translation to %s failed after CPU reload: %s", tl, e2)
+                        continue
             logger.warning("Translation to %s failed: %s", tl, e)
     return results
 
@@ -215,7 +286,7 @@ async def translate(req: TranslateRequest):
             loop.run_in_executor(
                 None, _translate_to_targets, req.text, req.source_lang, req.target_langs
             ),
-            timeout=2.0,
+            timeout=10.0,
         )
     except asyncio.TimeoutError:
         logger.warning("Translation timed out for: %s", req.text[:80])
@@ -226,7 +297,7 @@ async def translate(req: TranslateRequest):
 
 @app.post("/load", response_model=StatusResponse)
 async def load_model(req: LoadRequest):
-    global translator, sp_model, device_in_use
+    global translator, sp_model, punct_model, device_in_use
 
     device = req.device
     with _lock:
@@ -250,9 +321,22 @@ async def load_model(req: LoadRequest):
                     raise
 
             # Load SentencePiece model
-            sp_path = model_path_global.rstrip("/\\") + "/sentencepiece.model"
+            sp_path = model_path_global.rstrip("/\\") + "/sentencepiece.bpe.model"
             sp_model = spm.SentencePieceProcessor()
             sp_model.load(sp_path)
+
+            # Load punctuation restoration model
+            try:
+                from transformers import pipeline as hf_pipeline
+                punct_model = hf_pipeline(
+                    "token-classification",
+                    model="oliverguhr/fullstop-punctuation-multilang-large",
+                    aggregation_strategy="simple",
+                )
+                logger.info("Punctuation restoration model loaded")
+            except Exception as pe:
+                logger.warning("Punctuation model failed to load (continuing without): %s", pe)
+                punct_model = None
 
             logger.info("Model loaded successfully on %s", device_in_use)
             return StatusResponse(status="ok", model_loaded=True, device=device_in_use)
@@ -265,10 +349,11 @@ async def load_model(req: LoadRequest):
 
 @app.post("/unload", response_model=StatusResponse)
 async def unload_model():
-    global translator, sp_model
+    global translator, sp_model, punct_model
     with _lock:
         translator = None
         sp_model = None
+        punct_model = None
         import gc
         gc.collect()
         logger.info("Model unloaded")

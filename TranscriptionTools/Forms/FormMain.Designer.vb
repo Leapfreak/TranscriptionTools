@@ -962,7 +962,7 @@ Partial Class FormMain
         svy += 48
 
         Me.btnSetupTranslation = New Button()
-        Me.btnSetupTranslation.Text = "Setup Translation (~820MB)"
+        Me.btnSetupTranslation.Text = "Setup Translation (~3.5GB)"
         Me.btnSetupTranslation.Location = New Drawing.Point(10, svy + 2)
         Me.btnSetupTranslation.Size = New Drawing.Size(240, 28)
 

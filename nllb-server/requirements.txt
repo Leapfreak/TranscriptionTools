@@ -2,3 +2,6 @@ ctranslate2
 sentencepiece
 fastapi
 uvicorn
+nvidia-cublas-cu12
+transformers
+torch

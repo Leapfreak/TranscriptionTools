@@ -501,7 +501,27 @@ Namespace Pipeline
             If Not _isRunning Then Return
             _currentLine = text
             Dim json = $"{{""type"":""update"",""text"":{EscapeJson(text)}}}"
-            BroadcastMessage(json)
+            ' Only send live updates to clients without a translation language —
+            ' translation clients will see committed+translated text only
+            Dim buffer = Encoding.UTF8.GetBytes(json)
+            Dim segment = New ArraySegment(Of Byte)(buffer)
+            Dim deadKeys As New List(Of String)
+
+            For Each kvp In _clients
+                Try
+                    If Not String.IsNullOrEmpty(kvp.Value.Language) Then Continue For
+                    Dim ws = kvp.Value.WebSocket
+                    If ws.State = WebSocketState.Open Then
+                        ws.SendAsync(segment, WebSocketMessageType.Text, True, CancellationToken.None).Wait(500)
+                    Else
+                        deadKeys.Add(kvp.Key)
+                    End If
+                Catch
+                    deadKeys.Add(kvp.Key)
+                End Try
+            Next
+
+            CleanupDeadClients(deadKeys)
         End Sub
 
         Public Sub BroadcastCommit(text As String)

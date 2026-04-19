@@ -11,7 +11,7 @@ Namespace Pipeline
         Public Event StatusChanged As EventHandler(Of String)
 
         Private Shared ReadOnly _httpClient As New HttpClient() With {
-            .Timeout = TimeSpan.FromSeconds(3)
+            .Timeout = TimeSpan.FromMinutes(5)
         }
 
         Private _process As Process
@@ -96,7 +96,7 @@ Namespace Pipeline
             Dim modelDir = Path.Combine(baseDir, "nllb-model")
             Dim modelOk = Directory.Exists(modelDir) AndAlso
                           File.Exists(Path.Combine(modelDir, "model.bin")) AndAlso
-                          File.Exists(Path.Combine(modelDir, "sentencepiece.model"))
+                          File.Exists(Path.Combine(modelDir, "sentencepiece.bpe.model"))
 
             Return (pythonOk, depsOk, modelOk)
         End Function
@@ -143,6 +143,13 @@ Namespace Pipeline
                 .StandardOutputEncoding = Encoding.UTF8,
                 .StandardErrorEncoding = Encoding.UTF8
             }
+
+            ' Add whisper dir to PATH so ctranslate2 can find CUDA DLLs (cublas64_12.dll etc.)
+            Dim whisperDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "whisper")
+            If Directory.Exists(whisperDir) Then
+                Dim currentPath = If(Environment.GetEnvironmentVariable("PATH"), "")
+                psi.Environment("PATH") = whisperDir & ";" & currentPath
+            End If
 
             Try
                 _process = New Process()
@@ -277,7 +284,7 @@ Namespace Pipeline
                 Dim json = $"{{""text"":{EscapeJsonString(text)},""source_lang"":""{sourceLang}"",""target_langs"":{targetsJson}}}"
                 Dim content As New StringContent(json, Encoding.UTF8, "application/json")
 
-                Using cts As New CancellationTokenSource(TimeSpan.FromSeconds(2))
+                Using cts As New CancellationTokenSource(TimeSpan.FromSeconds(12))
                     Dim response = Await _httpClient.PostAsync($"http://localhost:{_port}/translate", content, cts.Token)
                     If response.IsSuccessStatusCode Then
                         Dim body = Await response.Content.ReadAsStringAsync()

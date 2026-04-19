@@ -1853,16 +1853,29 @@ del ""%~f0""
     End Function
 
     Private Function GetCurrentSourceNllbLang() As String
-        ' Map the current whisper input language to NLLB code
-        Dim whisperLang = "auto"
-        If cboLiveInputLang.InvokeRequired Then
-            whisperLang = CStr(cboLiveInputLang.Invoke(Function() If(cboLiveInputLang.SelectedItem, "auto").ToString()))
+        ' Determine the language of the TEXT that whisper outputs
+        ' If whisper translates to English, the output text is English regardless of input
+        Dim outputLang = ""
+        Dim inputLang = ""
+        If cboLiveOutputLang.InvokeRequired Then
+            outputLang = CStr(cboLiveOutputLang.Invoke(Function() If(cboLiveOutputLang.SelectedItem, "auto").ToString()))
+            inputLang = CStr(cboLiveInputLang.Invoke(Function() If(cboLiveInputLang.SelectedItem, "auto").ToString()))
         Else
-            If cboLiveInputLang.SelectedItem IsNot Nothing Then whisperLang = cboLiveInputLang.SelectedItem.ToString()
+            If cboLiveOutputLang.SelectedItem IsNot Nothing Then outputLang = cboLiveOutputLang.SelectedItem.ToString()
+            If cboLiveInputLang.SelectedItem IsNot Nothing Then inputLang = cboLiveInputLang.SelectedItem.ToString()
         End If
-        If whisperLang = "auto" Then whisperLang = "es" ' Default to Spanish for this church context
-        Return TranslationService.WhisperToNllbLang(whisperLang)
+
+        ' If whisper is translating to English, the text is English
+        If outputLang = "en" AndAlso inputLang <> "en" Then
+            Return TranslationService.WhisperToNllbLang("en")
+        End If
+
+        ' Otherwise text is in the input language
+        If inputLang = "auto" Then inputLang = "es" ' Default to Spanish for this church context
+        Return TranslationService.WhisperToNllbLang(inputLang)
     End Function
+
+    Private _translationSetupPrompted As Boolean = False
 
     Private Sub HandleActiveLanguagesChanged(sender As Object, e As EventArgs)
         Dim targets = _subtitleServer?.GetActiveTranslationLanguages()
@@ -1875,28 +1888,29 @@ del ""%~f0""
         ' Cancel unload timer if active
         _translationUnloadTimer?.Change(Timeout.Infinite, Timeout.Infinite)
 
-        ' Start translation service if not running
-        If _translationService Is Nothing OrElse Not _translationService.IsRunning Then
-            ' Check if deps are installed first
-            Dim deps = TranslationService.CheckDependenciesInstalled()
-            If Not deps.pythonOk OrElse Not deps.depsOk OrElse Not deps.modelOk Then
-                ' Need to prompt on UI thread
-                Me.BeginInvoke(Async Sub()
-                                   Dim result = MessageBox.Show(
-                                       "Translation requires downloading ~820MB of dependencies (Python, AI model, etc.)." & vbCrLf & vbCrLf &
-                                       "Download now?",
-                                       "Translation Setup Required",
-                                       MessageBoxButtons.YesNo, MessageBoxIcon.Question)
-                                   If result = DialogResult.Yes Then
-                                       Await SetupTranslationDepsAsync()
-                                   Else
-                                       AppendServerLog("Translation setup declined — clients will receive original text only.")
-                                   End If
-                               End Sub)
-                Return
-            End If
-            StartTranslationService()
+        ' If translation service is already running, nothing to do — language routing is handled per-client
+        If _translationService IsNot Nothing AndAlso _translationService.IsRunning Then Return
+
+        ' Check if deps are installed first
+        Dim deps = TranslationService.CheckDependenciesInstalled()
+        If Not deps.pythonOk OrElse Not deps.depsOk OrElse Not deps.modelOk Then
+            If _translationSetupPrompted Then Return
+            _translationSetupPrompted = True
+            Me.BeginInvoke(Async Sub()
+                               Dim result = MessageBox.Show(
+                                   "Translation requires downloading ~3.5GB of dependencies (Python, AI model, etc.)." & vbCrLf & vbCrLf &
+                                   "Download now?",
+                                   "Translation Setup Required",
+                                   MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+                               If result = DialogResult.Yes Then
+                                   Await SetupTranslationDepsAsync()
+                               Else
+                                   AppendServerLog("Translation setup declined — clients will receive original text only.")
+                               End If
+                           End Sub)
+            Return
         End If
+        StartTranslationService()
     End Sub
 
     Private Sub StartTranslationService()
@@ -2062,7 +2076,7 @@ del ""%~f0""
             btnSetupTranslation.Text = "Translation Ready"
             btnSetupTranslation.Enabled = True
         Else
-            btnSetupTranslation.Text = "Setup Translation (~820MB)"
+            btnSetupTranslation.Text = "Setup Translation (~3.5GB)"
             btnSetupTranslation.Enabled = True
         End If
     End Sub

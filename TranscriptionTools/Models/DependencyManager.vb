@@ -395,7 +395,7 @@ Namespace Models
             Dim depsOk = If(pythonOk, CheckPythonDepsInstalled(), False)
             Dim modelOk = Directory.Exists(NllbModelDir()) AndAlso
                           File.Exists(Path.Combine(NllbModelDir(), "model.bin")) AndAlso
-                          File.Exists(Path.Combine(NllbModelDir(), "sentencepiece.model"))
+                          File.Exists(Path.Combine(NllbModelDir(), "sentencepiece.bpe.model"))
             Return Task.FromResult((pythonOk, depsOk, modelOk))
         End Function
 
@@ -441,12 +441,12 @@ Namespace Models
         Public Function CheckNllbModelAsync() As Task(Of ToolState)
             Dim state As New ToolState With {
                 .Name = "NLLB Translation Model",
-                .DownloadUrl = "https://huggingface.co/JustFrederik/nllb-200-distilled-600M-ct2-float16/resolve/main"
+                .DownloadUrl = "https://huggingface.co/JustFrederik/nllb-200-1.3B-ct2-float16/resolve/main"
             }
             Dim modelDir = NllbModelDir()
             If Directory.Exists(modelDir) AndAlso
                File.Exists(Path.Combine(modelDir, "model.bin")) AndAlso
-               File.Exists(Path.Combine(modelDir, "sentencepiece.model")) Then
+               File.Exists(Path.Combine(modelDir, "sentencepiece.bpe.model")) Then
                 state.Status = ToolStatus.UpToDate
                 state.InstalledVersion = "installed"
             End If
@@ -457,8 +457,8 @@ Namespace Models
             Dim modelDir = NllbModelDir()
             If Not Directory.Exists(modelDir) Then Directory.CreateDirectory(modelDir)
 
-            Dim baseUrl = "https://huggingface.co/JustFrederik/nllb-200-distilled-600M-ct2-float16/resolve/main"
-            Dim files = {"model.bin", "sentencepiece.model", "vocabulary.json", "config.json", "shared_vocabulary.json"}
+            Dim baseUrl = "https://huggingface.co/JustFrederik/nllb-200-1.3B-ct2-float16/resolve/main"
+            Dim files = {"model.bin", "sentencepiece.bpe.model", "shared_vocabulary.txt", "config.json", "tokenizer_config.json"}
 
             For Each f In files
                 Dim destPath = Path.Combine(modelDir, f)

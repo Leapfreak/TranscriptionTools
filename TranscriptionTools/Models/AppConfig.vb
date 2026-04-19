@@ -119,7 +119,7 @@ Namespace Models
 
         Public Property TranslateToEnglish As Boolean = False
 
-        Public Property VadThreshold As Single = 0.6F
+        Public Property VadThreshold As Single = 0.8F
 
         Public Property FreqThreshold As Single = 100.0F
 

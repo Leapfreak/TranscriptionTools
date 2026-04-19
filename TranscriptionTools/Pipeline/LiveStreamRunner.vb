@@ -110,9 +110,12 @@ Namespace Pipeline
             args.Add($"-t {config.Threads}")
             args.Add($"-l {inputLanguage}")
 
-            args.Add("--step 3000")
-            args.Add("--length 10000")
-            args.Add("--keep-context")
+            args.Add("--step 6000")
+            args.Add("--length 8000")
+            args.Add($"--max-tokens 64")
+            args.Add($"--beam-size 5")
+            args.Add($"--vad-thold {config.VadThreshold:F2}")
+            args.Add($"--freq-thold {config.FreqThreshold:F2}")
 
             If translateToEnglish Then
                 args.Add("-tr")
