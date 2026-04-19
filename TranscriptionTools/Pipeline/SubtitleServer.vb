@@ -14,19 +14,35 @@ Namespace Pipeline
 
         Public Event StatusChanged As EventHandler(Of String)
         Public Event RemoteCommand As EventHandler(Of String)
+        Public Event ActiveLanguagesChanged As EventHandler
 
         Private _listener As HttpListener
         Private _httpsListener As TcpListener
         Private _httpsCert As X509Certificate2
         Private _cts As CancellationTokenSource
-        Private ReadOnly _clients As New ConcurrentDictionary(Of String, WebSocket)()
+        Private ReadOnly _clients As New ConcurrentDictionary(Of String, ClientInfo)()
         Private _port As Integer = 5080
         Private _httpsPort As Integer = 5081
         Private _isRunning As Boolean = False
         Private Const CertPassword As String = "transcription-tools-cert"
         Private _currentLine As String = ""
-        Private ReadOnly _committedLines As New ConcurrentQueue(Of String)()
+        Private ReadOnly _committedLines As New ConcurrentQueue(Of CommittedEntry)()
         Private Const MaxCommittedLines As Integer = 200
+
+        Private Class ClientInfo
+            Public Property WebSocket As WebSocket
+            Public Property Language As String = ""  ' Empty = original (no translation)
+        End Class
+
+        Private Class CommittedEntry
+            Public Property OriginalText As String = ""
+            Public Property Translations As Dictionary(Of String, String)
+
+            Public Sub New(text As String, Optional translations As Dictionary(Of String, String) = Nothing)
+                OriginalText = text
+                Me.Translations = If(translations, New Dictionary(Of String, String)())
+            End Sub
+        End Class
 
         Public ReadOnly Property IsRunning As Boolean
             Get
@@ -350,13 +366,15 @@ Namespace Pipeline
         ''' </summary>
         Private Async Function HandleWebSocketStream(ws As WebSocket, ct As CancellationToken) As Task
             Dim clientId = Guid.NewGuid().ToString()
-            _clients.TryAdd(clientId, ws)
+            Dim info As New ClientInfo() With {.WebSocket = ws}
+            _clients.TryAdd(clientId, info)
             RaiseEvent StatusChanged(Me, $"Client connected ({_clients.Count} total)")
 
-            ' Send history
+            ' Send history (original text — client will set language shortly)
             Try
-                For Each line In _committedLines
-                    Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(line)}}}"
+                For Each entry In _committedLines
+                    Dim text = GetTextForClient(info, entry.OriginalText, entry.Translations)
+                    Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(text)}}}"
                     Dim buf = Encoding.UTF8.GetBytes(json)
                     Await ws.SendAsync(New ArraySegment(Of Byte)(buf), WebSocketMessageType.Text, True, ct).ConfigureAwait(False)
                 Next
@@ -368,19 +386,26 @@ Namespace Pipeline
             Catch
             End Try
 
-            ' Keep alive by reading
+            ' Read loop — parse client messages (setLanguage, etc.)
             Dim recvBuf = New Byte(1023) {}
             Try
                 While ws.State = WebSocketState.Open AndAlso Not ct.IsCancellationRequested
-                    Await ws.ReceiveAsync(New ArraySegment(Of Byte)(recvBuf), ct).ConfigureAwait(False)
+                    Dim result = Await ws.ReceiveAsync(New ArraySegment(Of Byte)(recvBuf), ct).ConfigureAwait(False)
+                    If result.MessageType = WebSocketMessageType.Text AndAlso result.Count > 0 Then
+                        Dim msg = Encoding.UTF8.GetString(recvBuf, 0, result.Count)
+                        ProcessClientMessage(clientId, msg)
+                    ElseIf result.MessageType = WebSocketMessageType.Close Then
+                        Exit While
+                    End If
                 End While
             Catch
             End Try
 
-            Dim removed As WebSocket = Nothing
+            Dim removed As ClientInfo = Nothing
             _clients.TryRemove(clientId, removed)
-            removed?.Dispose()
+            removed?.WebSocket?.Dispose()
             RaiseEvent StatusChanged(Me, $"Client disconnected ({_clients.Count} total)")
+            RaiseEvent ActiveLanguagesChanged(Me, EventArgs.Empty)
         End Function
 
         Private Function GetOrCreateCertificate() As X509Certificate2
@@ -433,7 +458,7 @@ Namespace Pipeline
             ' Close all WebSocket connections
             For Each kvp In _clients
                 Try
-                    Dim ws = kvp.Value
+                    Dim ws = kvp.Value.WebSocket
                     If ws.State = WebSocketState.Open Then
                         ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Server stopping", CancellationToken.None).Wait(1000)
                     End If
@@ -461,6 +486,17 @@ Namespace Pipeline
             RaiseEvent StatusChanged(Me, "Server stopped")
         End Sub
 
+        Public Function GetActiveTranslationLanguages() As List(Of String)
+            Dim langs As New HashSet(Of String)()
+            For Each kvp In _clients
+                Dim lang = kvp.Value.Language
+                If Not String.IsNullOrEmpty(lang) Then
+                    langs.Add(lang)
+                End If
+            Next
+            Return langs.ToList()
+        End Function
+
         Public Sub BroadcastUpdate(text As String)
             If Not _isRunning Then Return
             _currentLine = text
@@ -470,25 +506,58 @@ Namespace Pipeline
 
         Public Sub BroadcastCommit(text As String)
             If Not _isRunning Then Return
+            BroadcastCommitTranslated(text, Nothing)
+        End Sub
+
+        Public Sub BroadcastCommitTranslated(originalText As String, translations As Dictionary(Of String, String))
+            If Not _isRunning Then Return
             _currentLine = ""
-            _committedLines.Enqueue(text)
+            Dim entry As New CommittedEntry(originalText, translations)
+            _committedLines.Enqueue(entry)
             While _committedLines.Count > MaxCommittedLines
-                Dim discard As String = Nothing
+                Dim discard As CommittedEntry = Nothing
                 _committedLines.TryDequeue(discard)
             End While
-            Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(text)}}}"
-            BroadcastMessage(json)
+
+            Dim deadKeys As New List(Of String)
+
+            For Each kvp In _clients
+                Try
+                    Dim ws = kvp.Value.WebSocket
+                    If ws.State = WebSocketState.Open Then
+                        Dim text = GetTextForClient(kvp.Value, originalText, translations)
+                        Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(text)}}}"
+                        Dim buffer = Encoding.UTF8.GetBytes(json)
+                        ws.SendAsync(New ArraySegment(Of Byte)(buffer), WebSocketMessageType.Text, True, CancellationToken.None).Wait(500)
+                    Else
+                        deadKeys.Add(kvp.Key)
+                    End If
+                Catch
+                    deadKeys.Add(kvp.Key)
+                End Try
+            Next
+
+            CleanupDeadClients(deadKeys)
         End Sub
 
         Public Sub BroadcastClear()
             If Not _isRunning Then Return
             _currentLine = ""
             While _committedLines.Count > 0
-                Dim discard As String = Nothing
+                Dim discard As CommittedEntry = Nothing
                 _committedLines.TryDequeue(discard)
             End While
             BroadcastMessage("{""type"":""clear""}")
         End Sub
+
+        Private Shared Function GetTextForClient(client As ClientInfo, originalText As String, translations As Dictionary(Of String, String)) As String
+            If String.IsNullOrEmpty(client.Language) Then Return originalText
+            If translations IsNot Nothing Then
+                Dim translated As String = Nothing
+                If translations.TryGetValue(client.Language, translated) Then Return translated
+            End If
+            Return originalText
+        End Function
 
         Private Sub BroadcastMessage(json As String)
             Dim buffer = Encoding.UTF8.GetBytes(json)
@@ -497,7 +566,7 @@ Namespace Pipeline
 
             For Each kvp In _clients
                 Try
-                    Dim ws = kvp.Value
+                    Dim ws = kvp.Value.WebSocket
                     If ws.State = WebSocketState.Open Then
                         ws.SendAsync(segment, WebSocketMessageType.Text, True, CancellationToken.None).Wait(500)
                     Else
@@ -508,15 +577,45 @@ Namespace Pipeline
                 End Try
             Next
 
+            CleanupDeadClients(deadKeys)
+        End Sub
+
+        Private Sub CleanupDeadClients(deadKeys As List(Of String))
             For Each key In deadKeys
-                Dim removed As WebSocket = Nothing
+                Dim removed As ClientInfo = Nothing
                 _clients.TryRemove(key, removed)
-                removed?.Dispose()
+                removed?.WebSocket?.Dispose()
             Next
 
             If deadKeys.Count > 0 Then
                 RaiseEvent StatusChanged(Me, $"Clients: {_clients.Count}")
+                RaiseEvent ActiveLanguagesChanged(Me, EventArgs.Empty)
             End If
+        End Sub
+
+        Private Sub ProcessClientMessage(clientId As String, jsonText As String)
+            Try
+                Using doc = System.Text.Json.JsonDocument.Parse(jsonText)
+                    Dim root = doc.RootElement
+                    Dim typeProp As System.Text.Json.JsonElement = Nothing
+                    If Not root.TryGetProperty("type", typeProp) Then Return
+                    Dim typeStr = typeProp.GetString()
+                    If typeStr = "setLanguage" Then
+                        Dim langProp As System.Text.Json.JsonElement = Nothing
+                        If Not root.TryGetProperty("language", langProp) Then Return
+                        Dim lang = langProp.GetString()
+                        Dim info As ClientInfo = Nothing
+                        If _clients.TryGetValue(clientId, info) Then
+                            Dim oldLang = info.Language
+                            info.Language = If(lang, "")
+                            If oldLang <> info.Language Then
+                                RaiseEvent ActiveLanguagesChanged(Me, EventArgs.Empty)
+                            End If
+                        End If
+                    End If
+                End Using
+            Catch
+            End Try
         End Sub
 
         Private Async Sub AcceptLoop(listener As HttpListener, ct As CancellationToken)
@@ -561,13 +660,15 @@ Namespace Pipeline
 
             Dim ws = wsCtx.WebSocket
             Dim clientId = Guid.NewGuid().ToString()
-            _clients.TryAdd(clientId, ws)
+            Dim info As New ClientInfo() With {.WebSocket = ws}
+            _clients.TryAdd(clientId, info)
             RaiseEvent StatusChanged(Me, $"Client connected ({_clients.Count} total)")
 
-            ' Send history to new client
+            ' Send history to new client (original text — client will set language shortly)
             Try
-                For Each line In _committedLines
-                    Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(line)}}}"
+                For Each entry In _committedLines
+                    Dim text = GetTextForClient(info, entry.OriginalText, entry.Translations)
+                    Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(text)}}}"
                     Dim buf = Encoding.UTF8.GetBytes(json)
                     Await ws.SendAsync(New ArraySegment(Of Byte)(buf), WebSocketMessageType.Text, True, ct).ConfigureAwait(False)
                 Next
@@ -579,19 +680,26 @@ Namespace Pipeline
             Catch
             End Try
 
-            ' Keep connection alive by reading (WebSocket protocol requires it)
+            ' Read loop — parse client messages (setLanguage, etc.)
             Dim recvBuf = New Byte(1023) {}
             Try
                 While ws.State = WebSocketState.Open AndAlso Not ct.IsCancellationRequested
-                    Await ws.ReceiveAsync(New ArraySegment(Of Byte)(recvBuf), ct).ConfigureAwait(False)
+                    Dim result = Await ws.ReceiveAsync(New ArraySegment(Of Byte)(recvBuf), ct).ConfigureAwait(False)
+                    If result.MessageType = WebSocketMessageType.Text AndAlso result.Count > 0 Then
+                        Dim msg = Encoding.UTF8.GetString(recvBuf, 0, result.Count)
+                        ProcessClientMessage(clientId, msg)
+                    ElseIf result.MessageType = WebSocketMessageType.Close Then
+                        Exit While
+                    End If
                 End While
             Catch
             End Try
 
-            Dim removed As WebSocket = Nothing
+            Dim removed As ClientInfo = Nothing
             _clients.TryRemove(clientId, removed)
-            removed?.Dispose()
+            removed?.WebSocket?.Dispose()
             RaiseEvent StatusChanged(Me, $"Client disconnected ({_clients.Count} total)")
+            RaiseEvent ActiveLanguagesChanged(Me, EventArgs.Empty)
         End Sub
 
         Public Property IsLiveRunning As Boolean = False
@@ -724,17 +832,19 @@ Namespace Pipeline
 <html lang=""en"">
 <head>
 <meta charset=""UTF-8"">
-<meta name=""viewport"" content=""width=device-width, initial-scale=1.0, user-scalable=yes"">
+<meta name=""viewport"" content=""width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover"">
 <title>Live Subtitles</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
+html{height:100%;height:100dvh;overflow:hidden}
 body{background:{{BG_COLOR}};color:{{FG_COLOR}};font-family:'Segoe UI',Arial,sans-serif;
-     height:100vh;display:flex;flex-direction:column;overflow:hidden}
+     height:100%;display:flex;flex-direction:column;overflow:hidden}
 #status{padding:6px 12px;font-size:13px;color:#888;background:#111;border-bottom:1px solid #222;flex-shrink:0}
 #status.connected{color:#4a4}
 #status.disconnected{color:#a44}
-#container{flex:1;overflow-y:auto;padding:16px;padding-bottom:32px}
-#lines{display:flex;flex-direction:column;min-height:100%;padding-bottom:24px}
+#container{flex:1;overflow-y:auto;padding:16px;padding-bottom:32px;
+           -webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#lines{display:flex;flex-direction:column;min-height:100%;padding-bottom:env(safe-area-inset-bottom,24px)}
 #spacer{flex:1}
 .line{font-size:28px;line-height:1.4;padding:4px 0;color:{{FG_COLOR}};word-wrap:break-word;border-bottom:1px solid #333;margin-bottom:4px}
 .line.in-progress{color:#ff6b6b;opacity:0.85}
@@ -804,6 +914,27 @@ body{background:{{BG_COLOR}};color:{{FG_COLOR}};font-family:'Segoe UI',Arial,san
     <option value=""1.3"">Fast</option>
     <option value=""1.6"">Very Fast</option>
   </select>
+  <label id=""lblTransLang"">Translation</label>
+  <select id=""transLangSelect"" onchange=""setTransLang(this.value)"">
+    <option value="""">Original</option>
+    <option value=""spa_Latn"">Espa&#241;ol</option>
+    <option value=""cat_Latn"">Catal&#224;</option>
+    <option value=""eng_Latn"">English</option>
+    <option value=""fra_Latn"">Fran&#231;ais</option>
+    <option value=""deu_Latn"">Deutsch</option>
+    <option value=""por_Latn"">Portugu&#234;s</option>
+    <option value=""ita_Latn"">Italiano</option>
+    <option value=""ron_Latn"">Rom&#226;n&#259;</option>
+    <option value=""nld_Latn"">Nederlands</option>
+    <option value=""pol_Latn"">Polski</option>
+    <option value=""rus_Cyrl"">&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;</option>
+    <option value=""ukr_Cyrl"">&#1059;&#1082;&#1088;&#1072;&#1111;&#1085;&#1089;&#1100;&#1082;&#1072;</option>
+    <option value=""zho_Hans"">&#20013;&#25991;</option>
+    <option value=""jpn_Jpan"">&#26085;&#26412;&#35486;</option>
+    <option value=""kor_Hang"">&#54620;&#44397;&#50612;</option>
+    <option value=""arb_Arab"">&#1575;&#1604;&#1593;&#1585;&#1576;&#1610;&#1577;</option>
+  </select>
+  <button id=""btnSave"" onclick=""saveTranscript()"" style=""width:100%;margin-top:12px"">&#128190; Save Transcript</button>
 </div>
 <div id=""container""><div id=""lines""><div id=""spacer""></div></div></div>
 <script>
@@ -827,7 +958,7 @@ var T={};
         bold:'Bold',font:'Font',style:'Style',voice:'Voice',speed:'Speed',color:'Text Color',
         slow:'Slow',normal:'Normal',fast:'Fast',vfast:'Very Fast',
         start:'Start',stop:'Stop',restart:'Restart',simulate:'Simulate',clear:'Clear',
-        remote:'Remote Control',settings:'Settings',readAloud:'Read aloud',keepScreen:'Keep screen on'},
+        saveTranscript:'Save Transcript',transLang:'Translation',remote:'Remote Control',settings:'Settings',readAloud:'Read aloud',keepScreen:'Keep screen on'},
     es:{connecting:'Conectando...',connected:'Conectado',disconnected:'Desconectado - reconectando...',
         wakeTitle:'Mantener Pantalla',wakeDesc:'Se necesita conexi\u00f3n segura (configuraci\u00f3n \u00fanica):',
         stepTap:'Toca el bot\u00f3n de abajo',stepWarn:'Ver\u00e1s una advertencia \u2014 es normal',
@@ -843,7 +974,7 @@ var T={};
         bold:'Negrita',font:'Fuente',style:'Estilo',voice:'Voz',speed:'Velocidad',color:'Color de texto',
         slow:'Lento',normal:'Normal',fast:'R\u00e1pido',vfast:'Muy R\u00e1pido',
         start:'Iniciar',stop:'Detener',restart:'Reiniciar',simulate:'Simular',clear:'Limpiar',
-        remote:'Control Remoto',settings:'Ajustes',readAloud:'Leer en voz alta',keepScreen:'Mantener pantalla'},
+        saveTranscript:'Guardar Transcripci\u00f3n',transLang:'Traducci\u00f3n',remote:'Control Remoto',settings:'Ajustes',readAloud:'Leer en voz alta',keepScreen:'Mantener pantalla'},
     fr:{connecting:'Connexion...',connected:'Connect\u00e9',disconnected:'D\u00e9connect\u00e9 - reconnexion...',
         wakeTitle:'\u00c9cran Allum\u00e9',wakeDesc:'Connexion s\u00e9curis\u00e9e requise (une seule fois) :',
         stepTap:'Appuyez sur le bouton ci-dessous',stepWarn:'Un avertissement s\u0027affichera \u2014 c\u0027est normal',
@@ -859,7 +990,7 @@ var T={};
         bold:'Gras',font:'Police',style:'Style',voice:'Voix',speed:'Vitesse',color:'Couleur du texte',
         slow:'Lent',normal:'Normal',fast:'Rapide',vfast:'Tr\u00e8s Rapide',
         start:'D\u00e9marrer',stop:'Arr\u00eater',restart:'Red\u00e9marrer',simulate:'Simuler',clear:'Effacer',
-        remote:'T\u00e9l\u00e9commande',settings:'Param\u00e8tres',readAloud:'Lire \u00e0 voix haute',keepScreen:'\u00c9cran allum\u00e9'},
+        saveTranscript:'Enregistrer',transLang:'Traduction',remote:'T\u00e9l\u00e9commande',settings:'Param\u00e8tres',readAloud:'Lire \u00e0 voix haute',keepScreen:'\u00c9cran allum\u00e9'},
     de:{connecting:'Verbinde...',connected:'Verbunden',disconnected:'Getrennt - verbinde erneut...',
         wakeTitle:'Bildschirm An',wakeDesc:'Sichere Verbindung erforderlich (einmalig):',
         stepTap:'Tippen Sie auf den Button unten',stepWarn:'Sie sehen eine Warnung \u2014 das ist normal',
@@ -875,7 +1006,7 @@ var T={};
         bold:'Fett',font:'Schrift',style:'Stil',voice:'Stimme',speed:'Geschwindigkeit',color:'Textfarbe',
         slow:'Langsam',normal:'Normal',fast:'Schnell',vfast:'Sehr Schnell',
         start:'Starten',stop:'Stoppen',restart:'Neustarten',simulate:'Simulieren',clear:'L\u00f6schen',
-        remote:'Fernsteuerung',settings:'Einstellungen',readAloud:'Vorlesen',keepScreen:'Bildschirm an'},
+        saveTranscript:'Speichern',transLang:'\u00dcbersetzung',remote:'Fernsteuerung',settings:'Einstellungen',readAloud:'Vorlesen',keepScreen:'Bildschirm an'},
     ca:{connecting:'Connectant...',connected:'Connectat',disconnected:'Desconnectat - reconnectant...',
         wakeTitle:'Mantenir Pantalla',wakeDesc:'Cal connexi\u00f3 segura (configuraci\u00f3 \u00fanica):',
         stepTap:'Toca el bot\u00f3 de sota',stepWarn:'Veur\u00e0s un av\u00eds \u2014 \u00e9s normal',
@@ -891,7 +1022,7 @@ var T={};
         bold:'Negreta',font:'Tipus de lletra',style:'Estil',voice:'Veu',speed:'Velocitat',color:'Color del text',
         slow:'Lent',normal:'Normal',fast:'R\u00e0pid',vfast:'Molt R\u00e0pid',
         start:'Iniciar',stop:'Aturar',restart:'Reiniciar',simulate:'Simular',clear:'Netejar',
-        remote:'Control Remot',settings:'Ajustos',readAloud:'Llegir en veu alta',keepScreen:'Mantenir pantalla'},
+        saveTranscript:'Desar Transcripci\u00f3',transLang:'Traducci\u00f3',remote:'Control Remot',settings:'Ajustos',readAloud:'Llegir en veu alta',keepScreen:'Mantenir pantalla'},
     pt:{connecting:'Conectando...',connected:'Conectado',disconnected:'Desconectado - reconectando...',
         wakeTitle:'Manter Tela Ligada',wakeDesc:'Conex\u00e3o segura necess\u00e1ria (apenas uma vez):',
         stepTap:'Toque no bot\u00e3o abaixo',stepWarn:'Voc\u00ea ver\u00e1 um aviso \u2014 isso \u00e9 normal',
@@ -907,7 +1038,7 @@ var T={};
         bold:'Negrito',font:'Fonte',style:'Estilo',voice:'Voz',speed:'Velocidade',color:'Cor do texto',
         slow:'Lento',normal:'Normal',fast:'R\u00e1pido',vfast:'Muito R\u00e1pido',
         start:'Iniciar',stop:'Parar',restart:'Reiniciar',simulate:'Simular',clear:'Limpar',
-        remote:'Controle Remoto',settings:'Configura\u00e7\u00f5es',readAloud:'Ler em voz alta',keepScreen:'Manter tela ligada'},
+        saveTranscript:'Salvar Transcri\u00e7\u00e3o',transLang:'Tradu\u00e7\u00e3o',remote:'Controle Remoto',settings:'Configura\u00e7\u00f5es',readAloud:'Ler em voz alta',keepScreen:'Manter tela ligada'},
     ja:{connecting:'\u63a5\u7d9a\u4e2d...',connected:'\u63a5\u7d9a\u6e08\u307f',disconnected:'\u5207\u65ad - \u518d\u63a5\u7d9a\u4e2d...',
         wakeTitle:'\u753b\u9762\u3092\u70b9\u706f',wakeDesc:'\u5b89\u5168\u306a\u63a5\u7d9a\u304c\u5fc5\u8981\u3067\u3059\uff08\u521d\u56de\u306e\u307f\uff09:',
         stepTap:'\u4e0b\u306e\u30dc\u30bf\u30f3\u3092\u30bf\u30c3\u30d7',stepWarn:'\u8b66\u544a\u304c\u8868\u793a\u3055\u308c\u307e\u3059 \u2014 \u6b63\u5e38\u3067\u3059',
@@ -923,7 +1054,7 @@ var T={};
         bold:'\u592a\u5b57',font:'\u30d5\u30a9\u30f3\u30c8',style:'\u30b9\u30bf\u30a4\u30eb',voice:'\u97f3\u58f0',speed:'\u901f\u5ea6',color:'\u6587\u5b57\u8272',
         slow:'\u9045\u3044',normal:'\u666e\u901a',fast:'\u901f\u3044',vfast:'\u3068\u3066\u3082\u901f\u3044',
         start:'\u958b\u59cb',stop:'\u505c\u6b62',restart:'\u518d\u958b',simulate:'\u30b7\u30df\u30e5\u30ec\u30fc\u30b7\u30e7\u30f3',clear:'\u30af\u30ea\u30a2',
-        remote:'\u30ea\u30e2\u30fc\u30c8',settings:'\u8a2d\u5b9a',readAloud:'\u8aad\u307f\u4e0a\u3052',keepScreen:'\u753b\u9762\u70b9\u706f'},
+        saveTranscript:'\u4fdd\u5b58',transLang:'\u7ffb\u8a33',remote:'\u30ea\u30e2\u30fc\u30c8',settings:'\u8a2d\u5b9a',readAloud:'\u8aad\u307f\u4e0a\u3052',keepScreen:'\u753b\u9762\u70b9\u706f'},
     zh:{connecting:'\u8fde\u63a5\u4e2d...',connected:'\u5df2\u8fde\u63a5',disconnected:'\u5df2\u65ad\u5f00 - \u91cd\u65b0\u8fde\u63a5...',
         wakeTitle:'\u4fdd\u6301\u5c4f\u5e55\u5e38\u4eae',wakeDesc:'\u9700\u8981\u5b89\u5168\u8fde\u63a5\uff08\u4ec5\u9700\u4e00\u6b21\uff09:',
         stepTap:'\u70b9\u51fb\u4e0b\u65b9\u6309\u94ae',stepWarn:'\u60a8\u5c06\u770b\u5230\u8b66\u544a\u9875\u9762 \u2014 \u8fd9\u662f\u6b63\u5e38\u7684',
@@ -939,7 +1070,7 @@ var T={};
         bold:'\u7c97\u4f53',font:'\u5b57\u4f53',style:'\u6837\u5f0f',voice:'\u8bed\u97f3',speed:'\u901f\u5ea6',color:'\u6587\u5b57\u989c\u8272',
         slow:'\u6162',normal:'\u6b63\u5e38',fast:'\u5feb',vfast:'\u975e\u5e38\u5feb',
         start:'\u5f00\u59cb',stop:'\u505c\u6b62',restart:'\u91cd\u542f',simulate:'\u6a21\u62df',clear:'\u6e05\u9664',
-        remote:'\u8fdc\u7a0b\u63a7\u5236',settings:'\u8bbe\u7f6e',readAloud:'\u6717\u8bfb',keepScreen:'\u4fdd\u6301\u5c4f\u5e55'}
+        saveTranscript:'\u4fdd\u5b58',transLang:'\u7ffb\u8bd1',remote:'\u8fdc\u7a0b\u63a7\u5236',settings:'\u8bbe\u7f6e',readAloud:'\u6717\u8bfb',keepScreen:'\u4fdd\u6301\u5c4f\u5e55'}
   };
   if(lang.indexOf('zh')===0)T=tr.zh;
   else T=tr[lc]||tr.en;
@@ -1012,6 +1143,23 @@ function changeFontSize(d){fontSize=Math.max(12,Math.min(80,fontSize+d));localSt
 function changeFont(f){fontFamily=f;localStorage.setItem('fontFamily',f);applyStylesToAll()}
 function toggleBold(){isBold=!isBold;localStorage.setItem('bold',isBold);document.getElementById('btnBold').classList.toggle('active');applyStylesToAll()}
 function changeColor(c){textColor=c;localStorage.setItem('textColor',c);applyStylesToAll()}
+function saveTranscript(){
+  var els=document.querySelectorAll('.line:not(.in-progress)');
+  var text='';
+  for(var i=0;i<els.length;i++){
+    var ln=els[i].textContent;if(ln)text+=ln+'\n';
+  }
+  if(!text){return}
+  var blob=new Blob([text],{type:'text/plain;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;
+  var d=new Date();
+  var pad=function(n){return n<10?'0'+n:''+n};
+  a.download='transcript_'+d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'_'+pad(d.getHours())+pad(d.getMinutes())+'.txt';
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url)},100);
+}
 var userScrolled=false;
 container.addEventListener('scroll',function(){
   var atBottom=container.scrollHeight-container.scrollTop-container.clientHeight<60;
@@ -1037,11 +1185,23 @@ function updateCurrent(text){
   currentEl.textContent=text;
   scrollBottom()
 }
+var wsRef=null;
+function setTransLang(lang){
+  localStorage.setItem('transLang',lang);
+  if(wsRef&&wsRef.readyState===1){wsRef.send(JSON.stringify({type:'setLanguage',language:lang}))}
+}
+(function(){var tls=document.getElementById('transLangSelect');var saved=localStorage.getItem('transLang')||'';
+  for(var i=0;i<tls.options.length;i++){if(tls.options[i].value===saved){tls.selectedIndex=i;break}}
+})();
 function connect(){
   var proto=location.protocol==='https:'?'wss:':'ws:';
   var ws=new WebSocket(proto+'//'+location.host+'/ws');
-  ws.onopen=function(){statusEl.textContent=t('connected');statusEl.className='connected'};
-  ws.onclose=function(){statusEl.textContent=t('disconnected');statusEl.className='disconnected';setTimeout(connect,2000)};
+  wsRef=ws;
+  ws.onopen=function(){statusEl.textContent=t('connected');statusEl.className='connected';
+    var lang=localStorage.getItem('transLang')||'';
+    if(lang){ws.send(JSON.stringify({type:'setLanguage',language:lang}))}
+  };
+  ws.onclose=function(){statusEl.textContent=t('disconnected');statusEl.className='disconnected';wsRef=null;setTimeout(connect,2000)};
   ws.onerror=function(){ws.close()};
   ws.onmessage=function(e){
     try{var msg=JSON.parse(e.data);
@@ -1063,6 +1223,8 @@ document.getElementById('lblColor').textContent=t('color');
 document.getElementById('btnBold').textContent=t('bold');
 document.getElementById('lblVoice').textContent=t('voice');
 document.getElementById('lblSpeed').textContent=t('speed');
+document.getElementById('lblTransLang').textContent=t('transLang');
+document.getElementById('btnSave').innerHTML='&#128190; '+t('saveTranscript');
 var rOpts=rateSelect.options;rOpts[0].textContent=t('slow');rOpts[1].textContent=t('normal');rOpts[2].textContent=t('fast');rOpts[3].textContent=t('vfast');
 connect();
 

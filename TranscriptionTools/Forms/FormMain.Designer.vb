@@ -959,17 +959,25 @@ Partial Class FormMain
         Me.chkSubtitleBold.Location = New Drawing.Point(500, svy + 18)
         Me.chkSubtitleBold.AutoSize = True
 
-        Me.grpServerSettings.Size = New Drawing.Size(830, 148)
+        svy += 48
+
+        Me.btnSetupTranslation = New Button()
+        Me.btnSetupTranslation.Text = "Setup Translation (~820MB)"
+        Me.btnSetupTranslation.Location = New Drawing.Point(10, svy + 2)
+        Me.btnSetupTranslation.Size = New Drawing.Size(240, 28)
+
+        Me.grpServerSettings.Size = New Drawing.Size(830, 196)
         Me.grpServerSettings.Controls.AddRange({Me.lblServerPort, Me.nudServerPort,
             Me.btnServerStart, Me.btnServerStop, Me.btnServerRestart,
             Me.btnServerSimulate, Me.btnServerSimStop,
             Me.lblSubtitleBg, Me.btnSubtitleBg, Me.lblSubtitleFg, Me.btnSubtitleFg,
-            Me.lblSubtitleFont, Me.cboSubtitleFont, Me.lblSubtitleSize, Me.nudSubtitleSize, Me.chkSubtitleBold})
+            Me.lblSubtitleFont, Me.cboSubtitleFont, Me.lblSubtitleSize, Me.nudSubtitleSize, Me.chkSubtitleBold,
+            Me.btnSetupTranslation})
 
         ' Connection info group
         Me.grpServerInfo = New GroupBox()
         Me.grpServerInfo.Text = "Connection Info"
-        Me.grpServerInfo.Location = New Drawing.Point(8, 160)
+        Me.grpServerInfo.Location = New Drawing.Point(8, 208)
         Me.grpServerInfo.Size = New Drawing.Size(830, 100)
         Me.grpServerInfo.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
 
@@ -1001,8 +1009,8 @@ Partial Class FormMain
 
         ' Server log
         Me.rtbServerLog = New RichTextBox()
-        Me.rtbServerLog.Location = New Drawing.Point(8, 266)
-        Me.rtbServerLog.Size = New Drawing.Size(830, 347)
+        Me.rtbServerLog.Location = New Drawing.Point(8, 314)
+        Me.rtbServerLog.Size = New Drawing.Size(830, 299)
         Me.rtbServerLog.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
         Me.rtbServerLog.[ReadOnly] = True
         Me.rtbServerLog.BackColor = Drawing.Color.Black
@@ -1267,6 +1275,7 @@ Partial Class FormMain
     Friend WithEvents lblSubtitleSize As Label
     Friend WithEvents nudSubtitleSize As NumericUpDown
     Friend WithEvents chkSubtitleBold As CheckBox
+    Friend WithEvents btnSetupTranslation As Button
 
     ' Live Translation tab
     Friend WithEvents grpLiveInput As GroupBox

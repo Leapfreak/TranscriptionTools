@@ -60,6 +60,8 @@ Source: "{#AppPublishDir}\Help\*"; DestDir: "{app}\Help"; Flags: ignoreversion r
 Source: "{#WhisperBinDir}\whisper-cli.exe"; DestDir: "{app}\whisper"; Flags: ignoreversion
 Source: "{#WhisperBinDir}\whisper-stream.exe"; DestDir: "{app}\whisper"; Flags: ignoreversion
 Source: "{#WhisperBinDir}\*.dll"; DestDir: "{app}\whisper"; Flags: ignoreversion
+; --- NLLB translation server ---
+Source: "{#AppPublishDir}\nllb-server\*"; DestDir: "{app}\nllb-server"; Flags: ignoreversion
 ; Locale satellite assemblies
 Source: "{#AppPublishDir}\ca\*"; DestDir: "{app}\ca"; Flags: ignoreversion
 Source: "{#AppPublishDir}\de\*"; DestDir: "{app}\de"; Flags: ignoreversion

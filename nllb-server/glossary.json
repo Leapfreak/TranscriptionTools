@@ -1,0 +1,105 @@
+[
+  {
+    "comment": "Spanish/Catalan 'culto' = church service, not 'cult'",
+    "trigger": "culto",
+    "source_langs": ["spa_Latn", "cat_Latn"],
+    "fixes": {
+      "eng_Latn": {"cult": "service", "cults": "services"},
+      "fra_Latn": {"culte": "culte religieux"},
+      "deu_Latn": {"Kult": "Gottesdienst"},
+      "por_Latn": {"culto": "culto religioso"}
+    }
+  },
+  {
+    "comment": "'cultos' plural form",
+    "trigger": "cultos",
+    "source_langs": ["spa_Latn", "cat_Latn"],
+    "fixes": {
+      "eng_Latn": {"cults": "services", "cult": "service"}
+    }
+  },
+  {
+    "comment": "'alabanza' = praise/worship (not just 'praise')",
+    "trigger": "alabanza",
+    "source_langs": ["spa_Latn"],
+    "fixes": {
+      "eng_Latn": {"praise": "worship"}
+    }
+  },
+  {
+    "comment": "'predicacion' / 'predicar' = sermon/preaching, not 'predication'",
+    "trigger": "predicaci",
+    "source_langs": ["spa_Latn"],
+    "fixes": {
+      "eng_Latn": {"predication": "sermon", "predications": "sermons"}
+    }
+  },
+  {
+    "comment": "'hermano/hermana' in church = brother/sister (fellow believer)",
+    "trigger": "hermano",
+    "source_langs": ["spa_Latn"],
+    "fixes": {}
+  },
+  {
+    "comment": "'congregacion' = congregation, ensure consistent",
+    "trigger": "congregaci",
+    "source_langs": ["spa_Latn"],
+    "fixes": {
+      "eng_Latn": {"assembly": "congregation"}
+    }
+  },
+  {
+    "comment": "'oracion' = prayer",
+    "trigger": "oraci",
+    "source_langs": ["spa_Latn"],
+    "fixes": {
+      "eng_Latn": {"oration": "prayer", "orations": "prayers"}
+    }
+  },
+  {
+    "comment": "'Espiritu Santo' = Holy Spirit, not 'Holy Ghost' or other variants",
+    "trigger": "Esp\u00edritu Santo",
+    "source_langs": ["spa_Latn"],
+    "fixes": {
+      "eng_Latn": {"Holy Ghost": "Holy Spirit"}
+    }
+  },
+  {
+    "comment": "'bautismo' = baptism (ensure correct in all targets)",
+    "trigger": "bautis",
+    "source_langs": ["spa_Latn"],
+    "fixes": {}
+  },
+  {
+    "comment": "'iglesia' = church",
+    "trigger": "iglesia",
+    "source_langs": ["spa_Latn"],
+    "fixes": {
+      "eng_Latn": {"Church": "church"}
+    }
+  },
+  {
+    "comment": "'pecado' = sin (not 'fish' from 'pescado' confusion)",
+    "trigger": "pecado",
+    "source_langs": ["spa_Latn"],
+    "fixes": {
+      "eng_Latn": {"fish": "sin"}
+    }
+  },
+  {
+    "comment": "'diezmo' = tithe",
+    "trigger": "diezmo",
+    "source_langs": ["spa_Latn"],
+    "fixes": {
+      "eng_Latn": {"tenth": "tithe", "tenths": "tithes"}
+    }
+  },
+  {
+    "comment": "'ofrenda' = offering (church collection)",
+    "trigger": "ofrenda",
+    "source_langs": ["spa_Latn"],
+    "fixes": {
+      "eng_Latn": {"gift": "offering", "gifts": "offerings"}
+    }
+  }
+]

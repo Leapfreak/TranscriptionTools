@@ -16,6 +16,8 @@ Public Class FormMain
     Private _resMgr As ResourceManager
     Private _liveRunner As LiveStreamRunner
     Private _subtitleServer As SubtitleServer
+    Private _translationService As TranslationService
+    Private _translationUnloadTimer As System.Threading.Timer
     Private _simCts As CancellationTokenSource
     Private _isInitializing As Boolean = True
     Private _exitForReal As Boolean = False
@@ -124,6 +126,9 @@ Public Class FormMain
 
         ' Check for missing dependencies
         CheckDependenciesAsync()
+
+        ' Update translation setup button
+        UpdateTranslationButtonAsync()
 
         ' Wire up system tray
         AddHandler trayIcon.DoubleClick, Sub(s, ev) ShowFromTray()
@@ -1686,7 +1691,7 @@ del ""%~f0""
 
         ' Committed final line - finalize the in-progress line with a newline
         AddHandler _liveRunner.OutputLineCommitted, Sub(s, line)
-                                                        _subtitleServer?.BroadcastCommit(line)
+                                                        TranslateAndBroadcastAsync(line)
                                                         If rtbLiveOutput.InvokeRequired Then
                                                             rtbLiveOutput.BeginInvoke(Sub() CommitLiveLine())
                                                         Else
@@ -1823,6 +1828,245 @@ del ""%~f0""
         rtbLiveOutput.ScrollToCaret()
     End Sub
 
+    Private Async Sub TranslateAndBroadcastAsync(line As String)
+        Await TranslateAndBroadcastAsyncTask(line)
+    End Sub
+
+    Private Async Function TranslateAndBroadcastAsyncTask(line As String) As Task
+        Dim targets = _subtitleServer?.GetActiveTranslationLanguages()
+        Dim sourceLang = GetCurrentSourceNllbLang()
+
+        ' Remove source language from targets
+        targets?.Remove(sourceLang)
+
+        Dim translations As Dictionary(Of String, String) = Nothing
+        If targets IsNot Nothing AndAlso targets.Count > 0 AndAlso
+           _translationService IsNot Nothing AndAlso _translationService.IsRunning AndAlso _translationService.IsModelLoaded Then
+            Try
+                translations = Await _translationService.TranslateAsync(line, sourceLang, targets)
+            Catch
+                ' Translation failed — all clients get original
+            End Try
+        End If
+
+        _subtitleServer?.BroadcastCommitTranslated(line, If(translations, New Dictionary(Of String, String)))
+    End Function
+
+    Private Function GetCurrentSourceNllbLang() As String
+        ' Map the current whisper input language to NLLB code
+        Dim whisperLang = "auto"
+        If cboLiveInputLang.InvokeRequired Then
+            whisperLang = CStr(cboLiveInputLang.Invoke(Function() If(cboLiveInputLang.SelectedItem, "auto").ToString()))
+        Else
+            If cboLiveInputLang.SelectedItem IsNot Nothing Then whisperLang = cboLiveInputLang.SelectedItem.ToString()
+        End If
+        If whisperLang = "auto" Then whisperLang = "es" ' Default to Spanish for this church context
+        Return TranslationService.WhisperToNllbLang(whisperLang)
+    End Function
+
+    Private Sub HandleActiveLanguagesChanged(sender As Object, e As EventArgs)
+        Dim targets = _subtitleServer?.GetActiveTranslationLanguages()
+        If targets Is Nothing OrElse targets.Count = 0 Then
+            ' No translation clients — reset unload timer
+            ResetTranslationUnloadTimer()
+            Return
+        End If
+
+        ' Cancel unload timer if active
+        _translationUnloadTimer?.Change(Timeout.Infinite, Timeout.Infinite)
+
+        ' Start translation service if not running
+        If _translationService Is Nothing OrElse Not _translationService.IsRunning Then
+            ' Check if deps are installed first
+            Dim deps = TranslationService.CheckDependenciesInstalled()
+            If Not deps.pythonOk OrElse Not deps.depsOk OrElse Not deps.modelOk Then
+                ' Need to prompt on UI thread
+                Me.BeginInvoke(Async Sub()
+                                   Dim result = MessageBox.Show(
+                                       "Translation requires downloading ~820MB of dependencies (Python, AI model, etc.)." & vbCrLf & vbCrLf &
+                                       "Download now?",
+                                       "Translation Setup Required",
+                                       MessageBoxButtons.YesNo, MessageBoxIcon.Question)
+                                   If result = DialogResult.Yes Then
+                                       Await SetupTranslationDepsAsync()
+                                   Else
+                                       AppendServerLog("Translation setup declined — clients will receive original text only.")
+                                   End If
+                               End Sub)
+                Return
+            End If
+            StartTranslationService()
+        End If
+    End Sub
+
+    Private Sub StartTranslationService()
+        If Not _config.TranslationEnabled Then Return
+
+        _translationService = New TranslationService()
+        AddHandler _translationService.StatusChanged, Sub(s, msg)
+                                                          AppendServerLog(msg)
+                                                      End Sub
+
+        Dim modelPath = _config.TranslationModelPath
+        Dim port = _config.TranslationPort
+        Dim device = _config.TranslationDevice
+        Dim glossaryPath = _config.TranslationGlossaryPath
+
+        _translationService.Start(port, modelPath, device, glossaryPath)
+        AppendServerLog("Translation service starting...")
+    End Sub
+
+    Private Sub StopTranslationService()
+        _translationUnloadTimer?.Dispose()
+        _translationUnloadTimer = Nothing
+        _translationService?.Stop()
+        _translationService = Nothing
+    End Sub
+
+    Private Sub ResetTranslationUnloadTimer()
+        If _translationService Is Nothing OrElse Not _translationService.IsRunning Then Return
+
+        Dim minutes = _config.TranslationUnloadMinutes
+        If minutes <= 0 Then Return
+
+        _translationUnloadTimer?.Dispose()
+        _translationUnloadTimer = New System.Threading.Timer(
+            Sub(state)
+                Dim targets = _subtitleServer?.GetActiveTranslationLanguages()
+                If targets Is Nothing OrElse targets.Count = 0 Then
+                    AppendServerLog($"No translation clients for {minutes} min, unloading model...")
+                    _translationService?.UnloadModelAsync().Wait()
+                End If
+            End Sub, Nothing, TimeSpan.FromMinutes(minutes), Timeout.InfiniteTimeSpan)
+    End Sub
+
+    Private Async Sub btnSetupTranslation_Click(sender As Object, e As EventArgs) Handles btnSetupTranslation.Click
+        Await SetupTranslationDepsAsync()
+    End Sub
+
+    Private Async Function SetupTranslationDepsAsync() As Task
+        Dim toolsDir = AppDomain.CurrentDomain.BaseDirectory
+        Dim mgr As New Models.DependencyManager(_config, toolsDir)
+
+        Dim deps = Await mgr.CheckTranslationDepsAsync()
+
+        If deps.pythonOk AndAlso deps.depsOk AndAlso deps.modelOk Then
+            MessageBox.Show("Translation dependencies are already installed.", "Translation Setup",
+                            MessageBoxButtons.OK, MessageBoxIcon.Information)
+            Return
+        End If
+
+        btnSetupTranslation.Enabled = False
+
+        Dim progressForm As New Form() With {
+            .Text = "Setting Up Translation",
+            .Size = New Drawing.Size(500, 180),
+            .StartPosition = FormStartPosition.CenterParent,
+            .FormBorderStyle = FormBorderStyle.FixedDialog,
+            .MaximizeBox = False,
+            .MinimizeBox = False
+        }
+        Dim lblStatus As New Label() With {
+            .Text = "Preparing...",
+            .Location = New Drawing.Point(15, 15),
+            .Size = New Drawing.Size(450, 20)
+        }
+        Dim pbDownload As New ProgressBar() With {
+            .Location = New Drawing.Point(15, 45),
+            .Size = New Drawing.Size(450, 25),
+            .Style = ProgressBarStyle.Continuous
+        }
+        Dim lblProgress As New Label() With {
+            .Text = "",
+            .Location = New Drawing.Point(15, 78),
+            .Size = New Drawing.Size(450, 20)
+        }
+        progressForm.Controls.AddRange({lblStatus, pbDownload, lblProgress})
+        progressForm.Show(Me)
+
+        Dim progress As New Progress(Of (downloaded As Long, total As Long))(
+            Sub(p)
+                If p.total > 0 Then
+                    Dim pct = CInt(p.downloaded * 100 \ p.total)
+                    pbDownload.Value = Math.Min(pct, 100)
+                    Dim dlMB = (p.downloaded / 1048576.0).ToString("F1")
+                    Dim totalMB = (p.total / 1048576.0).ToString("F1")
+                    lblProgress.Text = $"{dlMB} MB / {totalMB} MB"
+                Else
+                    Dim dlMB = (p.downloaded / 1048576.0).ToString("F1")
+                    lblProgress.Text = $"{dlMB} MB downloaded"
+                End If
+            End Sub)
+
+        Try
+            ' Step 1: Python embed
+            If Not deps.pythonOk Then
+                lblStatus.Text = "Step 1/3: Downloading Python embeddable package..."
+                pbDownload.Value = 0
+                lblProgress.Text = ""
+                Await mgr.DownloadPythonEmbedAsync(progress)
+            End If
+
+            ' Step 2: pip dependencies
+            If Not deps.depsOk Then
+                lblStatus.Text = "Step 2/3: Installing Python packages (this may take a few minutes)..."
+                pbDownload.Value = 0
+                pbDownload.Style = ProgressBarStyle.Marquee
+                lblProgress.Text = "Installing ctranslate2, sentencepiece, fastapi, uvicorn..."
+                Await Task.Run(Function() mgr.InstallPythonDepsAsync(Nothing))
+                pbDownload.Style = ProgressBarStyle.Continuous
+                pbDownload.Value = 100
+            End If
+
+            ' Step 3: NLLB model
+            If Not deps.modelOk Then
+                lblStatus.Text = "Step 3/3: Downloading NLLB translation model..."
+                pbDownload.Value = 0
+                lblProgress.Text = ""
+                Await mgr.DownloadNllbModelAsync(progress)
+            End If
+
+            lblStatus.Text = "Translation setup complete!"
+            pbDownload.Value = 100
+            lblProgress.Text = ""
+            Await Task.Delay(1000)
+
+            ' Start translation service if clients are waiting
+            Dim targets = _subtitleServer?.GetActiveTranslationLanguages()
+            If targets IsNot Nothing AndAlso targets.Count > 0 Then
+                StartTranslationService()
+            End If
+
+        Catch ex As Exception
+            MessageBox.Show($"Translation setup failed: {ex.Message}", "Setup Error",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error)
+            AppendServerLog($"Translation setup error: {ex.Message}")
+        Finally
+            progressForm.Close()
+            progressForm.Dispose()
+            UpdateTranslationButton()
+        End Try
+    End Function
+
+    Private Async Sub UpdateTranslationButtonAsync()
+        Dim deps = Await Task.Run(Function() TranslationService.CheckDependenciesInstalled())
+        UpdateTranslationButton(deps)
+    End Sub
+
+    Private Sub UpdateTranslationButton(Optional deps As (pythonOk As Boolean, depsOk As Boolean, modelOk As Boolean)? = Nothing)
+        If deps Is Nothing Then
+            deps = TranslationService.CheckDependenciesInstalled()
+        End If
+        Dim d = deps.Value
+        If d.pythonOk AndAlso d.depsOk AndAlso d.modelOk Then
+            btnSetupTranslation.Text = "Translation Ready"
+            btnSetupTranslation.Enabled = True
+        Else
+            btnSetupTranslation.Text = "Setup Translation (~820MB)"
+            btnSetupTranslation.Enabled = True
+        End If
+    End Sub
+
     Private Sub ReplaceLiveLastLine(text As String)
         ' Find the start of the last line and replace it
         Dim rtb = rtbLiveOutput
@@ -1951,6 +2195,8 @@ del ""%~f0""
         AddHandler _subtitleServer.RemoteCommand, Sub(s, cmd)
                                                       Me.BeginInvoke(Sub() HandleRemoteCommand(cmd))
                                                   End Sub
+
+        AddHandler _subtitleServer.ActiveLanguagesChanged, AddressOf HandleActiveLanguagesChanged
 
         Try
             _subtitleServer.Start(port, _config.AllowFirewall)
@@ -2087,7 +2333,7 @@ del ""%~f0""
                         Await Task.Delay(rng.Next(150, 350), ct)
                     Next
                     If Not ct.IsCancellationRequested Then
-                        _subtitleServer?.BroadcastCommit(sentence.ToString())
+                        Await TranslateAndBroadcastAsyncTask(sentence.ToString())
                         Await Task.Delay(rng.Next(800, 1500), ct)
                     End If
                     verseIdx += 1
@@ -2148,6 +2394,7 @@ del ""%~f0""
         _cts?.Cancel()
         _liveRunner?.Stop()
         _simCts?.Cancel()
+        StopTranslationService()
         _subtitleServer?.Stop()
         trayIcon.Visible = False
         trayIcon.Dispose()

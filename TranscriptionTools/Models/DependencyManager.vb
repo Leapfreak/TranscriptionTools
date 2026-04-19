@@ -303,6 +303,173 @@ Namespace Models
         End Function
 
         ' ──────────────────────────────────────────
+        '  Python Embedded + NLLB pip deps
+        ' ──────────────────────────────────────────
+
+        Private Function PythonEmbedDir() As String
+            Return Path.Combine(_toolsDir, "python-embed")
+        End Function
+
+        Private Function PythonExePath() As String
+            Return Path.Combine(PythonEmbedDir(), "python.exe")
+        End Function
+
+        Public Function CheckPythonEmbedAsync() As Task(Of ToolState)
+            Dim state As New ToolState With {.Name = "Python Embedded"}
+            If File.Exists(PythonExePath()) Then
+                state.Status = ToolStatus.UpToDate
+                state.InstalledVersion = "installed"
+            End If
+            Return Task.FromResult(state)
+        End Function
+
+        Public Async Function DownloadPythonEmbedAsync(progress As IProgress(Of (downloaded As Long, total As Long))) As Task
+            Dim embedDir = PythonEmbedDir()
+            Dim zipPath = Path.Combine(_toolsDir, "python-embed-temp.zip")
+            Try
+                Dim url = "https://www.python.org/ftp/python/3.12.9/python-3.12.9-embed-amd64.zip"
+                Await DownloadFileAsync(url, zipPath, progress)
+
+                ' Extract to python-embed/
+                If Directory.Exists(embedDir) Then Directory.Delete(embedDir, True)
+                ZipFile.ExtractToDirectory(zipPath, embedDir)
+
+                ' Enable import site in python312._pth so pip works
+                Dim pthFile = Path.Combine(embedDir, "python312._pth")
+                If File.Exists(pthFile) Then
+                    Dim lines = File.ReadAllLines(pthFile).ToList()
+                    Dim found = False
+                    For i = 0 To lines.Count - 1
+                        If lines(i).TrimStart().StartsWith("#") AndAlso lines(i).Contains("import site") Then
+                            lines(i) = "import site"
+                            found = True
+                            Exit For
+                        End If
+                    Next
+                    If Not found Then lines.Add("import site")
+                    File.WriteAllLines(pthFile, lines)
+                End If
+
+                ' Download and run get-pip.py
+                Dim getPipPath = Path.Combine(embedDir, "get-pip.py")
+                Await DownloadFileAsync("https://bootstrap.pypa.io/get-pip.py", getPipPath, Nothing)
+                Await RunProcessAsync(PythonExePath(), $"""{getPipPath}""", embedDir)
+                If File.Exists(getPipPath) Then File.Delete(getPipPath)
+            Finally
+                If File.Exists(zipPath) Then File.Delete(zipPath)
+            End Try
+        End Function
+
+        Public Async Function InstallPythonDepsAsync(progress As IProgress(Of (downloaded As Long, total As Long))) As Task
+            Dim reqFile = Path.Combine(_toolsDir, "nllb-server", "requirements.txt")
+            If Not File.Exists(reqFile) Then
+                Throw New FileNotFoundException("requirements.txt not found at " & reqFile)
+            End If
+            Await RunProcessAsync(PythonExePath(),
+                $"-m pip install -r ""{reqFile}"" --no-warn-script-location",
+                _toolsDir, 600000)
+        End Function
+
+        Public Function CheckPythonDepsInstalled() As Boolean
+            If Not File.Exists(PythonExePath()) Then Return False
+            Try
+                Dim psi As New Diagnostics.ProcessStartInfo With {
+                    .FileName = PythonExePath(),
+                    .Arguments = "-c ""import ctranslate2; import sentencepiece; import fastapi; import uvicorn""",
+                    .UseShellExecute = False,
+                    .RedirectStandardOutput = True,
+                    .RedirectStandardError = True,
+                    .CreateNoWindow = True
+                }
+                Using proc = Diagnostics.Process.Start(psi)
+                    proc.WaitForExit(10000)
+                    Return proc.ExitCode = 0
+                End Using
+            Catch
+                Return False
+            End Try
+        End Function
+
+        Public Function CheckTranslationDepsAsync() As Task(Of (pythonOk As Boolean, depsOk As Boolean, modelOk As Boolean))
+            Dim pythonOk = File.Exists(PythonExePath())
+            Dim depsOk = If(pythonOk, CheckPythonDepsInstalled(), False)
+            Dim modelOk = Directory.Exists(NllbModelDir()) AndAlso
+                          File.Exists(Path.Combine(NllbModelDir(), "model.bin")) AndAlso
+                          File.Exists(Path.Combine(NllbModelDir(), "sentencepiece.model"))
+            Return Task.FromResult((pythonOk, depsOk, modelOk))
+        End Function
+
+        Private Shared Async Function RunProcessAsync(exePath As String, args As String,
+                                                       workDir As String,
+                                                       Optional timeoutMs As Integer = 300000) As Task
+            Dim psi As New Diagnostics.ProcessStartInfo With {
+                .FileName = exePath,
+                .Arguments = args,
+                .WorkingDirectory = workDir,
+                .UseShellExecute = False,
+                .RedirectStandardOutput = True,
+                .RedirectStandardError = True,
+                .CreateNoWindow = True
+            }
+            Using proc = Diagnostics.Process.Start(psi)
+                Dim stdoutTask = proc.StandardOutput.ReadToEndAsync()
+                Dim stderrTask = proc.StandardError.ReadToEndAsync()
+                Using cts As New Threading.CancellationTokenSource(timeoutMs)
+                    Try
+                        Await proc.WaitForExitAsync(cts.Token)
+                    Catch ex As OperationCanceledException
+                        Try : proc.Kill(True) : Catch : End Try
+                        Throw New TimeoutException($"Process timed out after {timeoutMs / 1000}s")
+                    End Try
+                End Using
+                Dim stderr = Await stderrTask
+                If proc.ExitCode <> 0 Then
+                    Dim stdout = Await stdoutTask
+                    Throw New Exception($"Process exited with code {proc.ExitCode}: {If(stderr, stdout)}")
+                End If
+            End Using
+        End Function
+
+        ' ──────────────────────────────────────────
+        '  NLLB Translation Model
+        ' ──────────────────────────────────────────
+
+        Private Function NllbModelDir() As String
+            Return Path.Combine(_toolsDir, "nllb-model")
+        End Function
+
+        Public Function CheckNllbModelAsync() As Task(Of ToolState)
+            Dim state As New ToolState With {
+                .Name = "NLLB Translation Model",
+                .DownloadUrl = "https://huggingface.co/JustFrederik/nllb-200-distilled-600M-ct2-float16/resolve/main"
+            }
+            Dim modelDir = NllbModelDir()
+            If Directory.Exists(modelDir) AndAlso
+               File.Exists(Path.Combine(modelDir, "model.bin")) AndAlso
+               File.Exists(Path.Combine(modelDir, "sentencepiece.model")) Then
+                state.Status = ToolStatus.UpToDate
+                state.InstalledVersion = "installed"
+            End If
+            Return Task.FromResult(state)
+        End Function
+
+        Public Async Function DownloadNllbModelAsync(progress As IProgress(Of (downloaded As Long, total As Long))) As Task
+            Dim modelDir = NllbModelDir()
+            If Not Directory.Exists(modelDir) Then Directory.CreateDirectory(modelDir)
+
+            Dim baseUrl = "https://huggingface.co/JustFrederik/nllb-200-distilled-600M-ct2-float16/resolve/main"
+            Dim files = {"model.bin", "sentencepiece.model", "vocabulary.json", "config.json", "shared_vocabulary.json"}
+
+            For Each f In files
+                Dim destPath = Path.Combine(modelDir, f)
+                If Not File.Exists(destPath) Then
+                    Dim url = $"{baseUrl}/{f}"
+                    Await DownloadFileAsync(url, destPath, progress)
+                End If
+            Next
+        End Function
+
+        ' ──────────────────────────────────────────
         '  Download a tool by name
         ' ──────────────────────────────────────────
 
@@ -318,6 +485,8 @@ Namespace Models
                     Await DownloadModelAsync(state.DownloadUrl, progress)
                 Case "Subtitle Edit"
                     Await DownloadSubtitleEditAsync(state.DownloadUrl, progress)
+                Case "NLLB Translation Model"
+                    Await DownloadNllbModelAsync(progress)
             End Select
 
             ' Save the downloaded version

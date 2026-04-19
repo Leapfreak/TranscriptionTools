@@ -135,6 +135,15 @@ Namespace Models
         Public Property SubtitleFontSize As Single = 12
         Public Property SubtitleFontBold As Boolean = False
 
+        ' --- Translation (NLLB-200) ---
+
+        Public Property TranslationEnabled As Boolean = True
+        Public Property TranslationPort As Integer = 5090
+        Public Property TranslationModelPath As String = ".\nllb-model"
+        Public Property TranslationDevice As String = "cuda"
+        Public Property TranslationUnloadMinutes As Integer = 10
+        Public Property TranslationGlossaryPath As String = ".\nllb-server\glossary.json"
+
         Public Property FirstRunComplete As Boolean = False
         Public Property StartWithWindows As Boolean = False
         Public Property AllowFirewall As Boolean = False
