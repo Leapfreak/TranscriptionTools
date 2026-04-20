@@ -209,7 +209,7 @@ Namespace Pipeline
             While DateTime.UtcNow < deadline AndAlso Not ct.IsCancellationRequested
                 Try
                     Thread.Sleep(1000)
-                    Dim response = _httpClient.GetAsync($"http://localhost:{_port}/health", ct).Result
+                    Dim response = _httpClient.GetAsync($"http://127.0.0.1:{_port}/health", ct).Result
                     If response.IsSuccessStatusCode Then
                         RaiseEvent StatusChanged(Me, "Translation server ready, loading model...")
                         LoadModelAsync().Wait()
@@ -227,7 +227,7 @@ Namespace Pipeline
             Try
                 Dim json = $"{{""device"":""{_device}""}}"
                 Dim content As New StringContent(json, Encoding.UTF8, "application/json")
-                Dim response = Await _httpClient.PostAsync($"http://localhost:{_port}/load", content)
+                Dim response = Await _httpClient.PostAsync($"http://127.0.0.1:{_port}/load", content)
                 If response.IsSuccessStatusCode Then
                     Dim body = Await response.Content.ReadAsStringAsync()
                     Using doc = JsonDocument.Parse(body)
@@ -245,7 +245,7 @@ Namespace Pipeline
         Public Async Function ReloadGlossaryAsync() As Task
             Try
                 Dim content As New StringContent("{}", Encoding.UTF8, "application/json")
-                Dim response = Await _httpClient.PostAsync($"http://localhost:{_port}/glossary/reload", content)
+                Dim response = Await _httpClient.PostAsync($"http://127.0.0.1:{_port}/glossary/reload", content)
                 If response.IsSuccessStatusCode Then
                     Dim body = Await response.Content.ReadAsStringAsync()
                     Using doc = JsonDocument.Parse(body)
@@ -261,7 +261,7 @@ Namespace Pipeline
         Public Async Function UnloadModelAsync() As Task
             Try
                 Dim content As New StringContent("{}", Encoding.UTF8, "application/json")
-                Await _httpClient.PostAsync($"http://localhost:{_port}/unload", content)
+                Await _httpClient.PostAsync($"http://127.0.0.1:{_port}/unload", content)
                 _modelLoaded = False
                 RaiseEvent StatusChanged(Me, "Translation model unloaded")
             Catch
@@ -285,7 +285,7 @@ Namespace Pipeline
                 Dim content As New StringContent(json, Encoding.UTF8, "application/json")
 
                 Using cts As New CancellationTokenSource(TimeSpan.FromSeconds(12))
-                    Dim response = Await _httpClient.PostAsync($"http://localhost:{_port}/translate", content, cts.Token)
+                    Dim response = Await _httpClient.PostAsync($"http://127.0.0.1:{_port}/translate", content, cts.Token)
                     If response.IsSuccessStatusCode Then
                         Dim body = Await response.Content.ReadAsStringAsync()
                         Using doc = JsonDocument.Parse(body)

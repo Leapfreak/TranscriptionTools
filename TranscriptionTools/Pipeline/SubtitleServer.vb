@@ -526,7 +526,38 @@ Namespace Pipeline
 
         Public Sub BroadcastCommit(text As String)
             If Not _isRunning Then Return
-            BroadcastCommitTranslated(text, Nothing)
+            _currentLine = ""
+
+            ' Store in history (original text, no translations yet)
+            Dim entry As New CommittedEntry(text, Nothing)
+            _committedLines.Enqueue(entry)
+            While _committedLines.Count > MaxCommittedLines
+                Dim discard As CommittedEntry = Nothing
+                _committedLines.TryDequeue(discard)
+            End While
+
+            ' Send to non-translation clients only — translation clients
+            ' receive text separately via BroadcastTranslationsOnly after buffering
+            Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(text)}}}"
+            Dim buffer = Encoding.UTF8.GetBytes(json)
+            Dim segment = New ArraySegment(Of Byte)(buffer)
+            Dim deadKeys As New List(Of String)
+
+            For Each kvp In _clients
+                Try
+                    If Not String.IsNullOrEmpty(kvp.Value.Language) Then Continue For
+                    Dim ws = kvp.Value.WebSocket
+                    If ws.State = WebSocketState.Open Then
+                        ws.SendAsync(segment, WebSocketMessageType.Text, True, CancellationToken.None).Wait(500)
+                    Else
+                        deadKeys.Add(kvp.Key)
+                    End If
+                Catch
+                    deadKeys.Add(kvp.Key)
+                End Try
+            Next
+
+            CleanupDeadClients(deadKeys)
         End Sub
 
         Public Sub BroadcastCommitTranslated(originalText As String, translations As Dictionary(Of String, String))
@@ -547,6 +578,35 @@ Namespace Pipeline
                     If ws.State = WebSocketState.Open Then
                         Dim text = GetTextForClient(kvp.Value, originalText, translations)
                         Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(text)}}}"
+                        Dim buffer = Encoding.UTF8.GetBytes(json)
+                        ws.SendAsync(New ArraySegment(Of Byte)(buffer), WebSocketMessageType.Text, True, CancellationToken.None).Wait(500)
+                    Else
+                        deadKeys.Add(kvp.Key)
+                    End If
+                Catch
+                    deadKeys.Add(kvp.Key)
+                End Try
+            Next
+
+            CleanupDeadClients(deadKeys)
+        End Sub
+
+        Public Sub BroadcastTranslationsOnly(translations As Dictionary(Of String, String))
+            ' Send translated text only to clients whose language matches
+            If Not _isRunning OrElse translations Is Nothing Then Return
+
+            Dim deadKeys As New List(Of String)
+
+            For Each kvp In _clients
+                Try
+                    Dim lang = kvp.Value.Language
+                    If String.IsNullOrEmpty(lang) Then Continue For
+                    Dim translated As String = Nothing
+                    If Not translations.TryGetValue(lang, translated) Then Continue For
+
+                    Dim ws = kvp.Value.WebSocket
+                    If ws.State = WebSocketState.Open Then
+                        Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(translated)}}}"
                         Dim buffer = Encoding.UTF8.GetBytes(json)
                         ws.SendAsync(New ArraySegment(Of Byte)(buffer), WebSocketMessageType.Text, True, CancellationToken.None).Wait(500)
                     Else

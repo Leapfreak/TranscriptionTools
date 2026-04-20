@@ -3,5 +3,3 @@ sentencepiece
 fastapi
 uvicorn
 nvidia-cublas-cu12
-transformers
-torch

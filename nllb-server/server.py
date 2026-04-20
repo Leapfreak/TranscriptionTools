@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import re
+import time
 from collections import OrderedDict
 from threading import Lock
 
@@ -20,6 +21,18 @@ from pydantic import BaseModel
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger("nllb-server")
 
+# Pipeline debug log — writes every translation stage to a file
+_debug_log_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "nllb-debug.log")
+_debug_logger = logging.getLogger("nllb-debug")
+_debug_logger.setLevel(logging.DEBUG)
+try:
+    _debug_handler = logging.FileHandler(_debug_log_path, encoding="utf-8")
+    _debug_handler.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
+    _debug_logger.addHandler(_debug_handler)
+    _debug_logger.propagate = False
+except Exception:
+    pass
+
 app = FastAPI()
 
 # ---------------------------------------------------------------------------
@@ -27,7 +40,6 @@ app = FastAPI()
 # ---------------------------------------------------------------------------
 translator = None
 sp_model = None
-punct_model = None
 device_in_use = "cpu"
 model_path_global = ""
 glossary_path_global = ""
@@ -158,70 +170,39 @@ class StatusResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # Translation helpers
 # ---------------------------------------------------------------------------
-def _restore_punctuation(text: str) -> str:
-    """Restore punctuation using the token-classification pipeline."""
-    if punct_model is None or not text.strip():
-        return text
-    try:
-        results = punct_model(text)
-        output = []
-        last_end = 0
-        for entity in results:
-            word = entity.get("word", "")
-            label = entity.get("entity_group", "0")
-            start = entity.get("start", last_end)
-            end = entity.get("end", start + len(word))
-            # Add any whitespace between entities
-            if start > last_end:
-                output.append(text[last_end:start])
-            output.append(text[start:end])
-            # Append punctuation based on label
-            if label == ".":
-                output.append(".")
-            elif label == ",":
-                output.append(",")
-            elif label == "?":
-                output.append("?")
-            elif label == "-":
-                output.append("-")
-            last_end = end
-        # Add any trailing text
-        if last_end < len(text):
-            output.append(text[last_end:])
-        restored = "".join(output).strip()
-        # Capitalize first letter of sentences
-        if restored:
-            restored = restored[0].upper() + restored[1:]
-        return restored if restored else text
-    except Exception as e:
-        logger.warning("Punctuation restoration failed: %s", e)
-        return text
-
-
 def _translate_single(text: str, source_lang: str, target_lang: str) -> str:
     """Translate text from source_lang to target_lang using the loaded model."""
-    # Restore punctuation before translation for better NLLB input
-    cleaned = _restore_punctuation(text)
+    _debug_logger.debug("─" * 60)
+    _debug_logger.debug("[TRANSLATE] %s -> %s", source_lang, target_lang)
+    _debug_logger.debug("[INPUT] %r", text)
+
+    cleaned = text.strip()
 
     cache_key = (cleaned, source_lang, target_lang)
     cached = cache.get(cache_key)
     if cached is not None:
+        _debug_logger.debug("[CACHE HIT] %r", cached)
         return cached
 
     # Tokenize with SentencePiece
+    t_tok = time.perf_counter()
     sp_model.set_encode_extra_options("")
     tokens = sp_model.encode(cleaned, out_type=str)
+    tok_ms = (time.perf_counter() - t_tok) * 1000
+    _debug_logger.debug("[TOKENS] %d tokens (%.1fms): %s", len(tokens), tok_ms, " ".join(tokens[:30]))
 
     # Prepend source language token and append EOS (required by NLLB)
     tokens = [source_lang] + tokens + ["</s>"]
 
     # Translate
+    t_nllb = time.perf_counter()
     results = translator.translate_batch(
         [tokens],
         target_prefix=[[target_lang]],
         beam_size=4,
         max_decoding_length=256,
     )
+    nllb_ms = (time.perf_counter() - t_nllb) * 1000
 
     # Decode: skip the target language token
     output_tokens = results[0].hypotheses[0]
@@ -229,6 +210,7 @@ def _translate_single(text: str, source_lang: str, target_lang: str) -> str:
         output_tokens = output_tokens[1:]
 
     translated = sp_model.decode(output_tokens)
+    _debug_logger.debug("[OUTPUT RAW] %r  (nllb: %.1fms)", translated, nllb_ms)
     cache.put(cache_key, translated)
     return translated
 
@@ -251,11 +233,16 @@ def _reload_on_cpu():
 def _translate_to_targets(text: str, source_lang: str, target_langs: list[str]) -> dict[str, str]:
     """Translate to all target languages, then apply glossary fixes."""
     global translator
+    t_total = time.perf_counter()
     results = {}
     for tl in target_langs:
         try:
             translated = _translate_single(text, source_lang, tl)
-            results[tl] = glossary.apply(text, source_lang, tl, translated)
+            after_glossary = glossary.apply(text, source_lang, tl, translated)
+            if after_glossary != translated:
+                _debug_logger.debug("[GLOSSARY] %s: %r -> %r", tl, translated, after_glossary)
+            _debug_logger.debug("[FINAL] %s: %r", tl, after_glossary)
+            results[tl] = after_glossary
         except Exception as e:
             err_msg = str(e)
             if "cublas" in err_msg.lower() or "cuda" in err_msg.lower():
@@ -269,6 +256,9 @@ def _translate_to_targets(text: str, source_lang: str, target_langs: list[str]) 
                         logger.warning("Translation to %s failed after CPU reload: %s", tl, e2)
                         continue
             logger.warning("Translation to %s failed: %s", tl, e)
+    total_ms = (time.perf_counter() - t_total) * 1000
+    _debug_logger.debug("[TOTAL] %d targets in %.1fms", len(target_langs), total_ms)
+    _debug_logger.debug("=" * 60)
     return results
 
 
@@ -297,7 +287,7 @@ async def translate(req: TranslateRequest):
 
 @app.post("/load", response_model=StatusResponse)
 async def load_model(req: LoadRequest):
-    global translator, sp_model, punct_model, device_in_use
+    global translator, sp_model, device_in_use
 
     device = req.device
     with _lock:
@@ -325,19 +315,6 @@ async def load_model(req: LoadRequest):
             sp_model = spm.SentencePieceProcessor()
             sp_model.load(sp_path)
 
-            # Load punctuation restoration model
-            try:
-                from transformers import pipeline as hf_pipeline
-                punct_model = hf_pipeline(
-                    "token-classification",
-                    model="oliverguhr/fullstop-punctuation-multilang-large",
-                    aggregation_strategy="simple",
-                )
-                logger.info("Punctuation restoration model loaded")
-            except Exception as pe:
-                logger.warning("Punctuation model failed to load (continuing without): %s", pe)
-                punct_model = None
-
             logger.info("Model loaded successfully on %s", device_in_use)
             return StatusResponse(status="ok", model_loaded=True, device=device_in_use)
         except Exception as e:
@@ -349,11 +326,10 @@ async def load_model(req: LoadRequest):
 
 @app.post("/unload", response_model=StatusResponse)
 async def unload_model():
-    global translator, sp_model, punct_model
+    global translator, sp_model
     with _lock:
         translator = None
         sp_model = None
-        punct_model = None
         import gc
         gc.collect()
         logger.info("Model unloaded")
@@ -389,6 +365,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     model_path_global = args.model_path
+
+    # Clear debug log on startup
+    try:
+        with open(_debug_log_path, "w", encoding="utf-8") as f:
+            f.write(f"=== NLLB server started at {time.strftime('%Y-%m-%d %H:%M:%S')} ===\n")
+    except Exception:
+        pass
 
     # Load glossary: explicit path, or default next to server.py
     glossary_path_global = args.glossary

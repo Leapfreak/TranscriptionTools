@@ -1829,28 +1829,71 @@ del ""%~f0""
     End Sub
 
     Private Async Sub TranslateAndBroadcastAsync(line As String)
-        Await TranslateAndBroadcastAsyncTask(line)
-    End Sub
+        WriteDebugLog($"[WHISPER COMMIT] {line}")
 
-    Private Async Function TranslateAndBroadcastAsyncTask(line As String) As Task
+        ' Always broadcast original text immediately to non-translation clients
+        _subtitleServer?.BroadcastCommit(line)
+
+        ' Check if there are any translation targets
         Dim targets = _subtitleServer?.GetActiveTranslationLanguages()
         Dim sourceLang = GetCurrentSourceNllbLang()
-
-        ' Remove source language from targets
         targets?.Remove(sourceLang)
 
-        Dim translations As Dictionary(Of String, String) = Nothing
-        If targets IsNot Nothing AndAlso targets.Count > 0 AndAlso
-           _translationService IsNot Nothing AndAlso _translationService.IsRunning AndAlso _translationService.IsModelLoaded Then
-            Try
-                translations = Await _translationService.TranslateAsync(line, sourceLang, targets)
-            Catch
-                ' Translation failed — all clients get original
-            End Try
+        If targets Is Nothing OrElse targets.Count = 0 OrElse
+           _translationService Is Nothing OrElse Not _translationService.IsRunning OrElse Not _translationService.IsModelLoaded Then
+            WriteDebugLog($"[SOURCE LANG] {sourceLang} | targets: none")
+            Return
         End If
 
-        _subtitleServer?.BroadcastCommitTranslated(line, If(translations, New Dictionary(Of String, String)))
+        WriteDebugLog($"[SOURCE LANG] {sourceLang} | targets: {String.Join(",", targets)}")
+
+        ' Filter garbage commits
+        If IsGarbageCommit(line) Then
+            WriteDebugLog($"[FILTERED] garbage commit skipped")
+            Return
+        End If
+
+        ' Translate immediately
+        Dim sw = Diagnostics.Stopwatch.StartNew()
+        Dim translations As Dictionary(Of String, String) = Nothing
+        Try
+            translations = Await _translationService.TranslateAsync(line, sourceLang, targets)
+            If translations IsNot Nothing Then
+                For Each kvp In translations
+                    WriteDebugLog($"[TRANSLATION {kvp.Key}] {kvp.Value}")
+                Next
+            End If
+        Catch ex As Exception
+            WriteDebugLog($"[TRANSLATE ERROR] {ex.Message}")
+        End Try
+
+        sw.Stop()
+        WriteDebugLog($"[ROUND TRIP] {sw.ElapsedMilliseconds}ms (whisper commit -> broadcast)")
+
+        ' Send translated text to translation clients only
+        If translations IsNot Nothing AndAlso translations.Count > 0 Then
+            _subtitleServer?.BroadcastTranslationsOnly(translations)
+        End If
+    End Sub
+
+    Private Shared Function IsGarbageCommit(line As String) As Boolean
+        Dim trimmed = line.Trim().TrimEnd("."c).Trim()
+        ' Empty or just punctuation
+        If String.IsNullOrWhiteSpace(trimmed) Then Return True
+        ' Single short word (whisper hallucination during silence)
+        If trimmed.Length <= 3 AndAlso Not trimmed.Any(Function(c) Char.IsDigit(c)) Then Return True
+        ' Known whisper artifacts
+        If trimmed.StartsWith("[") AndAlso trimmed.EndsWith("]") Then Return True
+        Return False
     End Function
+
+    Private Shared Sub WriteDebugLog(msg As String)
+        Try
+            Dim logPath = IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "pipeline-debug.log")
+            IO.File.AppendAllText(logPath, $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} {msg}{Environment.NewLine}")
+        Catch
+        End Try
+    End Sub
 
     Private Function GetCurrentSourceNllbLang() As String
         ' Determine the language of the TEXT that whisper outputs
@@ -1915,6 +1958,13 @@ del ""%~f0""
 
     Private Sub StartTranslationService()
         If Not _config.TranslationEnabled Then Return
+
+        ' Clear debug logs on fresh start
+        Try
+            Dim logPath = IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "pipeline-debug.log")
+            IO.File.WriteAllText(logPath, $"=== Translation service started at {DateTime.Now:yyyy-MM-dd HH:mm:ss} ==={Environment.NewLine}")
+        Catch
+        End Try
 
         _translationService = New TranslationService()
         AddHandler _translationService.StatusChanged, Sub(s, msg)
@@ -2347,7 +2397,7 @@ del ""%~f0""
                         Await Task.Delay(rng.Next(150, 350), ct)
                     Next
                     If Not ct.IsCancellationRequested Then
-                        Await TranslateAndBroadcastAsyncTask(sentence.ToString())
+                        TranslateAndBroadcastAsync(sentence.ToString())
                         Await Task.Delay(rng.Next(800, 1500), ct)
                     End If
                     verseIdx += 1
