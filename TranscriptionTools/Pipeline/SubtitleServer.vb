@@ -27,6 +27,7 @@ Namespace Pipeline
         Private Const CertPassword As String = "transcription-tools-cert"
         Private _currentLine As String = ""
         Private ReadOnly _committedLines As New ConcurrentQueue(Of CommittedEntry)()
+        Private _lastCommittedEntry As CommittedEntry
         Private Const MaxCommittedLines As Integer = 200
 
         Private Class ClientInfo
@@ -524,20 +525,19 @@ Namespace Pipeline
             CleanupDeadClients(deadKeys)
         End Sub
 
-        Public Sub BroadcastCommit(text As String)
+        Public Sub BroadcastCommit(text As String, Optional skipTranslationClients As Boolean = False)
             If Not _isRunning Then Return
             _currentLine = ""
 
             ' Store in history (original text, no translations yet)
             Dim entry As New CommittedEntry(text, Nothing)
+            _lastCommittedEntry = entry
             _committedLines.Enqueue(entry)
             While _committedLines.Count > MaxCommittedLines
                 Dim discard As CommittedEntry = Nothing
                 _committedLines.TryDequeue(discard)
             End While
 
-            ' Send to non-translation clients only — translation clients
-            ' receive text separately via BroadcastTranslationsOnly after buffering
             Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(text)}}}"
             Dim buffer = Encoding.UTF8.GetBytes(json)
             Dim segment = New ArraySegment(Of Byte)(buffer)
@@ -545,7 +545,7 @@ Namespace Pipeline
 
             For Each kvp In _clients
                 Try
-                    If Not String.IsNullOrEmpty(kvp.Value.Language) Then Continue For
+                    If skipTranslationClients AndAlso Not String.IsNullOrEmpty(kvp.Value.Language) Then Continue For
                     Dim ws = kvp.Value.WebSocket
                     If ws.State = WebSocketState.Open Then
                         ws.SendAsync(segment, WebSocketMessageType.Text, True, CancellationToken.None).Wait(500)
@@ -559,6 +559,7 @@ Namespace Pipeline
 
             CleanupDeadClients(deadKeys)
         End Sub
+
 
         Public Sub BroadcastCommitTranslated(originalText As String, translations As Dictionary(Of String, String))
             If Not _isRunning Then Return
@@ -594,6 +595,13 @@ Namespace Pipeline
         Public Sub BroadcastTranslationsOnly(translations As Dictionary(Of String, String))
             ' Send translated text only to clients whose language matches
             If Not _isRunning OrElse translations Is Nothing Then Return
+
+            ' Update the last history entry with translations so reconnecting clients get them
+            If _lastCommittedEntry IsNot Nothing Then
+                For Each kvp In translations
+                    _lastCommittedEntry.Translations(kvp.Key) = kvp.Value
+                Next
+            End If
 
             Dim deadKeys As New List(Of String)
 
@@ -1190,7 +1198,9 @@ function populateVoices(){
 populateVoices();
 if(synth.onvoiceschanged!==undefined)synth.onvoiceschanged=populateVoices;
 
-function togglePanel(){panel.style.display=panel.style.display==='block'?'none':'block'}
+function closeAllPanels(){panel.style.display='none';adminPanel.style.display='none';if(adminPollTimer){clearInterval(adminPollTimer);adminPollTimer=null}}
+function togglePanel(){if(panel.style.display==='block'){panel.style.display='none'}else{closeAllPanels();panel.style.display='block'}}
+document.addEventListener('click',function(e){if(!panel.contains(e.target)&&!adminPanel.contains(e.target)&&!document.getElementById('toolbar').contains(e.target)){closeAllPanels()}})
 
 function toggleSpeak(){
   speakEnabled=!speakEnabled;
@@ -1219,9 +1229,9 @@ function applyStylesToAll(){
   document.querySelectorAll('.line').forEach(function(el){el.style.fontSize=fontSize+'px';el.style.fontFamily=fontFamily;el.style.fontWeight=isBold?'bold':'normal';if(!el.classList.contains('in-progress')&&!el.dataset.highlighted)el.style.color=textColor});
   if(currentEl){currentEl.style.fontSize=fontSize+'px';currentEl.style.fontFamily=fontFamily;currentEl.style.fontWeight=isBold?'bold':'normal'}
   scrollBottom()}
-function changeFontSize(d){fontSize=Math.max(12,Math.min(80,fontSize+d));localStorage.setItem('fontSize',fontSize);applyStylesToAll()}
+function changeFontSize(d){fontSize=Math.max(12,Math.min(80,fontSize+d));localStorage.setItem('fontSize',fontSize);applyStylesToAll();closeAllPanels()}
 function changeFont(f){fontFamily=f;localStorage.setItem('fontFamily',f);applyStylesToAll()}
-function toggleBold(){isBold=!isBold;localStorage.setItem('bold',isBold);document.getElementById('btnBold').classList.toggle('active');applyStylesToAll()}
+function toggleBold(){isBold=!isBold;localStorage.setItem('bold',isBold);document.getElementById('btnBold').classList.toggle('active');applyStylesToAll();closeAllPanels()}
 function changeColor(c){textColor=c;localStorage.setItem('textColor',c);applyStylesToAll()}
 function saveTranscript(){
   var els=document.querySelectorAll('.line:not(.in-progress)');
@@ -1239,6 +1249,7 @@ function saveTranscript(){
   a.download='transcript_'+d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+'_'+pad(d.getHours())+pad(d.getMinutes())+'.txt';
   document.body.appendChild(a);a.click();
   setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url)},100);
+  closeAllPanels();
 }
 var userScrolled=false;
 container.addEventListener('scroll',function(){
@@ -1268,6 +1279,7 @@ function updateCurrent(text){
 var wsRef=null;
 function setTransLang(lang){
   localStorage.setItem('transLang',lang);
+  closeAllPanels();
   if(wsRef&&wsRef.readyState===1){wsRef.send(JSON.stringify({type:'setLanguage',language:lang}))}
 }
 (function(){var tls=document.getElementById('transLangSelect');var saved=localStorage.getItem('transLang')||'';
@@ -1373,13 +1385,13 @@ var adminStatus=document.getElementById('adminStatus');
 var adminPollTimer=null;
 function toggleAdmin(){
   if(adminPanel.style.display==='block'){adminPanel.style.display='none';if(adminPollTimer){clearInterval(adminPollTimer);adminPollTimer=null}}
-  else{adminPanel.style.display='block';pollStatus();adminPollTimer=setInterval(pollStatus,3000)}
+  else{closeAllPanels();adminPanel.style.display='block';pollStatus();adminPollTimer=setInterval(pollStatus,3000)}
 }
 function sendCommand(action){
   adminStatus.textContent=t('sending');
   fetch('/api/control?action='+action).then(function(r){return r.json()}).then(function(d){
     adminStatus.textContent=action+t('cmdSent');
-    setTimeout(pollStatus,1500);
+    setTimeout(function(){closeAllPanels()},600);
   }).catch(function(){adminStatus.textContent=t('cmdFail')});
 }
 function pollStatus(){

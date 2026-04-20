@@ -97,12 +97,11 @@ Public Class FormMain
         cboLiveDevice.SelectedIndex = 0
         btnLiveStart.Enabled = False
 
-        ' Enumerate SDL devices in the background
-        Dim streamPath = AppConfig.ResolvePath(_config.PathStream)
-        Dim modelPath = AppConfig.ResolvePath(_config.PathModel)
+        ' Enumerate audio devices in the background
+        Dim pythonPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "python-embed", "python.exe")
         Task.Run(Sub()
                      Dim runner As New LiveStreamRunner()
-                     Dim devices = runner.EnumerateDevicesFromSDL(streamPath, modelPath)
+                     Dim devices = runner.EnumerateDevicesAsync(pythonPath)
                      cboLiveDevice.BeginInvoke(Sub()
                                                    UpdateDeviceCombo(devices)
                                                    btnLiveStart.Enabled = True
@@ -473,20 +472,17 @@ del ""%~f0""
         PopulateModelDropdown()
         PopulateLiveModelDropdown()
 
-        ' Re-enumerate audio devices now that whisper-stream.exe exists
-        Dim streamPath = AppConfig.ResolvePath(_config.PathStream)
-        Dim modelPath = AppConfig.ResolvePath(_config.PathModel)
-        If IO.File.Exists(streamPath) Then
-            btnLiveStart.Enabled = False
-            Task.Run(Sub()
-                         Dim runner As New LiveStreamRunner()
-                         Dim devices = runner.EnumerateDevicesFromSDL(streamPath, modelPath)
-                         cboLiveDevice.BeginInvoke(Sub()
-                                                       UpdateDeviceCombo(devices)
-                                                       btnLiveStart.Enabled = True
-                                                   End Sub)
-                     End Sub)
-        End If
+        ' Re-enumerate audio devices
+        Dim pythonPath2 = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "python-embed", "python.exe")
+        btnLiveStart.Enabled = False
+        Task.Run(Sub()
+                     Dim runner As New LiveStreamRunner()
+                     Dim devices = runner.EnumerateDevicesAsync(pythonPath2)
+                     cboLiveDevice.BeginInvoke(Sub()
+                                                   UpdateDeviceCombo(devices)
+                                                   btnLiveStart.Enabled = True
+                                               End Sub)
+                 End Sub)
     End Sub
 
     Private Sub btnCheckToolUpdates_Click(sender As Object, e As EventArgs) Handles btnCheckToolUpdates.Click
@@ -1617,17 +1613,16 @@ del ""%~f0""
     Private Sub btnRefreshDevices_Click(sender As Object, e As EventArgs) Handles btnRefreshDevices.Click
         SaveUiToConfig()
         cboLiveDevice.Items.Clear()
-        cboLiveDevice.Items.Add("Detecting SDL devices...")
+        cboLiveDevice.Items.Add("Detecting devices...")
         cboLiveDevice.SelectedIndex = 0
         cboLiveDevice.Enabled = False
         btnRefreshDevices.Enabled = False
 
-        Dim streamPath = AppConfig.ResolvePath(_config.PathStream)
-        Dim modelPath = AppConfig.ResolvePath(_config.PathModel)
+        Dim pythonPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "python-embed", "python.exe")
 
         Task.Run(Sub()
                      Dim runner As New LiveStreamRunner()
-                     Dim devices = runner.EnumerateDevicesFromSDL(streamPath, modelPath)
+                     Dim devices = runner.EnumerateDevicesAsync(pythonPath)
                      cboLiveDevice.BeginInvoke(Sub()
                                                    UpdateDeviceCombo(devices)
                                                    cboLiveDevice.Enabled = True
@@ -1636,17 +1631,41 @@ del ""%~f0""
                  End Sub)
     End Sub
 
-    Private Sub btnLiveStart_Click(sender As Object, e As EventArgs) Handles btnLiveStart.Click
+    Private Async Sub btnLiveStart_Click(sender As Object, e As EventArgs) Handles btnLiveStart.Click
         SaveUiToConfig()
 
-        Dim resolvedStreamPath = AppConfig.ResolvePath(_config.PathStream)
-        If Not File.Exists(resolvedStreamPath) Then
+        ' Check live dependencies (Python, packages, model) and offer to install
+        Dim toolsDir = AppDomain.CurrentDomain.BaseDirectory
+        Dim mgr As New Models.DependencyManager(_config, toolsDir)
+        Dim liveDeps = Await mgr.CheckLiveDepsAsync()
+
+        If Not liveDeps.pythonOk OrElse Not liveDeps.depsOk OrElse Not liveDeps.modelOk Then
             If _isRemoteCommand Then
-                AppendServerLog($"ERROR: whisper-stream.exe not found: {resolvedStreamPath}")
-            Else
-                MessageBox.Show($"{GetString("Msg_StreamNotFound")} {resolvedStreamPath}", GetString("Msg_Error"), MessageBoxButtons.OK, MessageBoxIcon.Error)
+                AppendServerLog("ERROR: Live transcription dependencies not installed.")
+                Return
             End If
-            Return
+
+            Dim result = MessageBox.Show(
+                "Live transcription requires additional setup:" & vbCrLf & vbCrLf &
+                If(Not liveDeps.pythonOk, "  - Python embeddable package" & vbCrLf, "") &
+                If(Not liveDeps.depsOk, "  - Python packages (faster-whisper, sounddevice)" & vbCrLf, "") &
+                If(Not liveDeps.modelOk, "  - faster-whisper large-v3 model (~3 GB)" & vbCrLf, "") &
+                vbCrLf & "Download and install now?",
+                "Live Setup Required",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question)
+
+            If result <> DialogResult.Yes Then Return
+
+            Await SetupLiveDepsAsync(mgr, liveDeps)
+
+            ' Re-check after setup
+            liveDeps = Await mgr.CheckLiveDepsAsync()
+            If Not liveDeps.pythonOk OrElse Not liveDeps.depsOk OrElse Not liveDeps.modelOk Then
+                MessageBox.Show("Setup incomplete. Please try again.", GetString("Msg_Error"),
+                                MessageBoxButtons.OK, MessageBoxIcon.Warning)
+                Return
+            End If
         End If
 
         ' Get device ID from combo selection
@@ -1669,19 +1688,10 @@ del ""%~f0""
             translateToEn = cboLiveOutputLang.SelectedItem.ToString() = "en" AndAlso inputLang <> "en"
         End If
 
-        ' Resolve model path
-        Dim modelDir = Path.GetDirectoryName(AppConfig.ResolvePath(_config.PathModel))
-        If cboLiveModel.SelectedItem IsNot Nothing AndAlso Not String.IsNullOrWhiteSpace(modelDir) Then
-            _config.PathModel = Path.Combine(modelDir, cboLiveModel.SelectedItem.ToString())
-        End If
-
-        Dim args = LiveStreamRunner.BuildArgs(_config, deviceId, inputLang, translateToEn)
-
         _liveRunner = New LiveStreamRunner()
 
-        ' In-progress line refinement (replace last line)
+        ' In-progress line refinement (show in app only, not broadcast to subtitle clients)
         AddHandler _liveRunner.OutputLineUpdated, Sub(s, line)
-                                                      _subtitleServer?.BroadcastUpdate(line)
                                                       If rtbLiveOutput.InvokeRequired Then
                                                           rtbLiveOutput.BeginInvoke(Sub() ReplaceLiveLastLine(line))
                                                       Else
@@ -1708,12 +1718,12 @@ del ""%~f0""
                                               End Sub
 
         AppendLiveText($"Starting live transcription (device {deviceId}, lang={inputLang})...", Drawing.Color.Yellow)
-        AppendLiveText($"{Path.GetFileName(_config.PathStream)} {args}", Drawing.Color.Gray)
+        AppendLiveText($"faster-whisper + Silero VAD (port {_config.LiveServerPort})", Drawing.Color.Gray)
         Dim fgColor As Drawing.Color = Drawing.Color.White
         Try : fgColor = ColorTranslator.FromHtml(_config.SubtitleFgColor) : Catch : End Try
         AppendLiveText("", fgColor)
 
-        _liveRunner.Start(resolvedStreamPath, args)
+        _liveRunner.Start(_config, deviceId, inputLang, translateToEn)
 
         If _liveRunner.IsRunning Then
             btnLiveStart.Enabled = False
@@ -1828,20 +1838,33 @@ del ""%~f0""
         rtbLiveOutput.ScrollToCaret()
     End Sub
 
-    Private Async Sub TranslateAndBroadcastAsync(line As String)
-        WriteDebugLog($"[WHISPER COMMIT] {line}")
+    Private Async Sub TranslateAndBroadcastAsync(commitData As String)
+        ' Parse detected language from tab-separated format: "lang\ttext"
+        Dim detectedLang = ""
+        Dim line = commitData
+        Dim tabIdx = commitData.IndexOf(vbTab)
+        If tabIdx > 0 Then
+            detectedLang = commitData.Substring(0, tabIdx)
+            line = commitData.Substring(tabIdx + 1)
+        End If
 
-        ' Always broadcast original text immediately to non-translation clients
-        _subtitleServer?.BroadcastCommit(line)
+        WriteDebugLog($"[WHISPER COMMIT] [{detectedLang}] {line}")
 
-        ' Check if there are any translation targets
+        ' Use detected language for NLLB source (convert whisper ISO code to NLLB code)
+        Dim sourceLang = If(Not String.IsNullOrEmpty(detectedLang), WhisperToNllbCode(detectedLang), GetCurrentSourceNllbLang())
+
+        ' Check if translation is available
         Dim targets = _subtitleServer?.GetActiveTranslationLanguages()
-        Dim sourceLang = GetCurrentSourceNllbLang()
         targets?.Remove(sourceLang)
 
-        If targets Is Nothing OrElse targets.Count = 0 OrElse
-           _translationService Is Nothing OrElse Not _translationService.IsRunning OrElse Not _translationService.IsModelLoaded Then
-            WriteDebugLog($"[SOURCE LANG] {sourceLang} | targets: none")
+        Dim translationReady = targets IsNot Nothing AndAlso targets.Count > 0 AndAlso
+            _translationService IsNot Nothing AndAlso _translationService.IsRunning AndAlso _translationService.IsModelLoaded
+
+        ' Broadcast original text — skip translation clients only if we will translate for them
+        Dim sourceTag = $"[{NllbToShortCode(sourceLang)}] "
+        _subtitleServer?.BroadcastCommit(sourceTag & line, skipTranslationClients:=translationReady)
+
+        If Not translationReady Then
             Return
         End If
 
@@ -1870,11 +1893,63 @@ del ""%~f0""
         sw.Stop()
         WriteDebugLog($"[ROUND TRIP] {sw.ElapsedMilliseconds}ms (whisper commit -> broadcast)")
 
-        ' Send translated text to translation clients only
+        ' Send translated text to translation clients with language tag
         If translations IsNot Nothing AndAlso translations.Count > 0 Then
-            _subtitleServer?.BroadcastTranslationsOnly(translations)
+            Dim tagged As New Dictionary(Of String, String)
+            For Each kvp In translations
+                tagged(kvp.Key) = $"[{NllbToShortCode(kvp.Key)}] {kvp.Value}"
+            Next
+            _subtitleServer?.BroadcastTranslationsOnly(tagged)
         End If
     End Sub
+
+    Private Shared Function NllbToShortCode(nllbCode As String) As String
+        If String.IsNullOrEmpty(nllbCode) Then Return "??"
+        ' Extract first part before underscore and uppercase it (e.g. "eng_Latn" → "EN", "spa_Latn" → "ES")
+        Dim prefix = nllbCode.Split("_"c)(0).ToUpperInvariant()
+        Select Case prefix
+            Case "ENG" : Return "EN"
+            Case "SPA" : Return "ES"
+            Case "FRA" : Return "FR"
+            Case "DEU" : Return "DE"
+            Case "POR" : Return "PT"
+            Case "ITA" : Return "IT"
+            Case "CAT" : Return "CA"
+            Case "RON" : Return "RO"
+            Case "NLD" : Return "NL"
+            Case "POL" : Return "PL"
+            Case "RUS" : Return "RU"
+            Case "UKR" : Return "UK"
+            Case "ZHO" : Return "ZH"
+            Case "JPN" : Return "JA"
+            Case "KOR" : Return "KO"
+            Case "ARB" : Return "AR"
+            Case Else : Return prefix.Substring(0, Math.Min(2, prefix.Length))
+        End Select
+    End Function
+
+    Private Shared Function WhisperToNllbCode(whisperLang As String) As String
+        ' Map whisper ISO 639-1 codes to NLLB codes
+        Select Case whisperLang.ToLowerInvariant()
+            Case "en" : Return "eng_Latn"
+            Case "es" : Return "spa_Latn"
+            Case "fr" : Return "fra_Latn"
+            Case "de" : Return "deu_Latn"
+            Case "pt" : Return "por_Latn"
+            Case "it" : Return "ita_Latn"
+            Case "ca" : Return "cat_Latn"
+            Case "ro" : Return "ron_Latn"
+            Case "nl" : Return "nld_Latn"
+            Case "pl" : Return "pol_Latn"
+            Case "ru" : Return "rus_Cyrl"
+            Case "uk" : Return "ukr_Cyrl"
+            Case "zh" : Return "zho_Hans"
+            Case "ja" : Return "jpn_Jpan"
+            Case "ko" : Return "kor_Hang"
+            Case "ar" : Return "arb_Arab"
+            Case Else : Return "eng_Latn"
+        End Select
+    End Function
 
     Private Shared Function IsGarbageCommit(line As String) As Boolean
         Dim trimmed = line.Trim().TrimEnd("."c).Trim()
@@ -2109,6 +2184,91 @@ del ""%~f0""
             progressForm.Close()
             progressForm.Dispose()
             UpdateTranslationButton()
+        End Try
+    End Function
+
+    Private Async Function SetupLiveDepsAsync(mgr As Models.DependencyManager,
+                                               deps As (pythonOk As Boolean, depsOk As Boolean, modelOk As Boolean)) As Task
+        Dim progressForm As New Form() With {
+            .Text = "Setting Up Live Transcription",
+            .Size = New Drawing.Size(500, 180),
+            .StartPosition = FormStartPosition.CenterParent,
+            .FormBorderStyle = FormBorderStyle.FixedDialog,
+            .MaximizeBox = False,
+            .MinimizeBox = False
+        }
+        Dim lblStatus As New Label() With {
+            .Text = "Preparing...",
+            .Location = New Drawing.Point(15, 15),
+            .Size = New Drawing.Size(450, 20)
+        }
+        Dim pbDownload As New ProgressBar() With {
+            .Location = New Drawing.Point(15, 45),
+            .Size = New Drawing.Size(450, 25),
+            .Style = ProgressBarStyle.Continuous
+        }
+        Dim lblProgress As New Label() With {
+            .Text = "",
+            .Location = New Drawing.Point(15, 78),
+            .Size = New Drawing.Size(450, 20)
+        }
+        progressForm.Controls.AddRange({lblStatus, pbDownload, lblProgress})
+        progressForm.Show(Me)
+
+        Dim progress As New Progress(Of (downloaded As Long, total As Long))(
+            Sub(p)
+                If p.total > 0 Then
+                    Dim pct = CInt(p.downloaded * 100 \ p.total)
+                    pbDownload.Value = Math.Min(pct, 100)
+                    Dim dlMB = (p.downloaded / 1048576.0).ToString("F1")
+                    Dim totalMB = (p.total / 1048576.0).ToString("F1")
+                    lblProgress.Text = $"{dlMB} MB / {totalMB} MB"
+                Else
+                    Dim dlMB = (p.downloaded / 1048576.0).ToString("F1")
+                    lblProgress.Text = $"{dlMB} MB downloaded"
+                End If
+            End Sub)
+
+        Try
+            ' Step 1: Python embed
+            If Not deps.pythonOk Then
+                lblStatus.Text = "Step 1/3: Downloading Python embeddable package..."
+                pbDownload.Value = 0
+                lblProgress.Text = ""
+                Await mgr.DownloadPythonEmbedAsync(progress)
+            End If
+
+            ' Step 2: pip dependencies
+            If Not deps.depsOk Then
+                lblStatus.Text = "Step 2/3: Installing Python packages (faster-whisper, sounddevice)..."
+                pbDownload.Value = 0
+                pbDownload.Style = ProgressBarStyle.Marquee
+                lblProgress.Text = "This may take a few minutes..."
+                Await Task.Run(Function() mgr.InstallPythonDepsAsync(Nothing))
+                pbDownload.Style = ProgressBarStyle.Continuous
+                pbDownload.Value = 100
+            End If
+
+            ' Step 3: faster-whisper model
+            If Not deps.modelOk Then
+                lblStatus.Text = "Step 3/3: Downloading faster-whisper large-v3 model (~3 GB)..."
+                pbDownload.Value = 0
+                lblProgress.Text = ""
+                Await mgr.DownloadFasterWhisperModelAsync(progress)
+            End If
+
+            lblStatus.Text = "Live transcription setup complete!"
+            pbDownload.Value = 100
+            lblProgress.Text = ""
+            Await Task.Delay(1000)
+
+        Catch ex As Exception
+            MessageBox.Show($"Live setup failed: {ex.Message}", "Setup Error",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error)
+            AppendServerLog($"Live setup error: {ex.Message}")
+        Finally
+            progressForm.Close()
+            progressForm.Dispose()
         End Try
     End Function
 
@@ -2456,7 +2616,7 @@ del ""%~f0""
 
         ' Real exit — clean up everything
         _cts?.Cancel()
-        _liveRunner?.Stop()
+        _liveRunner?.ShutdownServer()
         _simCts?.Cancel()
         StopTranslationService()
         _subtitleServer?.Stop()

@@ -135,6 +135,15 @@ Namespace Models
         Public Property SubtitleFontSize As Single = 12
         Public Property SubtitleFontBold As Boolean = False
 
+        ' --- Live Server (faster-whisper + VAD) ---
+
+        Public Property LiveServerPort As Integer = 5091
+        Public Property PathFasterWhisperModel As String = ".\faster-whisper-large-v3"
+        Public Property LiveComputeType As String = "int8_float16"
+        Public Property LiveVadSilenceMs As Integer = 600
+        Public Property LiveMaxSegmentSec As Integer = 30
+        Public Property LiveInterimIntervalMs As Integer = 1000
+
         ' --- Translation (NLLB-200) ---
 
         Public Property TranslationEnabled As Boolean = True

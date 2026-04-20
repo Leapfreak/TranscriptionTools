@@ -45,6 +45,14 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>nllb-server\requirements.txt</Link>
     </Content>
+    <Content Include="..\live-server\server.py">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>live-server\server.py</Link>
+    </Content>
+    <Content Include="..\live-server\requirements.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>live-server\requirements.txt</Link>
+    </Content>
   </ItemGroup>
 
 </Project>

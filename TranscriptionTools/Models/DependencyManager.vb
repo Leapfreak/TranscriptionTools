@@ -98,7 +98,8 @@ Namespace Models
                 CheckYtDlpAsync(),
                 CheckFfmpegAsync(),
                 CheckModelAsync(),
-                CheckSubtitleEditAsync()
+                CheckSubtitleEditAsync(),
+                CheckFasterWhisperModelAsync()
             }
             Await Task.WhenAll(tasks)
             Return tasks.Select(Function(t) t.Result).ToList()
@@ -361,13 +362,19 @@ Namespace Models
         End Function
 
         Public Async Function InstallPythonDepsAsync(progress As IProgress(Of (downloaded As Long, total As Long))) As Task
-            Dim reqFile = Path.Combine(_toolsDir, "nllb-server", "requirements.txt")
-            If Not File.Exists(reqFile) Then
-                Throw New FileNotFoundException("requirements.txt not found at " & reqFile)
+            Dim nllbReq = Path.Combine(_toolsDir, "nllb-server", "requirements.txt")
+            Dim liveReq = Path.Combine(_toolsDir, "live-server", "requirements.txt")
+
+            Dim args = "-m pip install"
+            If File.Exists(nllbReq) Then args &= $" -r ""{nllbReq}"""
+            If File.Exists(liveReq) Then args &= $" -r ""{liveReq}"""
+            args &= " --no-warn-script-location"
+
+            If Not File.Exists(nllbReq) AndAlso Not File.Exists(liveReq) Then
+                Throw New FileNotFoundException("No requirements.txt files found")
             End If
-            Await RunProcessAsync(PythonExePath(),
-                $"-m pip install -r ""{reqFile}"" --no-warn-script-location",
-                _toolsDir, 600000)
+
+            Await RunProcessAsync(PythonExePath(), args, _toolsDir, 600000)
         End Function
 
         Public Function CheckPythonDepsInstalled() As Boolean
@@ -375,7 +382,7 @@ Namespace Models
             Try
                 Dim psi As New Diagnostics.ProcessStartInfo With {
                     .FileName = PythonExePath(),
-                    .Arguments = "-c ""import ctranslate2; import sentencepiece; import fastapi; import uvicorn""",
+                    .Arguments = "-c ""import ctranslate2; import sentencepiece; import fastapi; import uvicorn; import faster_whisper; import sounddevice""",
                     .UseShellExecute = False,
                     .RedirectStandardOutput = True,
                     .RedirectStandardError = True,
@@ -388,6 +395,32 @@ Namespace Models
             Catch
                 Return False
             End Try
+        End Function
+
+        Public Function CheckLiveDepsAsync() As Task(Of (pythonOk As Boolean, depsOk As Boolean, modelOk As Boolean))
+            Dim pythonOk = File.Exists(PythonExePath())
+            Dim depsOk = False
+            If pythonOk Then
+                Try
+                    Dim psi As New Diagnostics.ProcessStartInfo With {
+                        .FileName = PythonExePath(),
+                        .Arguments = "-c ""import faster_whisper; import sounddevice""",
+                        .UseShellExecute = False,
+                        .RedirectStandardOutput = True,
+                        .RedirectStandardError = True,
+                        .CreateNoWindow = True
+                    }
+                    Using proc = Diagnostics.Process.Start(psi)
+                        proc.WaitForExit(10000)
+                        depsOk = (proc.ExitCode = 0)
+                    End Using
+                Catch
+                End Try
+            End If
+            Dim modelDir = FasterWhisperModelDir()
+            Dim modelOk = Directory.Exists(modelDir) AndAlso
+                          File.Exists(Path.Combine(modelDir, "model.bin"))
+            Return Task.FromResult((pythonOk, depsOk, modelOk))
         End Function
 
         Public Function CheckTranslationDepsAsync() As Task(Of (pythonOk As Boolean, depsOk As Boolean, modelOk As Boolean))
@@ -470,6 +503,44 @@ Namespace Models
         End Function
 
         ' ──────────────────────────────────────────
+        '  faster-whisper Model
+        ' ──────────────────────────────────────────
+
+        Private Function FasterWhisperModelDir() As String
+            Return Path.Combine(_toolsDir, "faster-whisper-large-v3")
+        End Function
+
+        Public Function CheckFasterWhisperModelAsync() As Task(Of ToolState)
+            Dim state As New ToolState With {
+                .Name = "faster-whisper Model (large-v3)",
+                .DownloadUrl = "https://huggingface.co/Systran/faster-whisper-large-v3/resolve/main"
+            }
+            Dim modelDir = FasterWhisperModelDir()
+            If Directory.Exists(modelDir) AndAlso
+               File.Exists(Path.Combine(modelDir, "model.bin")) Then
+                state.Status = ToolStatus.UpToDate
+                state.InstalledVersion = "installed"
+            End If
+            Return Task.FromResult(state)
+        End Function
+
+        Public Async Function DownloadFasterWhisperModelAsync(progress As IProgress(Of (downloaded As Long, total As Long))) As Task
+            Dim modelDir = FasterWhisperModelDir()
+            If Not Directory.Exists(modelDir) Then Directory.CreateDirectory(modelDir)
+
+            Dim baseUrl = "https://huggingface.co/Systran/faster-whisper-large-v3/resolve/main"
+            Dim files = {"model.bin", "config.json", "tokenizer.json", "preprocessor_config.json", "vocabulary.json"}
+
+            For Each f In files
+                Dim destPath = Path.Combine(modelDir, f)
+                If Not File.Exists(destPath) Then
+                    Dim url = $"{baseUrl}/{f}"
+                    Await DownloadFileAsync(url, destPath, progress)
+                End If
+            Next
+        End Function
+
+        ' ──────────────────────────────────────────
         '  Download a tool by name
         ' ──────────────────────────────────────────
 
@@ -487,6 +558,8 @@ Namespace Models
                     Await DownloadSubtitleEditAsync(state.DownloadUrl, progress)
                 Case "NLLB Translation Model"
                     Await DownloadNllbModelAsync(progress)
+                Case "faster-whisper Model (large-v3)"
+                    Await DownloadFasterWhisperModelAsync(progress)
             End Select
 
             ' Save the downloaded version

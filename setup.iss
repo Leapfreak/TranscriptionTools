@@ -62,6 +62,8 @@ Source: "{#WhisperBinDir}\whisper-stream.exe"; DestDir: "{app}\whisper"; Flags: 
 Source: "{#WhisperBinDir}\*.dll"; DestDir: "{app}\whisper"; Flags: ignoreversion
 ; --- NLLB translation server ---
 Source: "{#AppPublishDir}\nllb-server\*"; DestDir: "{app}\nllb-server"; Flags: ignoreversion
+; --- Live transcription server (faster-whisper + VAD) ---
+Source: "{#AppPublishDir}\live-server\*"; DestDir: "{app}\live-server"; Flags: ignoreversion
 ; Locale satellite assemblies
 Source: "{#AppPublishDir}\ca\*"; DestDir: "{app}\ca"; Flags: ignoreversion
 Source: "{#AppPublishDir}\de\*"; DestDir: "{app}\de"; Flags: ignoreversion
