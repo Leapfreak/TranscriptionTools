@@ -94,6 +94,26 @@ def broadcast_event(event_type: str, text: str, lang: str = ""):
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+def _strip_boundary_overlap(new_text: str, prev_text: str, max_overlap_words: int = 4) -> str:
+    """Remove overlapping words from the start of new_text that match the end of prev_text."""
+    if not prev_text or not new_text:
+        return new_text
+    prev_words = prev_text.lower().split()
+    new_words = new_text.split()
+    if not prev_words or not new_words:
+        return new_text
+    # Check if 1-4 words at the start of new_text match the end of prev_text
+    for n in range(min(max_overlap_words, len(prev_words), len(new_words)), 0, -1):
+        prev_tail = [re.sub(r"[^\w]", "", w) for w in prev_words[-n:]]
+        new_head = [re.sub(r"[^\w]", "", w.lower()) for w in new_words[:n]]
+        if prev_tail == new_head:
+            stripped = " ".join(new_words[n:])
+            if stripped:
+                logger.debug(f"  BOUNDARY-DEDUP: stripped {n} overlapping words: {' '.join(new_words[:n])}")
+                return stripped
+    return new_text
+
+
 def _find_sentence_boundary_word(words, min_time: float, audio_end: float) -> tuple:
     """Find the last word that ends a sentence (after min_time seconds).
     Only returns a boundary if it's within 2s of the audio end — meaning
@@ -267,6 +287,8 @@ def capture_and_transcribe():
                         "speech_pad_ms": 100,
                     },
                     word_timestamps=True,
+                    no_repeat_ngram_size=3,
+                    repetition_penalty=1.1,
                 )
 
                 segments = list(segments_iter)
@@ -308,6 +330,7 @@ def capture_and_transcribe():
             if all_final:
                 # VAD detected end of speech — commit everything and cut audio
                 if full_text and not _is_hallucination(segments, last_commit_text):
+                    full_text = _strip_boundary_overlap(full_text, last_commit_text)
                     broadcast_event("commit", full_text, lang=detected_lang)
                     logger.debug(f">>> COMMIT [{detected_lang}]: {full_text}")
                     last_commit_text = full_text[-200:]
@@ -345,6 +368,7 @@ def capture_and_transcribe():
                             last_committed_pos = 0
                         last_interim_time = now
                     else:
+                        boundary_text = _strip_boundary_overlap(boundary_text, last_commit_text)
                         broadcast_event("commit", boundary_text, lang=detected_lang)
                         logger.debug(f">>> SENTENCE-COMMIT [{detected_lang}] @{boundary_time:.1f}s ({uncommitted_duration:.1f}s): {boundary_text}")
                         last_commit_text = boundary_text[-200:]
@@ -378,6 +402,7 @@ def capture_and_transcribe():
             # Force-commit if exceeded max segment duration
             if uncommitted_duration >= vad_max_segment_s and not all_final:
                 if full_text:
+                    full_text = _strip_boundary_overlap(full_text, last_commit_text)
                     broadcast_event("commit", full_text, lang=detected_lang)
                     logger.debug(f">>> FORCE-COMMIT [{detected_lang}] ({uncommitted_duration:.1f}s): {full_text}")
                     last_commit_text = full_text[-200:]
