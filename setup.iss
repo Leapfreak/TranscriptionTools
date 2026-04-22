@@ -53,6 +53,13 @@ Source: "{#AppPublishDir}\TranscriptionTools.exe"; DestDir: "{app}"; Flags: igno
 Source: "{#AppPublishDir}\TranscriptionTools.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#AppPublishDir}\TranscriptionTools.deps.json"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#AppPublishDir}\TranscriptionTools.runtimeconfig.json"; DestDir: "{app}"; Flags: ignoreversion
+; --- WebView2 (required for Live Output tab) ---
+Source: "{#AppPublishDir}\Microsoft.Web.WebView2.Core.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#AppPublishDir}\Microsoft.Web.WebView2.WinForms.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#AppPublishDir}\Microsoft.Web.WebView2.Wpf.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#AppPublishDir}\runtimes\win-arm64\native\WebView2Loader.dll"; DestDir: "{app}\runtimes\win-arm64\native"; Flags: ignoreversion
+Source: "{#AppPublishDir}\runtimes\win-x64\native\WebView2Loader.dll"; DestDir: "{app}\runtimes\win-x64\native"; Flags: ignoreversion
+Source: "{#AppPublishDir}\runtimes\win-x86\native\WebView2Loader.dll"; DestDir: "{app}\runtimes\win-x86\native"; Flags: ignoreversion
 Source: "{#AppPublishDir}\component-versions.json"; DestDir: "{app}"; Flags: ignoreversion
 ; Help files
 Source: "{#AppPublishDir}\Help\*"; DestDir: "{app}\Help"; Flags: ignoreversion recursesubdirs
