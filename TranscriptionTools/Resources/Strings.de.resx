@@ -34,11 +34,9 @@
 
   <!-- Tab labels -->
   <data name="Tab_Main"><value>Haupt / Aufgabe</value></data>
-  <data name="Tab_WhisperParams"><value>Whisper-Parameter</value></data>
   <data name="Tab_Paths"><value>Pfade &amp; Werkzeuge</value></data>
-  <data name="Tab_Log"><value>Protokoll</value></data>
   <data name="Tab_Help"><value>Hilfe</value></data>
-  <data name="Tab_Live"><value>Live-Übersetzung (Test)</value></data>
+  <data name="Tab_Live"><value>Live-Übersetzung</value></data>
   <data name="Tab_Settings"><value>Einstellungen</value></data>
 
   <!-- Main tab - Input group -->
@@ -49,7 +47,6 @@
   <data name="Lbl_EndTime"><value>Endzeit (HH:MM:SS):</value></data>
   <data name="Lbl_OutputDir"><value>Ausgabeordner:</value></data>
   <data name="Btn_BrowseOutput"><value>Durchsuchen...</value></data>
-  <data name="Lbl_Language"><value>Sprache:</value></data>
 
   <!-- Main tab - Output formats group -->
   <data name="Grp_OutputFormats"><value>Ausgabeformate</value></data>
@@ -62,50 +59,12 @@
   <data name="Btn_OpenOutputFolder"><value>Ausgabeordner &#246;ffnen</value></data>
   <data name="Lnk_PreviewSrt"><value>preview.srt &#246;ffnen</value></data>
 
-  <!-- Whisper Params tab -->
-  <data name="Grp_LanguageModel"><value>Sprache &amp; Modell</value></data>
-  <data name="Grp_BeamSampling"><value>Strahlsuche / Abtastung</value></data>
-  <data name="Grp_QualityFiltering"><value>Qualit&#228;t / Filterung</value></data>
-  <data name="Grp_SegmentControl"><value>Segmentsteuerung</value></data>
-  <data name="Grp_Prompting"><value>Eingabeaufforderung</value></data>
-  <data name="Grp_Flags"><value>Optionen</value></data>
-  <data name="Grp_Vad"><value>VAD (Sprachaktivit&#228;tserkennung)</value></data>
 
-  <data name="Lbl_Threads"><value>Threads:</value></data>
-  <data name="Lbl_Processors"><value>Prozessoren:</value></data>
-  <data name="Lbl_BeamSize"><value>Strahlbreite:</value></data>
-  <data name="Lbl_BestOf"><value>Beste von:</value></data>
-  <data name="Lbl_Temperature"><value>Temperatur:</value></data>
-  <data name="Lbl_TemperatureInc"><value>Temperaturerh&#246;hung:</value></data>
-  <data name="Lbl_MaxContext"><value>Max. Kontext:</value></data>
-  <data name="Lbl_WordThreshold"><value>Wortschwelle:</value></data>
-  <data name="Lbl_EntropyThreshold"><value>Entropieschwelle:</value></data>
-  <data name="Lbl_LogProbThreshold"><value>Log-Prob-Schwelle:</value></data>
-  <data name="Lbl_NoSpeechThreshold"><value>Stille-Schwelle:</value></data>
-  <data name="Lbl_MaxSegmentLength"><value>Max. Segmentl&#228;nge:</value></data>
-  <data name="Lbl_MaxTokens"><value>Max. Tokens:</value></data>
-  <data name="Lbl_AudioContext"><value>Audiokontext:</value></data>
-  <data name="Lbl_InitialPrompt"><value>Anfangseingabe:</value></data>
-  <data name="Lbl_Hotwords"><value>Schl&#252;sselw&#246;rter:</value></data>
-  <data name="Lbl_VadThreshold"><value>VAD-Schwelle:</value></data>
-  <data name="Lbl_FreqThreshold"><value>Frequenzschwelle:</value></data>
 
-  <data name="Chk_SplitOnWord"><value>An Wortgrenzen teilen</value></data>
-  <data name="Chk_NoGpu"><value>Ohne GPU</value></data>
-  <data name="Chk_FlashAttn"><value>Flash-Attention</value></data>
-  <data name="Chk_PrintProgress"><value>Fortschritt ausgeben</value></data>
-  <data name="Chk_PrintColours"><value>Farben ausgeben</value></data>
-  <data name="Chk_PrintRealtime"><value>Echtzeit ausgeben</value></data>
-  <data name="Chk_Diarize"><value>Diarisierung</value></data>
-  <data name="Chk_Tinydiarize"><value>Tinydiarize</value></data>
-  <data name="Chk_NoTimestamps"><value>Ohne Zeitstempel</value></data>
-  <data name="Chk_Translate"><value>Ins Englische &#252;bersetzen</value></data>
 
-  <data name="Btn_RestoreDefaults"><value>Standardwerte wiederherstellen</value></data>
 
   <!-- Paths tab -->
   <data name="Lbl_PathWhisper"><value>whisper-cli.exe:</value></data>
-  <data name="Lbl_PathStream"><value>whisper-stream.exe:</value></data>
   <data name="Lbl_PathYtdlp"><value>yt-dlp.exe:</value></data>
   <data name="Lbl_PathFfmpeg"><value>ffmpeg.exe:</value></data>
   <data name="Lbl_PathFfprobe"><value>ffprobe.exe:</value></data>
@@ -115,7 +74,6 @@
   <data name="Lbl_YtdlpFormat"><value>yt-dlp-Formatzeichenfolge:</value></data>
   <data name="Btn_VerifyPaths"><value>Alle Pfade &#252;berpr&#252;fen</value></data>
   <data name="Lnk_DownloadModels"><value>Whisper-Modelle herunterladen...</value></data>
-  <data name="Btn_Browse"><value>Durchsuchen...</value></data>
 
   <!-- Log tab -->
   <data name="Btn_ClearLog"><value>Protokoll l&#246;schen</value></data>
@@ -123,25 +81,10 @@
 
   <!-- Settings tab -->
   <data name="Lbl_UiLanguage"><value>Oberfl&#228;chensprache:</value></data>
-  <data name="Lbl_ParallelJobs"><value>Parallele Transkriptionsaufgaben:</value></data>
-  <data name="Lbl_ChunkSize"><value>Fragmentgr&#246;&#223;e (Sekunden):</value></data>
-  <data name="Lbl_PollInterval"><value>Abfrageintervall (ms):</value></data>
-  <data name="Lbl_ChunkTimeout"><value>Fragment-Zeitlimit (Min.):</value></data>
-  <data name="Chk_KeepChunks"><value>Fragmentdateien behalten</value></data>
-  <data name="Chk_KeepPreview"><value>Zugeschnittene preview.mp4 behalten</value></data>
-  <data name="Chk_SkipDownload"><value>Download &#252;berspringen, wenn Datei existiert</value></data>
   <data name="Lbl_Theme"><value>Design:</value></data>
   <data name="Btn_ResetSettings"><value>Alle Einstellungen zur&#252;cksetzen</value></data>
 
   <!-- Status messages -->
-  <data name="Msg_Validating"><value>Eingaben werden &#252;berpr&#252;ft...</value></data>
-  <data name="Msg_Downloading"><value>Video wird heruntergeladen...</value></data>
-  <data name="Msg_Trimming"><value>Video wird zugeschnitten...</value></data>
-  <data name="Msg_ExtractingAudio"><value>Audio wird extrahiert...</value></data>
-  <data name="Msg_GettingDuration"><value>Dauer wird ermittelt...</value></data>
-  <data name="Msg_Splitting"><value>Audio wird in Fragmente aufgeteilt...</value></data>
-  <data name="Msg_Transcribing"><value>Transkription l&#228;uft...</value></data>
-  <data name="Msg_Merging"><value>Untertitel werden zusammengef&#252;hrt...</value></data>
   <data name="Msg_Done"><value>Fertig!</value></data>
   <data name="Msg_Cancelled"><value>Abgebrochen.</value></data>
   <data name="Msg_Ready"><value>Bereit</value></data>
@@ -159,35 +102,6 @@
 
   <!-- Tooltips -->
   <data name="Tip_Url"><value>Geben Sie eine YouTube-URL oder den Pfad zu einer lokalen Video-/Audiodatei ein</value></data>
-  <data name="Tip_BeamSize"><value>Strahlsuchbreite. -1 verwendet gierige Dekodierung. H&#246;here Werte sind langsamer, aber genauer.</value></data>
-  <data name="Tip_BestOf"><value>Anzahl der zu ber&#252;cksichtigenden Transkriptionskandidaten. H&#246;her = langsamer, aber bessere Qualit&#228;t.</value></data>
-  <data name="Tip_Temperature"><value>Abtasttemperatur. 0 = deterministisch (wahrscheinlichste Tokens). H&#246;her = zuf&#228;lliger.</value></data>
-  <data name="Tip_TemperatureInc"><value>Temperaturerh&#246;hung bei fehlgeschlagener Dekodierung. F&#252;gt beim Neuversuch Zuf&#228;lligkeit hinzu.</value></data>
-  <data name="Tip_MaxContext"><value>Maximale Tokens aus dem vorherigen Segment als Kontext. -1 = alle verwenden. 0 = keine.</value></data>
-  <data name="Tip_WordThreshold"><value>Wortwahrscheinlichkeitsschwelle. W&#246;rter unter diesem Vertrauenswert werden gefiltert.</value></data>
-  <data name="Tip_EntropyThreshold"><value>Entropieschwelle f&#252;r Decoder-R&#252;ckfall. H&#246;her = toleranter gegen&#252;ber unsicherer Ausgabe.</value></data>
-  <data name="Tip_LogProbThreshold"><value>Log-Wahrscheinlichkeitsschwelle f&#252;r Decoder-R&#252;ckfall.</value></data>
-  <data name="Tip_NoSpeechThreshold"><value>Wahrscheinlichkeitsschwelle zur Erkennung von Stille/keiner Sprache.</value></data>
-  <data name="Tip_SplitOnWord"><value>Untertitelsegmente an Wortgrenzen statt mitten im Wort teilen.</value></data>
-  <data name="Tip_NoGpu"><value>GPU-Beschleunigung deaktivieren. Nur CPU verwenden.</value></data>
-  <data name="Tip_FlashAttn"><value>Flash-Attention f&#252;r schnellere Inferenz auf unterst&#252;tzten GPUs aktivieren.</value></data>
-  <data name="Tip_Diarize"><value>Sprecherdiarisierung aktivieren. Erfordert Stereo-Audioeingabe.</value></data>
-  <data name="Tip_Tinydiarize"><value>Leichtgewichtige Sprecherwechselerkennung verwenden.</value></data>
-  <data name="Tip_Translate"><value>Nicht-englische Sprache ins Englische &#252;bersetzen.</value></data>
-  <data name="Tip_MaxSegmentLength"><value>Maximale Zeichen pro Untertitelsegment. 0 = unbegrenzt.</value></data>
-  <data name="Tip_MaxTokens"><value>Maximale Tokens pro Segment. 0 = unbegrenzt.</value></data>
-  <data name="Tip_AudioContext"><value>Audiokontextgr&#246;&#223;e in Tokens. 0 = vollen Kontext verwenden.</value></data>
-  <data name="Tip_InitialPrompt"><value>Texteingabe zur Steuerung von Transkriptionsstil, Vokabular oder Formatierung.</value></data>
-  <data name="Tip_Hotwords"><value>Kommagetrennte Liste von W&#246;rtern, die bei der Transkription bevorzugt werden.</value></data>
-  <data name="Tip_VadThreshold"><value>Schwelle der Sprachaktivit&#228;tserkennung. H&#246;her = strengere Stilleerkennung.</value></data>
-  <data name="Tip_FreqThreshold"><value>Frequenzschwelle f&#252;r den VAD-Hochpassfilter in Hz.</value></data>
-  <data name="Tip_Language"><value>Audiosprachcode (en, es, fr usw.) oder 'auto' f&#252;r automatische Erkennung.</value></data>
-  <data name="Tip_Threads"><value>Anzahl der CPU-Threads f&#252;r die Transkription.</value></data>
-  <data name="Tip_Processors"><value>Anzahl der parallelen Prozessoren f&#252;r die Transkription.</value></data>
-  <data name="Tip_PrintProgress"><value>Transkriptionsfortschritt in Prozent auf stdout ausgeben.</value></data>
-  <data name="Tip_PrintColours"><value>Transkriptionsausgabe nach Vertrauensniveau farblich kodieren.</value></data>
-  <data name="Tip_PrintRealtime"><value>Transkriptionsausgabe in Echtzeit w&#228;hrend der Generierung anzeigen.</value></data>
-  <data name="Tip_NoTimestamps"><value>Zeitstempelausgabe in der Transkription unterdr&#252;cken.</value></data>
   <data name="Lbl_Mode"><value>Modus:</value></data>
   <data name="Lbl_AudioFile"><value>Audiodatei:</value></data>
   <data name="Btn_BrowseAudio"><value>Audio suchen...</value></data>
@@ -209,12 +123,9 @@
   <data name="Lbl_LiveDevice"><value>Audioger&#228;t:</value></data>
   <data name="Btn_RefreshDevices"><value>Aktualisieren</value></data>
   <data name="Lbl_LiveInputLang"><value>Eingabesprache:</value></data>
-  <data name="Lbl_LiveOutputLang"><value>Ausgabesprache:</value></data>
-  <data name="Lbl_LiveModel"><value>Modell:</value></data>
   <data name="Btn_LiveStart"><value>Starten</value></data>
   <data name="Btn_LiveStop"><value>Stoppen</value></data>
   <data name="Btn_LiveSave"><value>Transkript speichern...</value></data>
-  <data name="Btn_LiveClear"><value>L&#246;schen</value></data>
 
   <!-- Subtitle Server tab -->
   <data name="Tab_Server"><value>Untertitel-Server</value></data>
@@ -250,11 +161,8 @@
   <data name="Msg_NoSrtFound"><value>Keine SRT-Datei im Ausgabeordner gefunden.</value></data>
   <data name="Msg_SubtitleEditNotFound"><value>SubtitleEdit.exe nicht gefunden:</value></data>
   <data name="Msg_PathVerification"><value>Pfad&#252;berpr&#252;fung</value></data>
-  <data name="Msg_RestoreDefaults"><value>Alle Whisper-Parameter auf Standardwerte zur&#252;cksetzen?</value></data>
-  <data name="Msg_RestoreDefaultsTitle"><value>Standardwerte wiederherstellen</value></data>
   <data name="Msg_ResetAll"><value>ALLE Einstellungen zur&#252;cksetzen? Dies kann nicht r&#252;ckg&#228;ngig gemacht werden.</value></data>
   <data name="Msg_ResetAllTitle"><value>Einstellungen zur&#252;cksetzen</value></data>
-  <data name="Msg_StreamNotFound"><value>whisper-stream.exe nicht gefunden:</value></data>
   <data name="Msg_TranscriptSaved"><value>Transkript gespeichert unter:</value></data>
   <data name="Msg_Saved"><value>Gespeichert</value></data>
   <data name="Msg_CleanUp"><value>Aufr&#228;umen</value></data>
@@ -262,4 +170,8 @@
   <data name="Msg_NewVersionAvailable"><value>Eine neue Version ist verf&#252;gbar:</value></data>
   <data name="Msg_DownloadUpdate"><value>M&#246;chten Sie die Download-Seite besuchen?</value></data>
   <data name="Msg_UpdateAvailable"><value>Update verf&#252;gbar</value></data>
+  <data name="Tab_LiveOutput"><value>Live-Ausgabe</value></data>
+  <data name="Tab_LiveLog"><value>Protokoll</value></data>
+  <data name="Btn_LiveSaveLog"><value>Protokoll Speichern...</value></data>
+  <data name="Btn_LiveClearLog"><value>Protokoll Löschen</value></data>
 </root>

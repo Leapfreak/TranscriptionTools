@@ -15,6 +15,7 @@ Namespace Pipeline
         Public Event StatusChanged As EventHandler(Of String)
         Public Event RemoteCommand As EventHandler(Of String)
         Public Event ActiveLanguagesChanged As EventHandler
+        Public Event LogMessage As EventHandler(Of String)
 
         Private _listener As HttpListener
         Private _httpsListener As TcpListener
@@ -29,19 +30,28 @@ Namespace Pipeline
         Private ReadOnly _committedLines As New ConcurrentQueue(Of CommittedEntry)()
         Private _lastCommittedEntry As CommittedEntry
         Private Const MaxCommittedLines As Integer = 200
+        Private _commitCounter As Integer = 0
 
         Private Class ClientInfo
             Public Property WebSocket As WebSocket
             Public Property Language As String = ""  ' Empty = original (no translation)
+            Public Property UserAgent As String = ""
+            Public Property RemoteEndpoint As String = ""
         End Class
 
         Private Class CommittedEntry
+            Public Property Id As Integer
             Public Property OriginalText As String = ""
+            Public Property SourceLang As String = ""
             Public Property Translations As Dictionary(Of String, String)
+            Public Property Timestamp As DateTime
 
-            Public Sub New(text As String, Optional translations As Dictionary(Of String, String) = Nothing)
+            Public Sub New(id As Integer, text As String, Optional lang As String = "", Optional translations As Dictionary(Of String, String) = Nothing)
+                Me.Id = id
                 OriginalText = text
+                SourceLang = If(lang, "")
                 Me.Translations = If(translations, New Dictionary(Of String, String)())
+                Timestamp = DateTime.Now
             End Sub
         End Class
 
@@ -260,7 +270,9 @@ Namespace Pipeline
                         .IsServer = True,
                         .KeepAliveInterval = TimeSpan.FromSeconds(30)
                     })
-                    Await HandleWebSocketStream(ws, ct).ConfigureAwait(False)
+                    Dim ua = If(headers.ContainsKey("User-Agent"), headers("User-Agent"), "")
+                    Dim ep = CType(client.Client.RemoteEndPoint, IPEndPoint).Address.ToString()
+                    Await HandleWebSocketStream(ws, ua, ep, ct).ConfigureAwait(False)
                     ' sslStream/client are owned by the WebSocket now — disposed when ws is disposed
                 ElseIf path = "/nosleep.wav" Then
                     Dim wav = BuildSilentWav()
@@ -365,17 +377,20 @@ Namespace Pipeline
         ''' Handle a WebSocket connection from the HTTPS TcpListener path.
         ''' Same logic as HandleWebSocket but uses a WebSocket directly instead of HttpListenerContext.
         ''' </summary>
-        Private Async Function HandleWebSocketStream(ws As WebSocket, ct As CancellationToken) As Task
+        Private Async Function HandleWebSocketStream(ws As WebSocket, userAgent As String, remoteEndpoint As String, ct As CancellationToken) As Task
             Dim clientId = Guid.NewGuid().ToString()
-            Dim info As New ClientInfo() With {.WebSocket = ws}
+            Dim info As New ClientInfo() With {.WebSocket = ws, .UserAgent = userAgent, .RemoteEndpoint = remoteEndpoint}
             _clients.TryAdd(clientId, info)
-            RaiseEvent StatusChanged(Me, $"Client connected ({_clients.Count} total)")
+            Dim shortUa = ParseUserAgent(userAgent)
+            RaiseEvent StatusChanged(Me, $"Client connected: {remoteEndpoint} — {shortUa} ({_clients.Count} total)")
 
-            ' Send history (original text — client will set language shortly)
+            ' Send history — replay uses final text (never pending)
             Try
                 For Each entry In _committedLines
                     Dim text = GetTextForClient(info, entry.OriginalText, entry.Translations)
-                    Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(text)}}}"
+                    Dim clientLang = GetLangForClient(info, entry.SourceLang, entry.Translations)
+                    Dim ts = entry.Timestamp.ToString("HH:mm:ss")
+                    Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(text)},""lang"":{EscapeJson(clientLang)},""time"":{EscapeJson(ts)},""id"":{entry.Id}}}"
                     Dim buf = Encoding.UTF8.GetBytes(json)
                     Await ws.SendAsync(New ArraySegment(Of Byte)(buf), WebSocketMessageType.Text, True, ct).ConfigureAwait(False)
                 Next
@@ -405,7 +420,7 @@ Namespace Pipeline
             Dim removed As ClientInfo = Nothing
             _clients.TryRemove(clientId, removed)
             removed?.WebSocket?.Dispose()
-            RaiseEvent StatusChanged(Me, $"Client disconnected ({_clients.Count} total)")
+            RaiseEvent StatusChanged(Me, $"Client disconnected: {remoteEndpoint} ({_clients.Count} total)")
             RaiseEvent ActiveLanguagesChanged(Me, EventArgs.Empty)
         End Function
 
@@ -525,12 +540,13 @@ Namespace Pipeline
             CleanupDeadClients(deadKeys)
         End Sub
 
-        Public Sub BroadcastCommit(text As String, Optional skipTranslationClients As Boolean = False)
-            If Not _isRunning Then Return
+        Public Function BroadcastCommit(text As String, Optional skipTranslationClients As Boolean = False, Optional lang As String = "") As Integer
+            Dim commitId = Interlocked.Increment(_commitCounter)
+            If Not _isRunning Then Return commitId
             _currentLine = ""
 
             ' Store in history (original text, no translations yet)
-            Dim entry As New CommittedEntry(text, Nothing)
+            Dim entry As New CommittedEntry(commitId, text, lang, Nothing)
             _lastCommittedEntry = entry
             _committedLines.Enqueue(entry)
             While _committedLines.Count > MaxCommittedLines
@@ -538,14 +554,18 @@ Namespace Pipeline
                 _committedLines.TryDequeue(discard)
             End While
 
-            Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(text)}}}"
+            Dim ts = entry.Timestamp.ToString("HH:mm:ss")
+            Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(text)},""lang"":{EscapeJson(lang)},""time"":{EscapeJson(ts)},""id"":{commitId}}}"
             Dim buffer = Encoding.UTF8.GetBytes(json)
             Dim segment = New ArraySegment(Of Byte)(buffer)
             Dim deadKeys As New List(Of String)
 
             For Each kvp In _clients
                 Try
-                    If skipTranslationClients AndAlso Not String.IsNullOrEmpty(kvp.Value.Language) Then Continue For
+                    If skipTranslationClients AndAlso Not String.IsNullOrEmpty(kvp.Value.Language) Then
+                        RaiseEvent LogMessage(Me,$"[SUBTITLE] COMMIT SKIP {kvp.Value.RemoteEndpoint} lang={kvp.Value.Language}")
+                        Continue For
+                    End If
                     Dim ws = kvp.Value.WebSocket
                     If ws.State = WebSocketState.Open Then
                         ws.SendAsync(segment, WebSocketMessageType.Text, True, CancellationToken.None).Wait(500)
@@ -558,29 +578,56 @@ Namespace Pipeline
             Next
 
             CleanupDeadClients(deadKeys)
-        End Sub
+            Return commitId
+        End Function
 
 
-        Public Sub BroadcastCommitTranslated(originalText As String, translations As Dictionary(Of String, String))
+        Public Sub BroadcastCommitTranslated(originalText As String, sourceLang As String, translations As Dictionary(Of String, String), langTags As Dictionary(Of String, String))
             If Not _isRunning Then Return
             _currentLine = ""
-            Dim entry As New CommittedEntry(originalText, translations)
+            Dim entry As New CommittedEntry(Interlocked.Increment(_commitCounter), originalText, sourceLang, translations)
+            _lastCommittedEntry = entry
             _committedLines.Enqueue(entry)
             While _committedLines.Count > MaxCommittedLines
                 Dim discard As CommittedEntry = Nothing
                 _committedLines.TryDequeue(discard)
             End While
 
+            Dim ts = entry.Timestamp.ToString("HH:mm:ss")
             Dim deadKeys As New List(Of String)
 
             For Each kvp In _clients
                 Try
+                    ' Determine what text to send this client
+                    Dim clientLang = kvp.Value.Language
+                    Dim text As String
+                    Dim tag As String
+
+                    If String.IsNullOrEmpty(clientLang) Then
+                        ' No translation requested — send original
+                        text = originalText
+                        tag = sourceLang
+                    Else
+                        ' Translation client — look up their language in translations
+                        Dim translated As String = Nothing
+                        If translations IsNot Nothing AndAlso translations.TryGetValue(clientLang, translated) Then
+                            text = translated
+                            tag = clientLang
+                        Else
+                            ' Language not available — skip (don't send original)
+                            RaiseEvent LogMessage(Me, $"[SUBTITLE] SKIP {kvp.Value.RemoteEndpoint} lang={clientLang} — not in translations")
+                            Continue For
+                        End If
+                    End If
+
                     Dim ws = kvp.Value.WebSocket
                     If ws.State = WebSocketState.Open Then
-                        Dim text = GetTextForClient(kvp.Value, originalText, translations)
-                        Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(text)}}}"
+                        Dim langTag = ""
+                        If langTags IsNot Nothing Then langTags.TryGetValue(tag, langTag)
+                        Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(text)},""lang"":{EscapeJson(langTag)},""time"":{EscapeJson(ts)}}}"
                         Dim buffer = Encoding.UTF8.GetBytes(json)
                         ws.SendAsync(New ArraySegment(Of Byte)(buffer), WebSocketMessageType.Text, True, CancellationToken.None).Wait(500)
+                        RaiseEvent LogMessage(Me, $"[SUBTITLE] SENT to {kvp.Value.RemoteEndpoint} lang={If(clientLang, "original")}")
                     Else
                         deadKeys.Add(kvp.Key)
                     End If
@@ -592,7 +639,7 @@ Namespace Pipeline
             CleanupDeadClients(deadKeys)
         End Sub
 
-        Public Sub BroadcastTranslationsOnly(translations As Dictionary(Of String, String))
+        Public Sub BroadcastTranslationsOnly(translations As Dictionary(Of String, String), langTags As Dictionary(Of String, String))
             ' Send translated text only to clients whose language matches
             If Not _isRunning OrElse translations Is Nothing Then Return
 
@@ -603,6 +650,7 @@ Namespace Pipeline
                 Next
             End If
 
+            Dim ts = DateTime.Now.ToString("HH:mm:ss")
             Dim deadKeys As New List(Of String)
 
             For Each kvp In _clients
@@ -610,17 +658,25 @@ Namespace Pipeline
                     Dim lang = kvp.Value.Language
                     If String.IsNullOrEmpty(lang) Then Continue For
                     Dim translated As String = Nothing
-                    If Not translations.TryGetValue(lang, translated) Then Continue For
+                    If Not translations.TryGetValue(lang, translated) Then
+                        RaiseEvent LogMessage(Me,$"[SUBTITLE] SKIP client {kvp.Value.RemoteEndpoint} lang={lang} — not in translations [{String.Join(",", translations.Keys)}]")
+                        Continue For
+                    End If
+
+                    Dim tagValue = ""
+                    If langTags IsNot Nothing Then langTags.TryGetValue(lang, tagValue)
 
                     Dim ws = kvp.Value.WebSocket
                     If ws.State = WebSocketState.Open Then
-                        Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(translated)}}}"
+                        Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(translated)},""lang"":{EscapeJson(tagValue)},""time"":{EscapeJson(ts)}}}"
                         Dim buffer = Encoding.UTF8.GetBytes(json)
                         ws.SendAsync(New ArraySegment(Of Byte)(buffer), WebSocketMessageType.Text, True, CancellationToken.None).Wait(500)
+                        RaiseEvent LogMessage(Me,$"[SUBTITLE] SENT translation to {kvp.Value.RemoteEndpoint} lang={lang}")
                     Else
                         deadKeys.Add(kvp.Key)
                     End If
-                Catch
+                Catch ex As Exception
+                    RaiseEvent LogMessage(Me,$"[SUBTITLE] SEND ERROR to {kvp.Value.RemoteEndpoint}: {ex.Message}")
                     deadKeys.Add(kvp.Key)
                 End Try
             Next
@@ -645,6 +701,12 @@ Namespace Pipeline
                 If translations.TryGetValue(client.Language, translated) Then Return translated
             End If
             Return originalText
+        End Function
+
+        Private Shared Function GetLangForClient(client As ClientInfo, sourceLang As String, translations As Dictionary(Of String, String)) As String
+            If String.IsNullOrEmpty(client.Language) Then Return sourceLang
+            If translations IsNot Nothing AndAlso translations.ContainsKey(client.Language) Then Return client.Language
+            Return sourceLang
         End Function
 
         Private Sub BroadcastMessage(json As String)
@@ -697,6 +759,7 @@ Namespace Pipeline
                             Dim oldLang = info.Language
                             info.Language = If(lang, "")
                             If oldLang <> info.Language Then
+                                RaiseEvent LogMessage(Me,$"[SUBTITLE] LANG CHANGE {info.RemoteEndpoint}: '{oldLang}' -> '{info.Language}'")
                                 RaiseEvent ActiveLanguagesChanged(Me, EventArgs.Empty)
                             End If
                         End If
@@ -748,15 +811,20 @@ Namespace Pipeline
 
             Dim ws = wsCtx.WebSocket
             Dim clientId = Guid.NewGuid().ToString()
-            Dim info As New ClientInfo() With {.WebSocket = ws}
+            Dim userAgent = If(ctx.Request.UserAgent, "")
+            Dim remoteEndpoint = ctx.Request.RemoteEndPoint?.Address.ToString()
+            Dim info As New ClientInfo() With {.WebSocket = ws, .UserAgent = userAgent, .RemoteEndpoint = remoteEndpoint}
             _clients.TryAdd(clientId, info)
-            RaiseEvent StatusChanged(Me, $"Client connected ({_clients.Count} total)")
+            Dim shortUa = ParseUserAgent(userAgent)
+            RaiseEvent StatusChanged(Me, $"Client connected: {remoteEndpoint} — {shortUa} ({_clients.Count} total)")
 
-            ' Send history to new client (original text — client will set language shortly)
+            ' Send history to new client — replay uses final text (never pending)
             Try
                 For Each entry In _committedLines
                     Dim text = GetTextForClient(info, entry.OriginalText, entry.Translations)
-                    Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(text)}}}"
+                    Dim clientLang = GetLangForClient(info, entry.SourceLang, entry.Translations)
+                    Dim ts = entry.Timestamp.ToString("HH:mm:ss")
+                    Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(text)},""lang"":{EscapeJson(clientLang)},""time"":{EscapeJson(ts)},""id"":{entry.Id}}}"
                     Dim buf = Encoding.UTF8.GetBytes(json)
                     Await ws.SendAsync(New ArraySegment(Of Byte)(buf), WebSocketMessageType.Text, True, ct).ConfigureAwait(False)
                 Next
@@ -786,7 +854,7 @@ Namespace Pipeline
             Dim removed As ClientInfo = Nothing
             _clients.TryRemove(clientId, removed)
             removed?.WebSocket?.Dispose()
-            RaiseEvent StatusChanged(Me, $"Client disconnected ({_clients.Count} total)")
+            RaiseEvent StatusChanged(Me, $"Client disconnected: {remoteEndpoint} ({_clients.Count} total)")
             RaiseEvent ActiveLanguagesChanged(Me, EventArgs.Empty)
         End Sub
 
@@ -1005,22 +1073,103 @@ body{background:{{BG_COLOR}};color:{{FG_COLOR}};font-family:'Segoe UI',Arial,san
   <label id=""lblTransLang"">Translation</label>
   <select id=""transLangSelect"" onchange=""setTransLang(this.value)"">
     <option value="""">Original</option>
-    <option value=""spa_Latn"">Espa&#241;ol</option>
+    <option value=""afr_Latn"">Afrikaans</option>
+    <option value=""amh_Ethi"">&#4768;&#4635;&#4653;&#4763; (Amharic)</option>
+    <option value=""arb_Arab"">&#1575;&#1604;&#1593;&#1585;&#1576;&#1610;&#1577; (Arabic)</option>
+    <option value=""hye_Armn"">&#1344;&#1377;&#1397;&#1381;&#1408;&#1381;&#1398; (Armenian)</option>
+    <option value=""azj_Latn"">Az&#601;rbaycan (Azerbaijani)</option>
+    <option value=""eus_Latn"">Euskara (Basque)</option>
+    <option value=""bel_Cyrl"">&#1041;&#1077;&#1083;&#1072;&#1088;&#1091;&#1089;&#1082;&#1072;&#1103; (Belarusian)</option>
+    <option value=""ben_Beng"">&#2476;&#2494;&#2434;&#2482;&#2494; (Bengali)</option>
+    <option value=""bos_Latn"">Bosanski (Bosnian)</option>
+    <option value=""bul_Cyrl"">&#1041;&#1098;&#1083;&#1075;&#1072;&#1088;&#1089;&#1082;&#1080; (Bulgarian)</option>
     <option value=""cat_Latn"">Catal&#224;</option>
+    <option value=""ces_Latn"">&#268;e&#353;tina (Czech)</option>
+    <option value=""zho_Hans"">&#20013;&#25991; (Chinese)</option>
+    <option value=""hrv_Latn"">Hrvatski (Croatian)</option>
+    <option value=""dan_Latn"">Dansk (Danish)</option>
+    <option value=""nld_Latn"">Nederlands (Dutch)</option>
     <option value=""eng_Latn"">English</option>
-    <option value=""fra_Latn"">Fran&#231;ais</option>
-    <option value=""deu_Latn"">Deutsch</option>
-    <option value=""por_Latn"">Portugu&#234;s</option>
-    <option value=""ita_Latn"">Italiano</option>
-    <option value=""ron_Latn"">Rom&#226;n&#259;</option>
-    <option value=""nld_Latn"">Nederlands</option>
-    <option value=""pol_Latn"">Polski</option>
-    <option value=""rus_Cyrl"">&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;</option>
-    <option value=""ukr_Cyrl"">&#1059;&#1082;&#1088;&#1072;&#1111;&#1085;&#1089;&#1100;&#1082;&#1072;</option>
-    <option value=""zho_Hans"">&#20013;&#25991;</option>
-    <option value=""jpn_Jpan"">&#26085;&#26412;&#35486;</option>
-    <option value=""kor_Hang"">&#54620;&#44397;&#50612;</option>
-    <option value=""arb_Arab"">&#1575;&#1604;&#1593;&#1585;&#1576;&#1610;&#1577;</option>
+    <option value=""est_Latn"">Eesti (Estonian)</option>
+    <option value=""fin_Latn"">Suomi (Finnish)</option>
+    <option value=""fra_Latn"">Fran&#231;ais (French)</option>
+    <option value=""glg_Latn"">Galego (Galician)</option>
+    <option value=""kat_Geor"">&#4325;&#4304;&#4320;&#4311;&#4323;&#4314;&#4312; (Georgian)</option>
+    <option value=""deu_Latn"">Deutsch (German)</option>
+    <option value=""ell_Grek"">&#917;&#955;&#955;&#951;&#957;&#953;&#954;&#940; (Greek)</option>
+    <option value=""guj_Gujr"">&#2711;&#2753;&#2716;&#2736;&#2750;&#2724;&#2752; (Gujarati)</option>
+    <option value=""hat_Latn"">Krey&#242;l Ayisyen (Haitian Creole)</option>
+    <option value=""hau_Latn"">Hausa</option>
+    <option value=""heb_Hebr"">&#1506;&#1489;&#1512;&#1497;&#1514; (Hebrew)</option>
+    <option value=""hin_Deva"">&#2361;&#2367;&#2344;&#2381;&#2342;&#2368; (Hindi)</option>
+    <option value=""hun_Latn"">Magyar (Hungarian)</option>
+    <option value=""isl_Latn"">&#205;slenska (Icelandic)</option>
+    <option value=""ind_Latn"">Bahasa Indonesia (Indonesian)</option>
+    <option value=""ita_Latn"">Italiano (Italian)</option>
+    <option value=""jpn_Jpan"">&#26085;&#26412;&#35486; (Japanese)</option>
+    <option value=""jav_Latn"">Basa Jawa (Javanese)</option>
+    <option value=""kan_Knda"">&#3221;&#3240;&#3277;&#3240;&#3233; (Kannada)</option>
+    <option value=""kaz_Cyrl"">&#1178;&#1072;&#1079;&#1072;&#1179; (Kazakh)</option>
+    <option value=""khm_Khmr"">&#6017;&#6098;&#6040;&#6082;&#6042; (Khmer)</option>
+    <option value=""kor_Hang"">&#54620;&#44397;&#50612; (Korean)</option>
+    <option value=""lao_Laoo"">&#3749;&#3762;&#3751; (Lao)</option>
+    <option value=""lvs_Latn"">Latvie&#353;u (Latvian)</option>
+    <option value=""lit_Latn"">Lietuvi&#371; (Lithuanian)</option>
+    <option value=""ltz_Latn"">L&#235;tzebuergesch (Luxembourgish)</option>
+    <option value=""mkd_Cyrl"">&#1052;&#1072;&#1082;&#1077;&#1076;&#1086;&#1085;&#1089;&#1082;&#1080; (Macedonian)</option>
+    <option value=""zsm_Latn"">Bahasa Melayu (Malay)</option>
+    <option value=""mal_Mlym"">&#3374;&#3378;&#3375;&#3390;&#3379;&#3330; (Malayalam)</option>
+    <option value=""mlt_Latn"">Malti (Maltese)</option>
+    <option value=""mri_Latn"">Te Reo M&#257;ori (Maori)</option>
+    <option value=""mar_Deva"">&#2350;&#2352;&#2366;&#2336;&#2368; (Marathi)</option>
+    <option value=""khk_Cyrl"">&#1052;&#1086;&#1085;&#1075;&#1086;&#1083; (Mongolian)</option>
+    <option value=""mya_Mymr"">&#4121;&#4156;&#4116;&#4154;&#4121;&#4140; (Myanmar)</option>
+    <option value=""npi_Deva"">&#2344;&#2375;&#2346;&#2366;&#2354;&#2368; (Nepali)</option>
+    <option value=""nob_Latn"">Norsk (Norwegian)</option>
+    <option value=""pes_Arab"">&#1601;&#1575;&#1585;&#1587;&#1740; (Persian)</option>
+    <option value=""pol_Latn"">Polski (Polish)</option>
+    <option value=""por_Latn"">Portugu&#234;s (Portuguese)</option>
+    <option value=""pan_Guru"">&#2602;&#2672;&#2588;&#2622;&#2604;&#2624; (Punjabi)</option>
+    <option value=""ron_Latn"">Rom&#226;n&#259; (Romanian)</option>
+    <option value=""rus_Cyrl"">&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081; (Russian)</option>
+    <option value=""srp_Cyrl"">&#1057;&#1088;&#1087;&#1089;&#1082;&#1080; (Serbian)</option>
+    <option value=""sna_Latn"">Shona</option>
+    <option value=""snd_Arab"">&#1587;&#1606;&#1068;&#1610; (Sindhi)</option>
+    <option value=""sin_Sinh"">&#3523;&#3538;&#3458;&#3524;&#3517; (Sinhala)</option>
+    <option value=""slk_Latn"">Sloven&#269;ina (Slovak)</option>
+    <option value=""slv_Latn"">Sloven&#353;&#269;ina (Slovenian)</option>
+    <option value=""som_Latn"">Soomaali (Somali)</option>
+    <option value=""spa_Latn"">Espa&#241;ol (Spanish)</option>
+    <option value=""sun_Latn"">Basa Sunda (Sundanese)</option>
+    <option value=""swh_Latn"">Kiswahili (Swahili)</option>
+    <option value=""swe_Latn"">Svenska (Swedish)</option>
+    <option value=""tgl_Latn"">Tagalog (Filipino)</option>
+    <option value=""tgk_Cyrl"">&#1058;&#1086;&#1207;&#1080;&#1082;&#1251; (Tajik)</option>
+    <option value=""tam_Taml"">&#2980;&#2990;&#3007;&#2996;&#3021; (Tamil)</option>
+    <option value=""tat_Cyrl"">&#1058;&#1072;&#1090;&#1072;&#1088; (Tatar)</option>
+    <option value=""tel_Telu"">&#3108;&#3142;&#3122;&#3137;&#3095;&#3137; (Telugu)</option>
+    <option value=""tha_Thai"">&#3616;&#3634;&#3625;&#3634;&#3652;&#3607;&#3618; (Thai)</option>
+    <option value=""tur_Latn"">T&#252;rk&#231;e (Turkish)</option>
+    <option value=""tuk_Latn"">T&#252;rkmen (Turkmen)</option>
+    <option value=""ukr_Cyrl"">&#1059;&#1082;&#1088;&#1072;&#1111;&#1085;&#1089;&#1100;&#1082;&#1072; (Ukrainian)</option>
+    <option value=""urd_Arab"">&#1575;&#1585;&#1583;&#1608; (Urdu)</option>
+    <option value=""uzn_Latn"">O&#8216;zbek (Uzbek)</option>
+    <option value=""vie_Latn"">Ti&#7871;ng Vi&#7879;t (Vietnamese)</option>
+    <option value=""cym_Latn"">Cymraeg (Welsh)</option>
+    <option value=""yor_Latn"">Yor&#249;b&#225; (Yoruba)</option>
+    <option value=""zul_Latn"">isiZulu (Zulu)</option>
+  </select>
+  <label id=""lblScroll"">Scroll Direction</label>
+  <select id=""scrollDir"" onchange=""setScrollDir(this.value)"">
+    <option value=""up"">Bottom-up (newest at bottom)</option>
+    <option value=""down"">Top-down (newest at top)</option>
+  </select>
+  <label id=""lblTags"">Tags</label>
+  <select id=""tagMode"" onchange=""setTagMode(this.value)"">
+    <option value=""off"">Off</option>
+    <option value=""lang"">Language</option>
+    <option value=""time"">Time</option>
+    <option value=""both"">Language + Time</option>
   </select>
   <button id=""btnSave"" onclick=""saveTranscript()"" style=""width:100%;margin-top:12px"">&#128190; Save Transcript</button>
 </div>
@@ -1046,7 +1195,7 @@ var T={};
         bold:'Bold',font:'Font',style:'Style',voice:'Voice',speed:'Speed',color:'Text Color',
         slow:'Slow',normal:'Normal',fast:'Fast',vfast:'Very Fast',
         start:'Start',stop:'Stop',restart:'Restart',simulate:'Simulate',clear:'Clear',
-        saveTranscript:'Save Transcript',transLang:'Translation',remote:'Remote Control',settings:'Settings',readAloud:'Read aloud',keepScreen:'Keep screen on'},
+        saveTranscript:'Save Transcript',transLang:'Translation',remote:'Remote Control',settings:'Settings',readAloud:'Read aloud',keepScreen:'Keep screen on',scrollDir:'Scroll Direction',scrollUp:'Bottom-up (newest at bottom)',scrollDown:'Top-down (newest at top)',tags:'Tags',tagOff:'Off',tagLang:'Language',tagTime:'Time',tagBoth:'Language + Time'},
     es:{connecting:'Conectando...',connected:'Conectado',disconnected:'Desconectado - reconectando...',
         wakeTitle:'Mantener Pantalla',wakeDesc:'Se necesita conexi\u00f3n segura (configuraci\u00f3n \u00fanica):',
         stepTap:'Toca el bot\u00f3n de abajo',stepWarn:'Ver\u00e1s una advertencia \u2014 es normal',
@@ -1062,7 +1211,7 @@ var T={};
         bold:'Negrita',font:'Fuente',style:'Estilo',voice:'Voz',speed:'Velocidad',color:'Color de texto',
         slow:'Lento',normal:'Normal',fast:'R\u00e1pido',vfast:'Muy R\u00e1pido',
         start:'Iniciar',stop:'Detener',restart:'Reiniciar',simulate:'Simular',clear:'Limpiar',
-        saveTranscript:'Guardar Transcripci\u00f3n',transLang:'Traducci\u00f3n',remote:'Control Remoto',settings:'Ajustes',readAloud:'Leer en voz alta',keepScreen:'Mantener pantalla'},
+        saveTranscript:'Guardar Transcripci\u00f3n',transLang:'Traducci\u00f3n',remote:'Control Remoto',settings:'Ajustes',readAloud:'Leer en voz alta',keepScreen:'Mantener pantalla',scrollDir:'Direcci\u00f3n de desplazamiento',scrollUp:'Abajo-arriba (reciente abajo)',scrollDown:'Arriba-abajo (reciente arriba)',tags:'Etiquetas',tagOff:'Desactivado',tagLang:'Idioma',tagTime:'Hora',tagBoth:'Idioma + Hora'},
     fr:{connecting:'Connexion...',connected:'Connect\u00e9',disconnected:'D\u00e9connect\u00e9 - reconnexion...',
         wakeTitle:'\u00c9cran Allum\u00e9',wakeDesc:'Connexion s\u00e9curis\u00e9e requise (une seule fois) :',
         stepTap:'Appuyez sur le bouton ci-dessous',stepWarn:'Un avertissement s\u0027affichera \u2014 c\u0027est normal',
@@ -1078,7 +1227,7 @@ var T={};
         bold:'Gras',font:'Police',style:'Style',voice:'Voix',speed:'Vitesse',color:'Couleur du texte',
         slow:'Lent',normal:'Normal',fast:'Rapide',vfast:'Tr\u00e8s Rapide',
         start:'D\u00e9marrer',stop:'Arr\u00eater',restart:'Red\u00e9marrer',simulate:'Simuler',clear:'Effacer',
-        saveTranscript:'Enregistrer',transLang:'Traduction',remote:'T\u00e9l\u00e9commande',settings:'Param\u00e8tres',readAloud:'Lire \u00e0 voix haute',keepScreen:'\u00c9cran allum\u00e9'},
+        saveTranscript:'Enregistrer',transLang:'Traduction',remote:'T\u00e9l\u00e9commande',settings:'Param\u00e8tres',readAloud:'Lire \u00e0 voix haute',keepScreen:'\u00c9cran allum\u00e9',scrollDir:'Direction du d\u00e9filement',scrollUp:'Bas en haut (r\u00e9cent en bas)',scrollDown:'Haut en bas (r\u00e9cent en haut)',tags:'\u00c9tiquettes',tagOff:'D\u00e9sactiv\u00e9',tagLang:'Langue',tagTime:'Heure',tagBoth:'Langue + Heure'},
     de:{connecting:'Verbinde...',connected:'Verbunden',disconnected:'Getrennt - verbinde erneut...',
         wakeTitle:'Bildschirm An',wakeDesc:'Sichere Verbindung erforderlich (einmalig):',
         stepTap:'Tippen Sie auf den Button unten',stepWarn:'Sie sehen eine Warnung \u2014 das ist normal',
@@ -1094,7 +1243,7 @@ var T={};
         bold:'Fett',font:'Schrift',style:'Stil',voice:'Stimme',speed:'Geschwindigkeit',color:'Textfarbe',
         slow:'Langsam',normal:'Normal',fast:'Schnell',vfast:'Sehr Schnell',
         start:'Starten',stop:'Stoppen',restart:'Neustarten',simulate:'Simulieren',clear:'L\u00f6schen',
-        saveTranscript:'Speichern',transLang:'\u00dcbersetzung',remote:'Fernsteuerung',settings:'Einstellungen',readAloud:'Vorlesen',keepScreen:'Bildschirm an'},
+        saveTranscript:'Speichern',transLang:'\u00dcbersetzung',remote:'Fernsteuerung',settings:'Einstellungen',readAloud:'Vorlesen',keepScreen:'Bildschirm an',scrollDir:'Scrollrichtung',scrollUp:'Unten nach oben (neueste unten)',scrollDown:'Oben nach unten (neueste oben)',tags:'Tags',tagOff:'Aus',tagLang:'Sprache',tagTime:'Zeit',tagBoth:'Sprache + Zeit'},
     ca:{connecting:'Connectant...',connected:'Connectat',disconnected:'Desconnectat - reconnectant...',
         wakeTitle:'Mantenir Pantalla',wakeDesc:'Cal connexi\u00f3 segura (configuraci\u00f3 \u00fanica):',
         stepTap:'Toca el bot\u00f3 de sota',stepWarn:'Veur\u00e0s un av\u00eds \u2014 \u00e9s normal',
@@ -1110,7 +1259,7 @@ var T={};
         bold:'Negreta',font:'Tipus de lletra',style:'Estil',voice:'Veu',speed:'Velocitat',color:'Color del text',
         slow:'Lent',normal:'Normal',fast:'R\u00e0pid',vfast:'Molt R\u00e0pid',
         start:'Iniciar',stop:'Aturar',restart:'Reiniciar',simulate:'Simular',clear:'Netejar',
-        saveTranscript:'Desar Transcripci\u00f3',transLang:'Traducci\u00f3',remote:'Control Remot',settings:'Ajustos',readAloud:'Llegir en veu alta',keepScreen:'Mantenir pantalla'},
+        saveTranscript:'Desar Transcripci\u00f3',transLang:'Traducci\u00f3',remote:'Control Remot',settings:'Ajustos',readAloud:'Llegir en veu alta',keepScreen:'Mantenir pantalla',scrollDir:'Direcci\u00f3 de despla\u00e7ament',scrollUp:'Baix a dalt (recent a baix)',scrollDown:'Dalt a baix (recent a dalt)',tags:'Etiquetes',tagOff:'Desactivat',tagLang:'Idioma',tagTime:'Hora',tagBoth:'Idioma + Hora'},
     pt:{connecting:'Conectando...',connected:'Conectado',disconnected:'Desconectado - reconectando...',
         wakeTitle:'Manter Tela Ligada',wakeDesc:'Conex\u00e3o segura necess\u00e1ria (apenas uma vez):',
         stepTap:'Toque no bot\u00e3o abaixo',stepWarn:'Voc\u00ea ver\u00e1 um aviso \u2014 isso \u00e9 normal',
@@ -1126,7 +1275,7 @@ var T={};
         bold:'Negrito',font:'Fonte',style:'Estilo',voice:'Voz',speed:'Velocidade',color:'Cor do texto',
         slow:'Lento',normal:'Normal',fast:'R\u00e1pido',vfast:'Muito R\u00e1pido',
         start:'Iniciar',stop:'Parar',restart:'Reiniciar',simulate:'Simular',clear:'Limpar',
-        saveTranscript:'Salvar Transcri\u00e7\u00e3o',transLang:'Tradu\u00e7\u00e3o',remote:'Controle Remoto',settings:'Configura\u00e7\u00f5es',readAloud:'Ler em voz alta',keepScreen:'Manter tela ligada'},
+        saveTranscript:'Salvar Transcri\u00e7\u00e3o',transLang:'Tradu\u00e7\u00e3o',remote:'Controle Remoto',settings:'Configura\u00e7\u00f5es',readAloud:'Ler em voz alta',keepScreen:'Manter tela ligada',scrollDir:'Dire\u00e7\u00e3o de rolagem',scrollUp:'Baixo para cima (recente embaixo)',scrollDown:'Cima para baixo (recente em cima)',tags:'Etiquetas',tagOff:'Desativado',tagLang:'Idioma',tagTime:'Hora',tagBoth:'Idioma + Hora'},
     ja:{connecting:'\u63a5\u7d9a\u4e2d...',connected:'\u63a5\u7d9a\u6e08\u307f',disconnected:'\u5207\u65ad - \u518d\u63a5\u7d9a\u4e2d...',
         wakeTitle:'\u753b\u9762\u3092\u70b9\u706f',wakeDesc:'\u5b89\u5168\u306a\u63a5\u7d9a\u304c\u5fc5\u8981\u3067\u3059\uff08\u521d\u56de\u306e\u307f\uff09:',
         stepTap:'\u4e0b\u306e\u30dc\u30bf\u30f3\u3092\u30bf\u30c3\u30d7',stepWarn:'\u8b66\u544a\u304c\u8868\u793a\u3055\u308c\u307e\u3059 \u2014 \u6b63\u5e38\u3067\u3059',
@@ -1142,7 +1291,7 @@ var T={};
         bold:'\u592a\u5b57',font:'\u30d5\u30a9\u30f3\u30c8',style:'\u30b9\u30bf\u30a4\u30eb',voice:'\u97f3\u58f0',speed:'\u901f\u5ea6',color:'\u6587\u5b57\u8272',
         slow:'\u9045\u3044',normal:'\u666e\u901a',fast:'\u901f\u3044',vfast:'\u3068\u3066\u3082\u901f\u3044',
         start:'\u958b\u59cb',stop:'\u505c\u6b62',restart:'\u518d\u958b',simulate:'\u30b7\u30df\u30e5\u30ec\u30fc\u30b7\u30e7\u30f3',clear:'\u30af\u30ea\u30a2',
-        saveTranscript:'\u4fdd\u5b58',transLang:'\u7ffb\u8a33',remote:'\u30ea\u30e2\u30fc\u30c8',settings:'\u8a2d\u5b9a',readAloud:'\u8aad\u307f\u4e0a\u3052',keepScreen:'\u753b\u9762\u70b9\u706f'},
+        saveTranscript:'\u4fdd\u5b58',transLang:'\u7ffb\u8a33',remote:'\u30ea\u30e2\u30fc\u30c8',settings:'\u8a2d\u5b9a',readAloud:'\u8aad\u307f\u4e0a\u3052',keepScreen:'\u753b\u9762\u70b9\u706f',scrollDir:'\u30b9\u30af\u30ed\u30fc\u30eb\u65b9\u5411',scrollUp:'\u4e0b\u304b\u3089\u4e0a (\u6700\u65b0\u304c\u4e0b)',scrollDown:'\u4e0a\u304b\u3089\u4e0b (\u6700\u65b0\u304c\u4e0a)',tags:'\u30bf\u30b0',tagOff:'\u30aa\u30d5',tagLang:'\u8a00\u8a9e',tagTime:'\u6642\u523b',tagBoth:'\u8a00\u8a9e + \u6642\u523b'},
     zh:{connecting:'\u8fde\u63a5\u4e2d...',connected:'\u5df2\u8fde\u63a5',disconnected:'\u5df2\u65ad\u5f00 - \u91cd\u65b0\u8fde\u63a5...',
         wakeTitle:'\u4fdd\u6301\u5c4f\u5e55\u5e38\u4eae',wakeDesc:'\u9700\u8981\u5b89\u5168\u8fde\u63a5\uff08\u4ec5\u9700\u4e00\u6b21\uff09:',
         stepTap:'\u70b9\u51fb\u4e0b\u65b9\u6309\u94ae',stepWarn:'\u60a8\u5c06\u770b\u5230\u8b66\u544a\u9875\u9762 \u2014 \u8fd9\u662f\u6b63\u5e38\u7684',
@@ -1158,7 +1307,7 @@ var T={};
         bold:'\u7c97\u4f53',font:'\u5b57\u4f53',style:'\u6837\u5f0f',voice:'\u8bed\u97f3',speed:'\u901f\u5ea6',color:'\u6587\u5b57\u989c\u8272',
         slow:'\u6162',normal:'\u6b63\u5e38',fast:'\u5feb',vfast:'\u975e\u5e38\u5feb',
         start:'\u5f00\u59cb',stop:'\u505c\u6b62',restart:'\u91cd\u542f',simulate:'\u6a21\u62df',clear:'\u6e05\u9664',
-        saveTranscript:'\u4fdd\u5b58',transLang:'\u7ffb\u8bd1',remote:'\u8fdc\u7a0b\u63a7\u5236',settings:'\u8bbe\u7f6e',readAloud:'\u6717\u8bfb',keepScreen:'\u4fdd\u6301\u5c4f\u5e55'}
+        saveTranscript:'\u4fdd\u5b58',transLang:'\u7ffb\u8bd1',remote:'\u8fdc\u7a0b\u63a7\u5236',settings:'\u8bbe\u7f6e',readAloud:'\u6717\u8bfb',keepScreen:'\u4fdd\u6301\u5c4f\u5e55',scrollDir:'\u6eda\u52a8\u65b9\u5411',scrollUp:'\u4ece\u4e0b\u5f80\u4e0a (\u6700\u65b0\u5728\u4e0b)',scrollDown:'\u4ece\u4e0a\u5f80\u4e0b (\u6700\u65b0\u5728\u4e0a)',tags:'\u6807\u7b7e',tagOff:'\u5173\u95ed',tagLang:'\u8bed\u8a00',tagTime:'\u65f6\u95f4',tagBoth:'\u8bed\u8a00 + \u65f6\u95f4'}
   };
   if(lang.indexOf('zh')===0)T=tr.zh;
   else T=tr[lc]||tr.en;
@@ -1228,7 +1377,7 @@ if(localStorage.getItem('fontSize'))fontSize=parseInt(localStorage.getItem('font
 function applyStylesToAll(){
   document.querySelectorAll('.line').forEach(function(el){el.style.fontSize=fontSize+'px';el.style.fontFamily=fontFamily;el.style.fontWeight=isBold?'bold':'normal';if(!el.classList.contains('in-progress')&&!el.dataset.highlighted)el.style.color=textColor});
   if(currentEl){currentEl.style.fontSize=fontSize+'px';currentEl.style.fontFamily=fontFamily;currentEl.style.fontWeight=isBold?'bold':'normal'}
-  scrollBottom()}
+  autoScroll()}
 function changeFontSize(d){fontSize=Math.max(12,Math.min(80,fontSize+d));localStorage.setItem('fontSize',fontSize);applyStylesToAll();closeAllPanels()}
 function changeFont(f){fontFamily=f;localStorage.setItem('fontFamily',f);applyStylesToAll()}
 function toggleBold(){isBold=!isBold;localStorage.setItem('bold',isBold);document.getElementById('btnBold').classList.toggle('active');applyStylesToAll();closeAllPanels()}
@@ -1252,30 +1401,56 @@ function saveTranscript(){
   closeAllPanels();
 }
 var userScrolled=false;
+var scrollMode=localStorage.getItem('scrollDir')||'up';
+var tagMode=localStorage.getItem('tagMode')||'lang';
+function setTagMode(val){tagMode=val;localStorage.setItem('tagMode',val);closeAllPanels()}
+function buildTag(lang,time){
+  var parts=[];
+  if((tagMode==='lang'||tagMode==='both')&&lang){parts.push(lang)}
+  if((tagMode==='time'||tagMode==='both')&&time){parts.push(time)}
+  if(parts.length===0)return '';
+  return '['+parts.join(' ')+'] ';
+}
+var spacer=document.getElementById('spacer');
+function applyScrollMode(){
+  if(scrollMode==='down'){spacer.style.display='none';container.scrollTop=0}
+  else{spacer.style.display='';container.scrollTop=container.scrollHeight}
+  userScrolled=false;
+}
+function setScrollDir(val){scrollMode=val;localStorage.setItem('scrollDir',val);applyScrollMode();closeAllPanels()}
 container.addEventListener('scroll',function(){
-  var atBottom=container.scrollHeight-container.scrollTop-container.clientHeight<60;
-  userScrolled=!atBottom;
+  if(scrollMode==='down'){var atTop=container.scrollTop<60;userScrolled=!atTop}
+  else{var atBottom=container.scrollHeight-container.scrollTop-container.clientHeight<60;userScrolled=!atBottom}
 });
-function scrollBottom(){if(!userScrolled){container.scrollTop=container.scrollHeight}}
-function addCommitted(text){
+function autoScroll(){if(!userScrolled){if(scrollMode==='down'){container.scrollTop=0}else{container.scrollTop=container.scrollHeight}}}
+function insertLine(el){
+  if(scrollMode==='down'){
+    var first=spacer.nextSibling;
+    if(first){lines.insertBefore(el,first)}else{lines.appendChild(el)}
+  }else{lines.appendChild(el)}
+}
+function addCommitted(text,lang,time){
   var el;
-  if(currentEl){el=currentEl;currentEl=null}
-  else{el=document.createElement('div');lines.appendChild(el)}
-  el.textContent=text;
+  if(currentEl){el=currentEl;currentEl=null;
+    if(scrollMode==='down'&&el.parentNode){el.parentNode.removeChild(el);insertLine(el)}
+  }else{el=document.createElement('div');insertLine(el)}
+  var tag=buildTag(lang,time);
+  el.textContent=tag+text;
   el.className='line';
   el.style.fontSize=fontSize+'px';el.style.fontFamily=fontFamily;el.style.fontWeight=isBold?'bold':'normal';
   el.style.color='#ffdd57';
   el.dataset.highlighted='1';
   setTimeout(function(){el.style.color=textColor;delete el.dataset.highlighted},5000);
-  scrollBottom();
-  while(lines.children.length>201){lines.removeChild(lines.children[1])}
+  autoScroll();
+  while(lines.children.length>201){if(scrollMode==='down'){lines.removeChild(lines.lastChild)}else{lines.removeChild(lines.children[1])}}
   speak(text);
 }
 function updateCurrent(text){
-  if(!currentEl){currentEl=document.createElement('div');currentEl.className='line in-progress';currentEl.style.fontSize=fontSize+'px';currentEl.style.fontFamily=fontFamily;currentEl.style.fontWeight=isBold?'bold':'normal';lines.appendChild(currentEl)}
+  if(!currentEl){currentEl=document.createElement('div');currentEl.className='line in-progress';currentEl.style.fontSize=fontSize+'px';currentEl.style.fontFamily=fontFamily;currentEl.style.fontWeight=isBold?'bold':'normal';insertLine(currentEl)}
   currentEl.textContent=text;
-  scrollBottom()
+  autoScroll()
 }
+applyScrollMode();
 var wsRef=null;
 function setTransLang(lang){
   localStorage.setItem('transLang',lang);
@@ -1297,9 +1472,9 @@ function connect(){
   ws.onerror=function(){ws.close()};
   ws.onmessage=function(e){
     try{var msg=JSON.parse(e.data);
-      if(msg.type==='commit')addCommitted(msg.text);
+      if(msg.type==='commit')addCommitted(msg.text,msg.lang||'',msg.time||'');
       else if(msg.type==='update')updateCurrent(msg.text);
-      else if(msg.type==='clear'){if(currentEl){currentEl.remove();currentEl=null}while(lines.children.length>1)lines.removeChild(lines.children[1]);scrollBottom()}
+      else if(msg.type==='clear'){if(currentEl){currentEl.remove();currentEl=null}while(lines.children.length>1)lines.removeChild(lines.children[1]);autoScroll()}
     }catch(ex){}
   }
 }
@@ -1316,6 +1491,12 @@ document.getElementById('btnBold').textContent=t('bold');
 document.getElementById('lblVoice').textContent=t('voice');
 document.getElementById('lblSpeed').textContent=t('speed');
 document.getElementById('lblTransLang').textContent=t('transLang');
+document.getElementById('lblScroll').textContent=t('scrollDir');
+var sdOpts=document.getElementById('scrollDir').options;sdOpts[0].textContent=t('scrollUp');sdOpts[1].textContent=t('scrollDown');
+(function(){var sd=document.getElementById('scrollDir');sd.value=scrollMode;})();
+document.getElementById('lblTags').textContent=t('tags');
+var tmOpts=document.getElementById('tagMode').options;tmOpts[0].textContent=t('tagOff');tmOpts[1].textContent=t('tagLang');tmOpts[2].textContent=t('tagTime');tmOpts[3].textContent=t('tagBoth');
+(function(){var tm=document.getElementById('tagMode');tm.value=tagMode;})();
 document.getElementById('btnSave').innerHTML='&#128190; '+t('saveTranscript');
 var rOpts=rateSelect.options;rOpts[0].textContent=t('slow');rOpts[1].textContent=t('normal');rOpts[2].textContent=t('fast');rOpts[3].textContent=t('vfast');
 connect();
@@ -1410,6 +1591,81 @@ admBtns[4].innerHTML='&#10060; '+t('clear');
 </script>
 </body>
 </html>").Replace("{{BG_COLOR}}", bg).Replace("{{FG_COLOR}}", fg)
+        End Function
+
+        ''' <summary>
+        ''' Parse a User-Agent string into a short readable description.
+        ''' e.g. "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) ... Safari/604.1"
+        '''   → "iPhone iOS 17.0 / Safari"
+        ''' </summary>
+        Private Shared Function ParseUserAgent(ua As String) As String
+            If String.IsNullOrWhiteSpace(ua) Then Return "Unknown"
+
+            Dim device = ""
+            Dim os = ""
+            Dim browser = ""
+
+            ' Detect device/OS
+            If ua.Contains("iPhone") Then
+                device = "iPhone"
+            ElseIf ua.Contains("iPad") Then
+                device = "iPad"
+            ElseIf ua.Contains("Android") Then
+                device = "Android"
+            ElseIf ua.Contains("Windows") Then
+                device = "Windows"
+            ElseIf ua.Contains("Macintosh") Then
+                device = "Mac"
+            ElseIf ua.Contains("Linux") Then
+                device = "Linux"
+            ElseIf ua.Contains("CrOS") Then
+                device = "ChromeOS"
+            End If
+
+            ' Extract OS version
+            Dim m = Text.RegularExpressions.Regex.Match(ua, "iPhone OS (\d+[_\.]\d+)")
+            If m.Success Then
+                os = "iOS " & m.Groups(1).Value.Replace("_", ".")
+            Else
+                m = Text.RegularExpressions.Regex.Match(ua, "CPU OS (\d+[_\.]\d+)")
+                If m.Success Then
+                    os = "iPadOS " & m.Groups(1).Value.Replace("_", ".")
+                Else
+                    m = Text.RegularExpressions.Regex.Match(ua, "Android (\d+[\.\d]*)")
+                    If m.Success Then os = "Android " & m.Groups(1).Value
+                End If
+            End If
+
+            ' Detect browser (order matters — check specific before generic)
+            If ua.Contains("EdgA/") OrElse ua.Contains("Edg/") OrElse ua.Contains("Edge/") Then
+                browser = "Edge"
+            ElseIf ua.Contains("SamsungBrowser/") Then
+                browser = "Samsung Browser"
+            ElseIf ua.Contains("OPR/") OrElse ua.Contains("Opera") Then
+                browser = "Opera"
+            ElseIf ua.Contains("CriOS/") Then
+                browser = "Chrome (iOS)"
+            ElseIf ua.Contains("FxiOS/") Then
+                browser = "Firefox (iOS)"
+            ElseIf ua.Contains("Firefox/") Then
+                browser = "Firefox"
+            ElseIf ua.Contains("Chrome/") Then
+                browser = "Chrome"
+            ElseIf ua.Contains("Safari/") Then
+                browser = "Safari"
+            ElseIf ua.Contains("MSIE") OrElse ua.Contains("Trident") Then
+                browser = "IE"
+            End If
+
+            ' Build description
+            Dim parts As New List(Of String)()
+            If device.Length > 0 Then parts.Add(device)
+            If os.Length > 0 AndAlso Not os.StartsWith(device) Then parts.Add(os)
+            If os.Length > 0 AndAlso os.StartsWith(device) Then parts.Clear() : parts.Add(os)
+            If browser.Length > 0 Then parts.Add(browser)
+
+            If parts.Count = 0 Then Return If(ua.Length > 80, ua.Substring(0, 80) & "...", ua)
+            Return String.Join(" / ", parts)
         End Function
 
         Private Shared Function EscapeJson(s As String) As String

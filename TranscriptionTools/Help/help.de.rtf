@@ -1,0 +1,315 @@
+{\rtf1\ansi\deff0
+{\fonttbl{\f0\fswiss\fcharset0 Segoe UI;}{\f1\fmodern\fcharset0 Consolas;}}
+{\colortbl;\red0\green0\blue0;\red0\green102\blue204;\red80\green80\blue80;\red0\green128\blue0;\red139\green0\blue0;}
+\viewkind4\uc1
+
+\pard\sa200\sl276\slmult1
+\f0\fs36\b\cf2 Transcription Tools \endash  Benutzerhandbuch\b0\cf0\fs20\par
+
+\fs24\b \'dcberblick\b0\fs20\par
+Transcription Tools ist eine Windows-Desktopanwendung, die Untertiteldateien aus Audio- und Videoquellen erstellt. Sie bietet eine grafische Benutzeroberfl\'e4che f\'fcr die whisper.cpp Spracherkennungs-Engine und unterst\'fctzt vier Stapelverarbeitungsmodi sowie einen Echtzeit-Livemodus mit optionaler KI-gest\'fctzter \'dcbersetzung.\par
+
+\b Stapelverarbeitungsmodi\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b YouTube -> Subtitles\b0  \endash  Lade ein YouTube-Video herunter (oder verwende eine lokale Videodatei), schneide es optional auf einen Zeitbereich zu und erstelle Untertitel.\par
+\bullet\tab\b Audio File -> Subtitles\b0  \endash  Transkribiere direkt eine beliebige Audiodatei (OGG, MP3, WAV, FLAC, M4A usw.) in Untertitel.\par
+\bullet\tab\b YouTube -> Full Video\b0  \endash  Lade ein YouTube-Video herunter (oder kopiere eine lokale Videodatei) und schneide es zu, ohne Transkription.\par
+\bullet\tab\b YouTube -> Audio Only\b0  \endash  Lade ein YouTube-Video herunter (oder kopiere eine lokale Videodatei), schneide es zu und extrahiere das Audio als hochwertge MP3-Datei, ohne Transkription.\par
+
+\pard\sa200\sl276\slmult1
+\b Livemodus\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Live Translation\b0  \endash  Echtzeit-Spracherkennung von einem Mikrofon oder Audioeingabeger\'e4t mit faster-whisper und Silero VAD (Sprachaktivit\'e4tserkennung). Text wird an nat\'fcrlichen Sprechpausen segmentiert, um saubere, vollst\'e4ndige S\'e4tze zu erzeugen. Unterst\'fctzt optionale Echtzeit\'fcbersetzung in 200+ Sprachen via NLLB.\par
+
+\pard\sa200\sl276\slmult1
+\fs24\b\cf2 Haupt-/Aufgaben-Tab\b0\cf0\fs20\par
+
+\b Modusauswahl\b0\par
+Verwende das Dropdown-Men\'fc oben, um zwischen den Modi zu wechseln. Der Standardmodus ist \b YouTube -> Subtitles\b0 . Die Benutzeroberfl\'e4che passt sich an und zeigt nur die f\'fcr den gew\'e4hlten Modus relevanten Steuerelemente. Zeitbereichssteuerungen und die Schaltfl\'e4che Fortsetzen werden nur f\'fcr YouTube-basierte Modi angezeigt. Ausgabeformat-Kontrollk\'e4stchen werden nur f\'fcr Modi angezeigt, die Untertitel erzeugen (YouTube -> Subtitles und Audio File -> Subtitles).\par
+
+\b YouTube -> Subtitles Modus\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b URL / Datei\b0  \endash  Gib eine YouTube-URL ein oder klicke auf Durchsuchen, um eine lokale Videodatei auszuw\'e4hlen.\par
+\bullet\tab\b Eingabesprache\b0  \endash  Die im Audio gesprochene Sprache. Auf \b auto\b0  setzen, damit die Engine sie automatisch erkennt, oder eine bestimmte Sprache f\'fcr bessere Genauigkeit ausw\'e4hlen.\par
+\bullet\tab\b Ausgabesprache\b0  \endash  Die Sprache der generierten Untertitel. Auf \b auto\b0  setzen, um dieselbe Sprache wie die Eingabe beizubehalten. Auf \b en\b0  (Englisch) setzen, um nicht-englisches Audio in englische Untertitel zu \'fcbersetzen. Whisper kann nur \i ins\i0  Englische \'fcbersetzen.\par
+\bullet\tab\b Modell\b0  \endash  W\'e4hle das zu verwendende Whisper-Modell. Gr\'f6\'dfere Modelle (z.\'a0B. ggml-large-v3.bin) sind genauer, aber langsamer. Kleinere Modelle (z.\'a0B. ggml-tiny.bin, ggml-base.bin) sind schneller, aber weniger genau.\par
+\bullet\tab\b Startzeit / Endzeit\b0  \endash  Optional einen Zeitbereich (HH:MM:SS) angeben, um das Video vor der Transkription zuzuschneiden. Bei 00:00:00 belassen, um das gesamte Video zu verarbeiten.\par
+\bullet\tab\b Ausgabeverzeichnis\b0  \endash  Hier werden alle Arbeitsdateien und die endg\'fcltige Untertiteldatei gespeichert. Standardm\'e4\'dfig in einem mit Zeitstempel versehenen Ordner unter dem Ausgabewurzelverzeichnis.\par
+\bullet\tab\b Fortsetzen\b0  \endash  Wenn ein vorheriger Auftrag unterbrochen wurde, auf Fortsetzen klicken, um den Ausgabeordner auszuw\'e4hlen und an der Stelle weiterzumachen, an der er unterbrochen wurde. Bereits abgeschlossene Abschnitte werden automatisch \'fcbersprungen.\par
+
+\pard\sa200\sl276\slmult1
+\b Audio File -> Subtitles Modus\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Audiodatei\b0  \endash  Auf Audiodatei durchsuchen klicken, um eine Audiodatei auszuw\'e4hlen. Unterst\'fctzte Formate: OGG, MP3, WAV, FLAC, M4A, WMA, AAC, OPUS und weitere.\par
+\bullet\tab\b Ausgabeverzeichnis\b0  \endash  Wie im YouTube-Modus. Die SRT-Ausgabedatei wird nach der Eingabedatei benannt.\par
+\bullet\tab Dieser Modus speichert sein eigenes Standardmodell separat, sodass ein gro\'dfes Modell f\'fcr YouTube-Videos und ein kleineres, schnelleres Modell f\'fcr schnelle Audiotranskriptionen verwendet werden kann.\par
+
+\pard\sa200\sl276\slmult1
+\b YouTube -> Full Video Modus\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab L\'e4dt ein Video herunter und schneidet es zu, ohne eine Transkription durchzuf\'fchren.\par
+\bullet\tab Die Ausgabedatei ist \b preview.mp4\b0  im Ausgabeverzeichnis.\par
+\bullet\tab Es werden nur yt-dlp und ffmpeg ben\'f6tigt.\par
+
+\pard\sa200\sl276\slmult1
+\b YouTube -> Audio Only Modus\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab L\'e4dt ein Video herunter, schneidet es zu und extrahiert das Audio als hochwertige MP3-Datei (\b yt_audio.mp3\b0 ), ohne eine Transkription durchzuf\'fchren.\par
+\bullet\tab Audio wird in maximaler VBR-Qualit\'e4t extrahiert.\par
+\bullet\tab Es werden nur yt-dlp und ffmpeg ben\'f6tigt.\par
+
+\pard\sa200\sl276\slmult1
+\b Ausgabeformate\b0\par
+Verf\'fcgbar bei Verwendung von YouTube -> Subtitles oder Audio File -> Subtitles Modus. W\'e4hle, welche Formate generiert werden sollen:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b SRT\b0  \endash  SubRip-Untertitelformat (am h\'e4ufigsten, standardm\'e4\'dfig aktiviert)\par
+\bullet\tab\b VTT\b0  \endash  WebVTT-Format (f\'fcr die Webnutzung)\par
+\bullet\tab\b TXT\b0  \endash  Reines Texttranskript\par
+\bullet\tab\b JSON\b0  \endash  Strukturierte JSON-Ausgabe\par
+\bullet\tab\b CSV\b0  \endash  Kommagetrennte Werte\par
+\bullet\tab\b LRC\b0  \endash  Liedtextformat\par
+
+\pard\sa200\sl276\slmult1
+\b Fortschritt\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab Der obere Fortschrittsbalken zeigt den gesamten Pipeline-Fortschritt \'fcber alle Schritte.\par
+\bullet\tab Ein zweiter Fortschrittsbalken erscheint w\'e4hrend der Transkription und zeigt den Fortschritt auf Abschnittsebene.\par
+\bullet\tab\b Starten\b0  \endash  Verarbeitung starten. Der Log-Tab wird automatisch angezeigt.\par
+\bullet\tab\b Abbrechen\b0  \endash  Den aktuellen Auftrag stoppen.\par
+\bullet\tab\b Ausgabeordner \'f6ffnen\b0  \endash  \'d6ffnet das Ausgabeverzeichnis im Windows Explorer (nach Abschluss verf\'fcgbar).\par
+\bullet\tab\b Subtitle Edit\b0  \endash  \'d6ffnet die generierte SRT-Datei direkt in Subtitle Edit zur \'dcberpr\'fcfung (nach Abschluss verf\'fcgbar, nur Untertitelmodi).\par
+\bullet\tab\b preview.srt \'f6ffnen\b0  \endash  \'d6ffnet die generierte SRT-Datei mit der Standardanwendung (nach Abschluss verf\'fcgbar, nur Untertitelmodi).\par
+
+\pard\sa200\sl276\slmult1
+\fs24\b\cf2 Live Translation Tab\b0\cf0\fs20\par
+Der Live Translation Tab bietet Echtzeit-Spracherkennung von Mikrofon oder anderem Audioeingabeger\'e4t. Er verwendet faster-whisper mit Silero VAD (Sprachaktivit\'e4tserkennung), um nat\'fcrliche Sprechpausen zu erkennen und Audio in vollst\'e4ndige \'c4u\'dferungen zu segmentieren. Dies erzeugt sauberere und genauere Transkriptionen als die Verarbeitung in festen Zeitfenstern.\par
+
+Transkribierter Text erscheint in zwei Unter-Tabs:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Live Output\b0  \endash  Eine webbasierte Ansicht (identisch mit der Untertitel-Serverseite), direkt in die Anwendung eingebettet.\par
+\bullet\tab\b Log\b0  \endash  Ein scrollender Textlog, der die Transkriptionsausgabe farbcodiert anzeigt. Laufender Text wird w\'e4hrend des Sprechens kontinuierlich verfeinert. Statusmeldungen erscheinen in Gelb, Systeminformationen in Grau.\par
+
+\pard\sa200\sl276\slmult1
+\b Steuerelemente\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Audioge\'e4r\'e4t\b0  \endash  Audioeingabeger\'e4t ausw\'e4hlen. Ger\'e4te werden beim Start \'fcber die Python-Bibliothek sounddevice erkannt. Auf \b Aktualisieren\b0  klicken, um erneut zu scannen, wenn ein neues Ger\'e4t angeschlossen wird.\par
+\bullet\tab\b Eingabesprache\b0  \endash  Die gesprochene Sprache. Auf \b auto\b0  f\'fcr automatische Erkennung setzen oder eine bestimmte Sprache f\'fcr bessere Genauigkeit ausw\'e4hlen.\par
+\bullet\tab\b Starten\b0  \endash  Livetranskription starten. Bei der ersten Verwendung l\'e4dt die Anwendung das faster-whisper-Modell (~3\'a0GB) herunter und installiert Python-Abh\'e4ngigkeiten, sofern noch nicht vorhanden.\par
+\bullet\tab\b Stoppen\b0  \endash  Die Livetranskriptionssitzung beenden.\par
+\bullet\tab\b Speichern\b0  \endash  Das vollst\'e4ndige Transkript in eine Textdatei speichern.\par
+\bullet\tab\b L\'f6schen\b0  \endash  Die Ausgabeanzeige leeren.\par
+
+\pard\sa200\sl276\slmult1
+\b Echtzeit\'fcbersetzung\b0\par
+Wenn der Untertitelserver l\'e4uft, k\'f6nnen verbundene Web-Clients eine \'dcbersetzungssprache aus dem Dropdown-Men\'fc auf der Webseite ausw\'e4hlen. Die Anwendung startet automatisch einen NLLB-200-\'dcbersetzungsserver (bei der ersten Verwendung werden ~3,5\'a0GB Abh\'e4ngigkeiten einschlie\'dflich des KI-Modells heruntergeladen). Transkribierter Text wird in Echtzeit \'fcbersetzt und in der gew\'e4hlten Sprache an jeden Client gesendet. \'dcber 200 Sprachen werden unterst\'fctzt. Clients, die keine \'dcbersetzungssprache ausw\'e4hlen, erhalten die urspr\'fcngliche Transkription.\par
+
+\pard\sa200\sl276\slmult1
+\fs24\b\cf2 Untertitelserver-Tab\b0\cf0\fs20\par
+Der Untertitelserver bietet eine webbasierte Live-Untertiteleinblendung, die auf jedem Ger\'e4t (Smartphone, Tablet, zweiter Monitor) im selben Netzwerk angezeigt werden kann. Wenn der Server l\'e4uft, stellt er eine Webseite bereit, die Live-Transkriptionstext \'fcber WebSocket anzeigt. Der Server l\'e4uft auf HTTP und startet zus\'e4tzlich einen HTTPS-Listener auf dem n\'e4chsten Port (z.\'a0B. 5081), um die Bildschirm-Wake-Lock-Funktion zu unterst\'fctzen. Neue Untertitelzeilen werden kurz gelb hervorgehoben, bevor sie in die gew\'e4hlte Textfarbe \'fcbergehen.\par
+
+\b Servereinstellungen\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Port\b0  \endash  Der HTTP-Port, auf dem der Server lauscht (Standard: 5080). Ein HTTPS-Port wird automatisch auf Port+1 (Standard: 5081) mit einem selbstsignierten Zertifikat ge\'f6ffnet.\par
+\bullet\tab\b Server starten / stoppen / neu starten\b0  \endash  Den Untertitelserver steuern.\par
+\bullet\tab\b Simulieren\b0  \endash  Beispieltext (Johannes 3,16-18) senden, um die Anzeige ohne Live-Audioquelle zu testen.\par
+\bullet\tab\b Sim stoppen\b0  \endash  Die Simulation stoppen.\par
+\bullet\tab\b Hintergrund- / Textfarbe\b0  \endash  Die Farben der Untertitelanzeige anpassen. Diese Farben gelten sowohl f\'fcr die Webseite als auch f\'fcr das Live-Ausgabetextfeld. Auf das Farbfeld klicken, um einen Farbauswahldialog zu \'f6ffnen. Farben werden in der Konfiguration gespeichert.\par
+
+\pard\sa200\sl276\slmult1
+\b Verbindungsinformationen\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab Zeigt den Serverstatus, die URL und die Anzahl der verbundenen Clients.\par
+\bullet\tab\b URL kopieren\b0  \endash  Kopiert die Server-URL in die Zwischenablage, damit sie mit anderen Ger\'e4ten geteilt werden kann.\par
+
+\pard\sa200\sl276\slmult1
+\b Webseiten-Symbolleiste\b0\par
+Die Untertitel-Webseite enth\'e4lt eine Symbolleiste in der oberen rechten Ecke mit folgenden Steuerelementen:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Fernsteuerung\b0  (Zahnrad-Symbol) \endash  \'d6ffnet ein Administratorfeld, um die Livetranskription aus der Ferne zu starten, zu stoppen, neu zu starten oder zu simulieren, ohne zur Desktopanwendung zur\'fcckzukehren. Das Feld ruft den Serverstatus alle 3\'a0Sekunden ab.\par
+\bullet\tab\b Einstellungen\b0  (Aa) \endash  \'d6ffnet ein Einstellungsfeld zur Anpassung von Schriftgr\'f6\'dfe, Schriftfamilie, Fettschrift und Textfarbe. Enth\'e4lt auch Stimmenauswahl und Geschwindigkeit f\'fcr die Vorlesefunktion, Scrollrichtung und Tag-Anzeigeoptionen. Alle Einstellungen werden lokal im Browser gespeichert.\par
+\bullet\tab\b \'dcbersetzung\b0  \endash  Ein Dropdown-Men\'fc zur Auswahl einer \'dcbersetzungssprache. Wenn eine Sprache ausgew\'e4hlt wird, erh\'e4lt der Client KI-\'fcbersetzten Text in dieser Sprache statt der urspr\'fcnglichen Transkription. \ldblquote Original\rdblquote  ausw\'e4hlen, um den nicht \'fcbersetzten Text zu erhalten.\par
+\bullet\tab\b Tags\b0  \endash  W\'e4hlen, welche Informationen vor jeder Untertitelzeile angezeigt werden: Aus, Sprache (zeigt den erkannten oder \'fcbersetzten Sprachcode), Zeit (zeigt den Zeitstempel) oder beides.\par
+\bullet\tab\b Vorlesen\b0  (Lautsprecher-Symbol) \endash  Schaltet die Text-zu-Sprache-Funktion um. Wenn aktiviert, wird jede neue best\'e4tigte Untertitelzeile mithilfe der Sprachsynthese des Browsers vorgelesen. Stimme und Geschwindigkeit k\'f6nnen im Einstellungsfeld konfiguriert werden.\par
+\bullet\tab\b Bildschirm aktiv halten\b0  (Licht-Symbol) \endash  Verhindert, dass das Smartphone- oder Tablet-Display gedimmt oder gesperrt wird. Hierf\'fcr wird die Wake Lock API des Browsers verwendet, die eine sichere (HTTPS) Verbindung erfordert. Bei der ersten Verwendung \'fcber HTTP erkl\'e4rt eine \'dcberblendung schrittweise, wie die Warnung vor dem selbstsignierten Zertifikat im Browser akzeptiert werden kann (einmalige Einrichtung). Nach der Annahme bleibt der Bildschirm aktiv, solange die Seite ge\'f6ffnet ist.\par
+\bullet\tab\b Transkript speichern\b0  \endash  Das aktuelle Transkript als Textdatei herunterladen.\par
+
+\pard\sa200\sl276\slmult1
+\b Lokalisierung\b0\par
+Die Webseitenoberfl\'e4che erkennt automatisch die Browsersprache und zeigt alle Beschriftungen, Schaltfl\'e4chen und Meldungen in der entsprechenden Sprache an. Unterst\'fctzte Sprachen: Englisch, Spanisch, Franz\'f6sisch, Deutsch, Katalanisch, Portugiesisch, Japanisch und Chinesisch. Wenn die Browsersprache nicht unterst\'fctzt wird, wird Englisch als R\'fcckfallsprache verwendet.\par
+
+\fs24\b\cf2 Whisper-Parameter-Tab\b0\cf0\fs20\par
+Erweiterte Einstellungen f\'fcr die whisper-cli Spracherkennungs-Engine. Diese Parameter gelten nur f\'fcr die Stapelverarbeitungsmodi (nicht f\'fcr Live Translation). Die meisten Benutzer k\'f6nnen diese auf den Standardwerten belassen.\par
+
+\b Sprache & Modell\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Sprache\b0  \endash  Spiegelt die Eingabespracheneinstellung vom Haupt-Tab wider.\par
+\bullet\tab\b Threads\b0  \endash  Anzahl der CPU-Threads f\'fcr die Verarbeitung (Standard: 4).\par
+\bullet\tab\b Prozessoren\b0  \endash  Anzahl der parallelen Prozessoren (Standard: 1).\par
+
+\pard\sa200\sl276\slmult1
+\b Strahlsuche / Stichprobennahme\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Beam Size\b0  \endash  Breite der Strahlsuche (Standard: 5). H\'f6here Werte k\'f6nnen die Genauigkeit verbessern, sind aber langsamer.\par
+\bullet\tab\b Best Of\b0  \endash  Anzahl der zu ber\'fccksichtigenden Kandidaten (Standard: 5).\par
+\bullet\tab\b Temperature\b0  \endash  Stichprobentemperatur (Standard: 0,0). H\'f6here Werte erh\'f6hen die Zuf\'e4lligkeit.\par
+\bullet\tab\b Temperature Inc\b0  \endash  Temperaturinkrement bei R\'fcckfall (Standard: 0,2).\par
+
+\pard\sa200\sl276\slmult1
+\b Qualit\'e4t / Filterung\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Max Context\b0  \endash  Maximale Kontext-Token (0 = Standard verwenden).\par
+\bullet\tab\b Word Threshold\b0  \endash  Konfidenz-Schwellenwert auf Wortebene (Standard: 0,01).\par
+\bullet\tab\b Entropy Threshold\b0  \endash  Entropie-Schwellenwert f\'fcr Qualit\'e4tsfilterung (Standard: 2,4).\par
+\bullet\tab\b Log Prob Threshold\b0  \endash  Logarithmischer Wahrscheinlichkeitsschwellenwert (Standard: -1,0).\par
+\bullet\tab\b No Speech Threshold\b0  \endash  Schwellenwert zur Erkennung von Nicht-Sprachsegmenten (Standard: 0,6).\par
+
+\pard\sa200\sl276\slmult1
+\b Segmentsteuerung\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Max Segment Length\b0  \endash  Maximale Zeichen pro Untertitelsegment (0 = unbegrenzt).\par
+\bullet\tab\b Max Tokens\b0  \endash  Maximale Token pro Segment (0 = unbegrenzt).\par
+\bullet\tab\b Audio Context\b0  \endash  Audiokontext-Gr\'f6\'dfe (0 = Standard verwenden).\par
+
+\pard\sa200\sl276\slmult1
+\b Eingabeaufforderungen\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Initial Prompt\b0  \endash  Texteingabeaufforderung zur Steuerung der Transkription. N\'fctzlich f\'fcr die Angabe von Kontext, Schreibweise von Namen oder fachspezifischem Vokabular.\par
+\bullet\tab\b Hotwords\b0  \endash  Kommagetrennte Liste von W\'f6rtern, deren Erkennung verbessert werden soll.\par
+
+\pard\sa200\sl276\slmult1
+\b Flags\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Split on Word\b0  \endash  Segmente an Wortgrenzen aufteilen (standardm\'e4\'dfig aktiviert).\par
+\bullet\tab\b No GPU\b0  \endash  Nur CPU-Verarbeitung erzwingen.\par
+\bullet\tab\b Flash Attention\b0  \endash  Flash Attention f\'fcr schnellere GPU-Inferenz aktivieren.\par
+\bullet\tab\b Print Progress\b0  \endash  Fortschrittsprozentzahl in der Whisper-Ausgabe anzeigen.\par
+\bullet\tab\b Print Colours\b0  \endash  Ausgabe nach Konfidenzniveau farblich kodieren.\par
+\bullet\tab\b Print Realtime\b0  \endash  Ausgabe in Echtzeit anzeigen, w\'e4hrend sie generiert wird.\par
+\bullet\tab\b Diarize\b0  \endash  Sprecher-Diarisierung aktivieren (verschiedene Sprecher identifizieren).\par
+\bullet\tab\b Tinydiarize\b0  \endash  Einfache Sprecherwechselerkennung verwenden.\par
+\bullet\tab\b No Timestamps\b0  \endash  Zeitstempelausgabe unterdr\'fccken.\par
+
+\pard\sa200\sl276\slmult1
+\b VAD (Sprachaktivit\'e4tserkennung)\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b VAD Threshold\b0  \endash  Empfindlichkeit f\'fcr die Spracherkennung (Standard: 0,6).\par
+\bullet\tab\b Frequency Threshold\b0  \endash  Hochpassfrequenzfilter in Hz (Standard: 100).\par
+
+\pard\sa200\sl276\slmult1
+Auf \b Standardwerte wiederherstellen\b0  klicken, um alle Whisper-Parameter auf ihre Standardwerte zur\'fcckzusetzen.\par
+
+\fs24\b\cf2 Pfade & Werkzeuge Tab\b0\cf0\fs20\par
+Dateipfade zu externen Werkzeugen und Modellen konfigurieren:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b whisper-cli.exe\b0  \endash  Die Whisper-Spracherkennungs-Engine (wird von Stapeltranskriptionsmodi verwendet).\par
+\bullet\tab\b yt-dlp.exe\b0  \endash  YouTube-Video-Downloader.\par
+\bullet\tab\b ffmpeg.exe\b0  \endash  Audio-/Videoverarbeitungswerkzeug (Zuschneiden, Konvertierung, Aufteilung).\par
+\bullet\tab\b ffprobe.exe\b0  \endash  Audio-/Videoanalyse-Werkzeug (Dauerermittlung).\par
+\bullet\tab\b YouTube Model (.bin)\b0  \endash  Die Whisper-Modelldatei f\'fcr den Modus YouTube -> Subtitles.\par
+\bullet\tab\b Audio File Model (.bin)\b0  \endash  Die Whisper-Modelldatei f\'fcr den Modus Audio File -> Subtitles.\par
+\bullet\tab\b Standard-Ausgabewurzel\b0  \endash  Basisverzeichnis, in dem mit Zeitstempel versehene Ausgabeordner erstellt werden.\par
+\bullet\tab\b yt-dlp Format String\b0  \endash  Download-Formatpr\'e4ferenz f\'fcr yt-dlp (Standard: bestes MP4-Video + M4A-Audio).\par
+
+\pard\sa200\sl276\slmult1
+Auf \b Alle Pfade pr\'fcfen\b0  klicken, um zu \'fcberpr\'fcfen, ob alle konfigurierten Werkzeuge und Dateien vorhanden sind. Den Link \b Whisper-Modelle herunterladen\b0  verwenden, um Modelldateien zu erhalten.\par
+
+\fs24\b\cf2 Log-Tab\b0\cf0\fs20\par
+Zeigt die Echtzeitausgabe der Verarbeitungs-Pipeline an. Jeder Log-Eintrag ist mit einem Zeitstempel versehen und farblich kodiert:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\cf5\b Dunkelgr\'fcn\b0\cf0  \endash  Erfolgsmeldungen und abgeschlossene Schritte.\par
+\bullet\tab\cf1\b Schwarz\b0\cf0  \endash  Allgemeine Informationen.\par
+\bullet\tab\cf3\b Grau\b0\cf0  \endash  Ausf\'fchrliche/Debug-Ausgabe (Befehlszeilen, Exit-Codes, ffprobe-Ausgabe).\par
+\bullet\tab\b Rot\b0  \endash  Fehler und Warnungen.\par
+
+\pard\sa200\sl276\slmult1
+Der Log scrollt automatisch, um die neueste Ausgabe anzuzeigen. Wenn nach oben gescrollt wird, um fr\'fchere Eintr\'e4ge zu \'fcberpr\'fcfen, wird das automatische Scrollen angehalten. Es wird wieder aufgenommen, wenn zum unteren Ende gescrollt wird.\par
+\b Log l\'f6schen\b0  verwenden, um den Log zur\'fcckzusetzen, und \b In Zwischenablage kopieren\b0 , um den gesamten Log-Text zu kopieren.\par
+
+\fs24\b\cf2 Einstellungen-Tab\b0\cf0\fs20\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Oberfl\'e4chensprache\b0  \endash  Die Oberfl\'e4chensprache \'e4ndern. Verf\'fcgbar: Englisch, Spanisch, Franz\'f6sisch, Deutsch, Katalanisch, Portugiesisch, Vereinfachtes Chinesisch, Japanisch.\par
+\bullet\tab\b Parallele Transkriptionsauftr\'e4ge\b0  \endash  Anzahl der gleichzeitig zu transkribierenden Audioabschnitte (Standard: 4). H\'f6here Werte verwenden mehr RAM und CPU, sind aber schneller.\par
+\bullet\tab\b Abschnittsgr\'f6\'dfe (Sekunden)\b0  \endash  Dauer jedes Audioabschnitts (Standard: 300 = 5 Minuten). Langes Audio wird zur Parallelverarbeitung in Abschnitte aufgeteilt.\par
+\bullet\tab\b Abfrageintervall (ms)\b0  \endash  Wie oft gepr\'fcft wird, ob Transkriptionsabschnitte abgeschlossen sind (Standard: 2000\'a0ms).\par
+\bullet\tab\b Abschnitts-Timeout (min)\b0  \endash  Maximale Wartezeit f\'fcr den Abschluss eines einzelnen Abschnitts (Standard: 60 Minuten).\par
+\bullet\tab\b Abschnittsdateien behalten\b0  \endash  Zwischenspeicher-WAV- und SRT-Dateien nach der Verarbeitung beibehalten.\par
+\bullet\tab\b Zugeschnittene preview.mp4 behalten\b0  \endash  Die zugeschnittene Videodatei behalten. Wenn deaktiviert, wird preview.mp4 nach der Audioextraktion oder dem Abschluss gel\'f6scht.\par
+\bullet\tab\b Download \'fcberspringen, wenn Datei vorhanden\b0  \endash  Den yt-dlp-Download-Schritt \'fcberspringen, wenn die Videodatei bereits im Ausgabeordner vorhanden ist.\par
+\bullet\tab\b Design\b0  \endash  System-, helles oder dunkles Design w\'e4hlen.\par
+
+\pard\sa200\sl276\slmult1
+Auf \b Alle Einstellungen zur\'fccksetzen\b0  klicken, um alle Konfigurationen auf die Werkseinstellungen zur\'fcckzusetzen.\par
+
+\fs24\b\cf2 Verarbeitungs-Pipeline\b0\cf0\fs20\par
+
+\b YouTube -> Subtitles Modus (8 Schritte):\b0\par
+\pard\fi-360\li720\sa100
+0.\tab Eingaben und Werkzeugpfade validieren\par
+1.\tab Video mit yt-dlp herunterladen (oder lokale Datei kopieren)\par
+2.\tab Video mit ffmpeg auf angegebenen Zeitbereich zuschneiden\par
+3.\tab Audio in WAV-Format (16\'a0kHz Mono) f\'fcr Whisper extrahieren\par
+4.\tab Audiodauer mit ffprobe ermitteln\par
+5.\tab Audio f\'fcr Parallelverarbeitung in Abschnitte aufteilen\par
+6.\tab Alle Abschnitte in parallelen Batches mit whisper-cli transkribieren\par
+7.\tab Abschnitts-SRT-Dateien mit korrigierten Zeitstempeln in die endg\'fcltige Untertiteldatei (preview.srt) zusammenf\'fchren\par
+
+\pard\sa200\sl276\slmult1
+\b Audio File -> Subtitles Modus (6 Schritte):\b0\par
+\pard\fi-360\li720\sa100
+0.\tab Eingaben und Werkzeugpfade validieren\par
+1.\tab Audio in WAV-Format (16\'a0kHz Mono) f\'fcr Whisper konvertieren\par
+2.\tab Audiodauer ermitteln\par
+3.\tab Audio in Abschnitte aufteilen\par
+4.\tab Alle Abschnitte in parallelen Batches transkribieren\par
+5.\tab In endg\'fcltige SRT-Datei zusammenf\'fchren (nach Eingabedatei benannt)\par
+
+\pard\sa200\sl276\slmult1
+\b YouTube -> Full Video Modus (3 Schritte):\b0\par
+\pard\fi-360\li720\sa100
+0.\tab Eingaben und Werkzeugpfade validieren\par
+1.\tab Video mit yt-dlp herunterladen (oder lokale Datei kopieren)\par
+2.\tab Video mit ffmpeg auf angegebenen Zeitbereich zuschneiden (Ausgabe: preview.mp4)\par
+
+\pard\sa200\sl276\slmult1
+\b YouTube -> Audio Only Modus (4 Schritte):\b0\par
+\pard\fi-360\li720\sa100
+0.\tab Eingaben und Werkzeugpfade validieren\par
+1.\tab Video mit yt-dlp herunterladen (oder lokale Datei kopieren)\par
+2.\tab Video mit ffmpeg auf angegebenen Zeitbereich zuschneiden\par
+3.\tab Audio als hochwertige MP3-Datei extrahieren (Ausgabe: yt_audio.mp3)\par
+
+\pard\sa200\sl276\slmult1
+\fs24\b\cf2 Tipps\b0\cf0\fs20\par
+\pard\fi-360\li720\sa100
+\bullet\tab F\'fcr beste Untertitelqualit\'e4t das Modell \b ggml-large-v3\b0  verwenden. F\'fcr schnelle Ergebnisse bei kurzem Audio (z.\'a0B. Sprachnachrichten) \b ggml-tiny\b0  oder \b ggml-base\b0  verwenden.\par
+\bullet\tab Wenn die Transkription feststeckt, den Log-Tab auf detaillierte Ausgaben pr\'fcfen.\par
+\bullet\tab \b Fortsetzen\b0  verwenden, um einen unterbrochenen Auftrag fortzusetzen, ohne erneut herunterzuladen oder aufzuteilen.\par
+\bullet\tab Das Feld \b Initial Prompt\b0  ist leistungsf\'e4hig \endash  es kann zur Angabe von Schreibweisen von Namen, Fachbegriffen oder Kontext verwendet werden, um bessere Modellergebnisse zu erzielen.\par
+\bullet\tab Beim Beenden der Anwendung wird eine Aufforderung angezeigt, alle w\'e4hrend der aktuellen Sitzung erstellten Arbeitsordner zu bereinigen.\par
+\bullet\tab \b Ausgabesprache\b0  auf \b en\b0  setzen, um fremdsprachiges Audio direkt in englische Untertitel zu \'fcbersetzen.\par
+\bullet\tab Den Modus \b YouTube -> Full Video\b0  verwenden, wenn nur die Videodatei ohne Untertitel ben\'f6tigt wird.\par
+\bullet\tab Den Modus \b YouTube -> Audio Only\b0  verwenden, um eine hochwertige MP3-Audiodatei aus einem YouTube-Video oder einer lokalen Videodatei zu erhalten.\par
+\bullet\tab F\'fcr Live Translation wird eine CUDA-f\'e4hige GPU mit mindestens 4\'a0GB VRAM empfohlen. Das faster-whisper-Modell verwendet ~1,5\'a0GB und das NLLB-\'dcbersetzungsmodell ~2,6\'a0GB.\par
+\bullet\tab Die Hilfedatei wird automatisch in der ausgew\'e4hlten Oberfl\'e4chensprache geladen, sofern verf\'fcgbar, andernfalls wird auf Englisch zur\'fcckgegriffen.\par
+
+\pard\sa200\sl276\slmult1
+\fs24\b\cf2 Erforderliche externe Werkzeuge\b0\cf0\fs20\par
+Diese Anwendung erfordert, dass die folgenden Werkzeuge installiert und im Tab Pfade & Werkzeuge konfiguriert sind:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b whisper-cli\b0  \endash  Spracherkennungs-Engine (whisper.cpp) \endash  erforderlich f\'fcr Stapeltranskription\par
+\bullet\tab\b yt-dlp\b0  \endash  YouTube-Downloader (erforderlich f\'fcr alle YouTube-basierten Modi)\par
+\bullet\tab\b ffmpeg\b0  \endash  Audio-/Videoverarbeitung (erforderlich f\'fcr alle Modi)\par
+\bullet\tab\b ffprobe\b0  \endash  Medienanalyse, im Lieferumfang von ffmpeg enthalten (erforderlich f\'fcr Transkriptionsmodi)\par
+\bullet\tab\b Subtitle Edit\b0  (optional) \endash  Zum \'dcberpr\'fcfen und Bearbeiten generierter Untertiteldateien\par
+
+\pard\sa200\sl276\slmult1
+\b Automatisch verwaltete Abh\'e4ngigkeiten\b0\par
+Die folgenden Komponenten werden bei der ersten Verwendung automatisch heruntergeladen und erfordern keine manuelle Konfiguration:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Python (eingebettet)\b0  \endash  Eine portable Python-Laufzeitumgebung, die von den Live-Transkriptions- und \'dcbersetzungsservern verwendet wird.\par
+\bullet\tab\b faster-whisper-Modell\b0  \endash  Das faster-whisper large-v3 Spracherkennungsmodell (~3\'a0GB), wird beim ersten Start von Live Translation heruntergeladen.\par
+\bullet\tab\b NLLB-200-Modell\b0  \endash  Das Meta NLLB-200 1.3B \'dcbersetzungsmodell (~2,6\'a0GB), wird heruntergeladen, wenn ein Web-Client erstmals eine \'dcbersetzungssprache ausw\'e4hlt.\par
+
+\pard\sa200\sl276\slmult1
+\par
+}

@@ -12,7 +12,7 @@
 
 ; Source directory for published app files
 #define AppPublishDir "TranscriptionTools\bin\Publish"
-; Whisper CUDA binaries (place whisper-cli.exe, whisper-stream.exe, DLLs here)
+; Whisper CUDA binaries (place whisper-cli.exe, DLLs here)
 #define WhisperBinDir "whisper-bin"
 
 [Setup]
@@ -58,7 +58,6 @@ Source: "{#AppPublishDir}\component-versions.json"; DestDir: "{app}"; Flags: ign
 Source: "{#AppPublishDir}\Help\*"; DestDir: "{app}\Help"; Flags: ignoreversion recursesubdirs
 ; --- Whisper CUDA binaries ---
 Source: "{#WhisperBinDir}\whisper-cli.exe"; DestDir: "{app}\whisper"; Flags: ignoreversion
-Source: "{#WhisperBinDir}\whisper-stream.exe"; DestDir: "{app}\whisper"; Flags: ignoreversion
 Source: "{#WhisperBinDir}\*.dll"; DestDir: "{app}\whisper"; Flags: ignoreversion
 ; --- NLLB translation server ---
 Source: "{#AppPublishDir}\nllb-server\*"; DestDir: "{app}\nllb-server"; Flags: ignoreversion

@@ -29,7 +29,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: whisper-bin
-          key: whisper-v1.8.4-cuda12.4-v2-${{ hashFiles('patches/stream.cpp') }}
+          key: whisper-v1.8.4-cuda12.4-v3
           restore-keys: |
             whisper-v1.8.4-cuda12.4-v2-
 
@@ -61,21 +61,6 @@ jobs:
         run: |
           git clone --depth 1 --branch v1.8.4 https://github.com/ggml-org/whisper.cpp.git whisper-src
 
-      - name: Apply patches
-        if: steps.cache-check.outputs.has_binaries != 'true'
-        run: |
-          Copy-Item -Path "patches/stream.cpp" -Destination "whisper-src/examples/stream/stream.cpp" -Force
-
-      - name: Download SDL2
-        if: steps.cache-check.outputs.has_binaries != 'true'
-        run: |
-          Invoke-WebRequest -Uri "https://github.com/libsdl-org/SDL/releases/download/release-2.30.11/SDL2-devel-2.30.11-VC.zip" -OutFile "sdl2.zip"
-          Expand-Archive -Path "sdl2.zip" -DestinationPath "sdl2-temp" -Force
-          $sdlDir = Get-ChildItem -Path "sdl2-temp" -Directory | Select-Object -First 1
-          Move-Item -Path $sdlDir.FullName -Destination "SDL2"
-          Remove-Item "sdl2.zip" -Force
-          Remove-Item "sdl2-temp" -Recurse -Force
-
       - name: Build whisper.cpp with CUDA
         if: steps.cache-check.outputs.has_binaries != 'true'
         run: |
@@ -88,8 +73,6 @@ jobs:
           cmake .. -G "Visual Studio 17 2022" -A x64 `
             -DGGML_CUDA=ON `
             -DCMAKE_BUILD_TYPE=Release `
-            -DWHISPER_SDL2=ON `
-            -DSDL2_DIR="${{ github.workspace }}/SDL2/cmake" `
             -DCUDAToolkit_ROOT="$cudaPath" `
             -DCMAKE_CUDA_COMPILER="$cudaPath\bin\nvcc.exe"
           cmake --build . --config Release
@@ -100,13 +83,11 @@ jobs:
           New-Item -ItemType Directory -Force -Path "whisper-bin"
           $binDir = "whisper-src/build/bin/Release"
           Copy-Item "$binDir/whisper-cli.exe" "whisper-bin/"
-          Copy-Item "$binDir/whisper-stream.exe" "whisper-bin/"
           Copy-Item "$binDir/whisper.dll" "whisper-bin/"
           Copy-Item "$binDir/ggml.dll" "whisper-bin/"
           Copy-Item "$binDir/ggml-base.dll" "whisper-bin/"
           Copy-Item "$binDir/ggml-cpu.dll" "whisper-bin/"
           Copy-Item "$binDir/ggml-cuda.dll" "whisper-bin/"
-          Copy-Item "${{ github.workspace }}/SDL2/lib/x64/SDL2.dll" "whisper-bin/"
           # Bundle CUDA runtime DLLs so users don't need CUDA toolkit installed
           $cudaBin = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4\bin"
           Copy-Item "$cudaBin/cublas64_12.dll" "whisper-bin/"

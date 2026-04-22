@@ -7,7 +7,7 @@
 \f0\fs36\b\cf2 Transcription Tools \endash  User Guide\b0\cf0\fs20\par
 
 \fs24\b Overview\b0\fs20\par
-Transcription Tools is a Windows desktop application that generates subtitle files from audio and video sources. It provides a graphical interface for the whisper.cpp speech-to-text engine and supports four batch processing modes plus an experimental real-time live translation mode.\par
+Transcription Tools is a Windows desktop application that generates subtitle files from audio and video sources. It provides a graphical interface for the whisper.cpp speech-to-text engine and supports four batch processing modes plus a real-time live transcription mode with optional AI-powered translation.\par
 
 \b Batch Processing Modes\b0\par
 \pard\fi-360\li720\sa100
@@ -19,7 +19,7 @@ Transcription Tools is a Windows desktop application that generates subtitle fil
 \pard\sa200\sl276\slmult1
 \b Live Mode\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Live Translation (Test)\b0  \endash  Real-time speech-to-text from a microphone or audio input device using whisper-stream.exe. This feature is experimental.\par
+\bullet\tab\b Live Translation\b0  \endash  Real-time speech-to-text from a microphone or audio input device using faster-whisper with Silero VAD (Voice Activity Detection). Text is segmented on natural speech pauses for clean, complete sentences. Supports optional real-time translation to 200+ languages via NLLB.\par
 
 \pard\sa200\sl276\slmult1
 \fs24\b\cf2 Main / Job Tab\b0\cf0\fs20\par
@@ -81,29 +81,27 @@ Available when using YouTube -> Subtitles or Audio File -> Subtitles mode. Selec
 \bullet\tab\b Open preview.srt\b0  \endash  Opens the generated SRT file with your default application (available after completion, subtitle modes only).\par
 
 \pard\sa200\sl276\slmult1
-\fs24\b\cf2 Live Translation (Test) Tab\b0\cf0\fs20\par
-\b\i Note: This feature is experimental and intended for testing purposes only.\i0\b0\par
-The Live Translation tab provides real-time speech-to-text transcription from your microphone or other audio input device using whisper-stream.exe (from the whisper.cpp project). Transcribed text appears in a scrolling output window with a black background as you speak. The current in-progress line is shown in red and is continuously refined. Status messages appear in yellow and system information in grey.\par
+\fs24\b\cf2 Live Translation Tab\b0\cf0\fs20\par
+The Live Translation tab provides real-time speech-to-text transcription from your microphone or other audio input device. It uses faster-whisper with Silero VAD (Voice Activity Detection) to detect natural speech pauses and segment audio into complete utterances. This produces cleaner, more accurate transcriptions than fixed-window chunking.\par
 
-\b Important:\b0  How well this feature works depends heavily on your GPU type and performance. Systems with a powerful dedicated GPU will produce faster and more responsive results. On slower hardware, there may be noticeable delays or reduced accuracy.\par
+Transcribed text appears in two sub-tabs:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Live Output\b0  \endash  A web-based view (same as the subtitle server page) embedded directly in the application.\par
+\bullet\tab\b Log\b0  \endash  A scrolling text log showing transcription output with colour coding. In-progress text is continuously refined as you speak. Status messages appear in yellow and system information in grey.\par
 
+\pard\sa200\sl276\slmult1
 \b Controls\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Audio Device\b0  \endash  Select your audio input device. Devices are automatically detected via SDL on application startup. Click \b Refresh\b0  to re-scan if you connect a new device after the application has started.\par
+\bullet\tab\b Audio Device\b0  \endash  Select your audio input device. Devices are detected via the Python sounddevice library on startup. Click \b Refresh\b0  to re-scan if you connect a new device.\par
 \bullet\tab\b Input Language\b0  \endash  The language being spoken. Set to \b auto\b0  for automatic detection, or select a specific language for better accuracy.\par
-\bullet\tab\b Output Language\b0  \endash  Set to \b auto\b0  to keep the same language as input, or \b en\b0  (English) to translate to English. Whisper can only translate \i to\i0  English, so these are the only two options available.\par
-\bullet\tab\b Model\b0  \endash  Choose a whisper model. Larger models are more accurate but require more GPU power for real-time use.\par
-\bullet\tab\b Start\b0  \endash  Begin live transcription.\par
+\bullet\tab\b Start\b0  \endash  Begin live transcription. On first use, the application will download the faster-whisper model (~3 GB) and install Python dependencies if not already present.\par
 \bullet\tab\b Stop\b0  \endash  Stop the live transcription session.\par
 \bullet\tab\b Save\b0  \endash  Save the full transcript to a text file.\par
 \bullet\tab\b Clear\b0  \endash  Clear the output display.\par
 
 \pard\sa200\sl276\slmult1
-\b Requirements\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab The path to \b whisper-stream.exe\b0  must be configured on the \b Paths & Tools\b0  tab.\par
-\bullet\tab A whisper model file (.bin) must be available.\par
-\bullet\tab An audio input device (microphone) must be connected.\par
+\b Real-Time Translation\b0\par
+When the Subtitle Server is running, connected web clients can select a translation language from the dropdown on the web page. The application automatically starts an NLLB-200 translation server (on first use, this downloads ~3.5 GB of dependencies including the AI model). Transcribed text is translated on-the-fly and sent to each client in their chosen language. Over 200 languages are supported. Clients that do not select a translation language receive the original transcription.\par
 
 \pard\sa200\sl276\slmult1
 \fs24\b\cf2 Subtitle Server Tab\b0\cf0\fs20\par
@@ -125,12 +123,15 @@ The Subtitle Server provides a web-based live caption overlay that can be viewed
 
 \pard\sa200\sl276\slmult1
 \b Web Page Toolbar\b0\par
-The subtitle web page includes a toolbar in the top-right corner with the following buttons:\par
+The subtitle web page includes a toolbar in the top-right corner with the following controls:\par
 \pard\fi-360\li720\sa100
 \bullet\tab\b Remote Control\b0  (gear icon) \endash  Opens an admin panel to remotely Start, Stop, Restart, or Simulate the live transcription without returning to the desktop application. The panel polls the server status every 3 seconds.\par
-\bullet\tab\b Settings\b0  (Aa) \endash  Opens a settings panel to adjust font size, font family, bold, and text colour. Also includes voice selection and speed for the read-aloud feature. All preferences are saved locally in the browser.\par
+\bullet\tab\b Settings\b0  (Aa) \endash  Opens a settings panel to adjust font size, font family, bold, and text colour. Also includes voice selection and speed for the read-aloud feature, scroll direction, and tag display options. All preferences are saved locally in the browser.\par
+\bullet\tab\b Translation\b0  \endash  A dropdown to select a translation language. When a language is selected, the client receives AI-translated text in that language instead of the original transcription. Select \ldblquote Original\rdblquote  to receive the untranslated text.\par
+\bullet\tab\b Tags\b0  \endash  Choose what information to display before each subtitle line: Off, Language (shows the detected or translated language code), Time (shows the timestamp), or both.\par
 \bullet\tab\b Read Aloud\b0  (speaker icon) \endash  Toggles text-to-speech. When enabled, each new committed subtitle line is read aloud using the browser\rquote s speech synthesis. Voice and speed can be configured in the Settings panel.\par
 \bullet\tab\b Keep Screen On\b0  (light icon) \endash  Prevents the phone or tablet screen from dimming or locking. This uses the browser Wake Lock API, which requires a secure (HTTPS) connection. On first use from HTTP, a guided overlay explains how to accept the self-signed certificate warning in your browser (one-time setup). Once accepted, the screen stays on as long as the page is open.\par
+\bullet\tab\b Save Transcript\b0  \endash  Download the current transcript as a text file.\par
 
 \pard\sa200\sl276\slmult1
 \b Localisation\b0\par
@@ -201,7 +202,6 @@ Click \b Restore Defaults\b0  to reset all whisper parameters to their default v
 Configure the file paths to external tools and models:\par
 \pard\fi-360\li720\sa100
 \bullet\tab\b whisper-cli.exe\b0  \endash  The whisper speech recognition engine (used by batch transcription modes).\par
-\bullet\tab\b whisper-stream.exe\b0  \endash  The whisper real-time streaming engine (used by Live Translation).\par
 \bullet\tab\b yt-dlp.exe\b0  \endash  YouTube video downloader.\par
 \bullet\tab\b ffmpeg.exe\b0  \endash  Audio/video processing tool (trimming, conversion, chunking).\par
 \bullet\tab\b ffprobe.exe\b0  \endash  Audio/video analysis tool (duration detection).\par
@@ -289,7 +289,7 @@ Click \b Reset All Settings\b0  to restore all configuration to factory defaults
 \bullet\tab Set \b Output Language\b0  to \b en\b0  to translate foreign-language audio directly into English subtitles.\par
 \bullet\tab Use \b YouTube -> Full Video\b0  mode when you just need the video file without subtitles.\par
 \bullet\tab Use \b YouTube -> Audio Only\b0  mode to get a high-quality MP3 audio file from a YouTube video or local video file.\par
-\bullet\tab For Live Translation, a smaller model (e.g. ggml-base or ggml-small) may give better real-time responsiveness than a large model, depending on your GPU.\par
+\bullet\tab For Live Translation, a CUDA-capable GPU with at least 4 GB VRAM is recommended. The faster-whisper model uses ~1.5 GB and the NLLB translation model uses ~2.6 GB.\par
 \bullet\tab The help file automatically loads in your selected UI language if available, otherwise it falls back to English.\par
 
 \pard\sa200\sl276\slmult1
@@ -297,11 +297,18 @@ Click \b Reset All Settings\b0  to restore all configuration to factory defaults
 This application requires the following tools to be installed and configured on the Paths & Tools tab:\par
 \pard\fi-360\li720\sa100
 \bullet\tab\b whisper-cli\b0  \endash  Speech recognition engine (whisper.cpp) \endash  required for batch transcription\par
-\bullet\tab\b whisper-stream\b0  \endash  Real-time streaming engine (whisper.cpp) \endash  required for Live Translation\par
 \bullet\tab\b yt-dlp\b0  \endash  YouTube downloader (required for all YouTube-based modes)\par
 \bullet\tab\b ffmpeg\b0  \endash  Audio/video processing (required for all modes)\par
 \bullet\tab\b ffprobe\b0  \endash  Media analysis, included with ffmpeg (required for transcription modes)\par
 \bullet\tab\b Subtitle Edit\b0  (optional) \endash  For reviewing and editing generated subtitle files\par
+
+\pard\sa200\sl276\slmult1
+\b Automatically Managed Dependencies\b0\par
+The following components are downloaded automatically on first use and do not require manual configuration:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Python (embedded)\b0  \endash  A portable Python runtime used by the live transcription and translation servers.\par
+\bullet\tab\b faster-whisper model\b0  \endash  The faster-whisper large-v3 speech recognition model (~3 GB), downloaded on first Live Translation start.\par
+\bullet\tab\b NLLB-200 model\b0  \endash  The Meta NLLB-200 1.3B translation model (~2.6 GB), downloaded when a web client first selects a translation language.\par
 
 \pard\sa200\sl276\slmult1
 \par

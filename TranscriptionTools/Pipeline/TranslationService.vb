@@ -114,7 +114,40 @@ Namespace Pipeline
             StartProcess()
         End Sub
 
+        Private Sub KillProcessOnPort(port As Integer)
+            Try
+                ' Kill any leftover process holding this port
+                Dim psi As New ProcessStartInfo() With {
+                    .FileName = "netstat",
+                    .Arguments = $"-ano",
+                    .UseShellExecute = False,
+                    .RedirectStandardOutput = True,
+                    .CreateNoWindow = True
+                }
+                Using proc = Process.Start(psi)
+                    Dim output = proc.StandardOutput.ReadToEnd()
+                    proc.WaitForExit(5000)
+                    For Each line In output.Split({vbCrLf, vbLf}, StringSplitOptions.RemoveEmptyEntries)
+                        If line.Contains($":{port}") AndAlso line.Contains("LISTENING") Then
+                            Dim parts = line.Trim().Split({" "c}, StringSplitOptions.RemoveEmptyEntries)
+                            Dim pid As Integer
+                            If parts.Length > 0 AndAlso Integer.TryParse(parts(parts.Length - 1), pid) AndAlso pid > 0 Then
+                                Try
+                                    Process.GetProcessById(pid).Kill(True)
+                                Catch
+                                End Try
+                            End If
+                        End If
+                    Next
+                End Using
+            Catch
+            End Try
+        End Sub
+
         Private Sub StartProcess()
+            ' Kill any leftover process from a previous session holding our port
+            KillProcessOnPort(_port)
+
             Dim resolvedModelPath = Models.AppConfig.ResolvePath(_modelPath)
             Dim serverScript = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "nllb-server", "server.py")
 

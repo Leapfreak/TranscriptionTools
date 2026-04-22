@@ -23,9 +23,7 @@ Partial Class FormMain
         ' === Main TabControl ===
         Me.tabMain = New TabControl()
         Me.tabPageJob = New TabPage()
-        Me.tabPageWhisper = New TabPage()
         Me.tabPagePaths = New TabPage()
-        Me.tabPageLog = New TabPage()
         Me.tabPageSettings = New TabPage()
         Me.tabPageLive = New TabPage()
         Me.tabPageServer = New TabPage()
@@ -81,76 +79,7 @@ Partial Class FormMain
         Me.lnkPreviewSrt = New LinkLabel()
 
         ' ==============================================
-        ' TAB 2: Whisper Parameters
-        ' ==============================================
-        Me.pnlWhisperScroll = New Panel()
-
-        Me.grpLanguageModel = New GroupBox()
-        Me.lblWLanguage = New Label()
-        Me.cboWLanguage = New ComboBox()
-
-        Me.grpBeamSampling = New GroupBox()
-        Me.lblThreads = New Label()
-        Me.nudThreads = New NumericUpDown()
-        Me.lblProcessors = New Label()
-        Me.nudProcessors = New NumericUpDown()
-        Me.lblBeamSize = New Label()
-        Me.nudBeamSize = New NumericUpDown()
-        Me.lblBestOf = New Label()
-        Me.nudBestOf = New NumericUpDown()
-        Me.lblTemperature = New Label()
-        Me.nudTemperature = New NumericUpDown()
-        Me.lblTemperatureInc = New Label()
-        Me.nudTemperatureInc = New NumericUpDown()
-
-        Me.grpQualityFiltering = New GroupBox()
-        Me.lblMaxContext = New Label()
-        Me.nudMaxContext = New NumericUpDown()
-        Me.lblWordThreshold = New Label()
-        Me.nudWordThreshold = New NumericUpDown()
-        Me.lblEntropyThreshold = New Label()
-        Me.nudEntropyThreshold = New NumericUpDown()
-        Me.lblLogProbThreshold = New Label()
-        Me.nudLogProbThreshold = New NumericUpDown()
-        Me.lblNoSpeechThreshold = New Label()
-        Me.nudNoSpeechThreshold = New NumericUpDown()
-
-        Me.grpSegmentControl = New GroupBox()
-        Me.lblMaxSegmentLength = New Label()
-        Me.nudMaxSegmentLength = New NumericUpDown()
-        Me.lblMaxTokens = New Label()
-        Me.nudMaxTokens = New NumericUpDown()
-        Me.lblAudioContext = New Label()
-        Me.nudAudioContext = New NumericUpDown()
-
-        Me.grpPrompting = New GroupBox()
-        Me.lblInitialPrompt = New Label()
-        Me.txtInitialPrompt = New TextBox()
-        Me.lblHotwords = New Label()
-        Me.txtHotwords = New TextBox()
-
-        Me.grpFlags = New GroupBox()
-        Me.chkSplitOnWord = New CheckBox()
-        Me.chkNoGpu = New CheckBox()
-        Me.chkFlashAttn = New CheckBox()
-        Me.chkPrintProgress = New CheckBox()
-        Me.chkPrintColours = New CheckBox()
-        Me.chkPrintRealtime = New CheckBox()
-        Me.chkDiarize = New CheckBox()
-        Me.chkTinydiarize = New CheckBox()
-        Me.chkNoTimestamps = New CheckBox()
-        Me.chkTranslate = New CheckBox()
-
-        Me.grpVad = New GroupBox()
-        Me.lblVadThreshold = New Label()
-        Me.nudVadThreshold = New NumericUpDown()
-        Me.lblFreqThreshold = New Label()
-        Me.nudFreqThreshold = New NumericUpDown()
-
-        Me.btnRestoreDefaults = New Button()
-
-        ' ==============================================
-        ' TAB 3: Paths & Tools
+        ' TAB 2: Paths & Tools
         ' ==============================================
         Me.grpPaths = New GroupBox()
         Me.lblPathWhisper = New Label()
@@ -165,9 +94,12 @@ Partial Class FormMain
         Me.lblPathFfprobe = New Label()
         Me.txtPathFfprobe = New TextBox()
         Me.btnBrowseFfprobe = New Button()
-        Me.lblPathStream = New Label()
-        Me.txtPathStream = New TextBox()
-        Me.btnBrowseStream = New Button()
+        Me.lblPathFasterWhisper = New Label()
+        Me.txtPathFasterWhisper = New TextBox()
+        Me.btnBrowseFasterWhisper = New Button()
+        Me.lblPathNllbModel = New Label()
+        Me.txtPathNllbModel = New TextBox()
+        Me.btnBrowseNllbModel = New Button()
         Me.lblPathModel = New Label()
         Me.txtPathModel = New TextBox()
         Me.btnBrowseModel = New Button()
@@ -184,6 +116,7 @@ Partial Class FormMain
         ' ==============================================
         ' TAB 4: Log
         ' ==============================================
+        Me.grpLog = New GroupBox()
         Me.rtbLog = New RichTextBox()
         Me.btnClearLog = New Button()
         Me.btnCopyLog = New Button()
@@ -194,17 +127,6 @@ Partial Class FormMain
         Me.grpSettings = New GroupBox()
         Me.lblUiLanguage = New Label()
         Me.cboUiLanguage = New ComboBox()
-        Me.lblParallelJobs = New Label()
-        Me.nudParallelJobs = New NumericUpDown()
-        Me.lblChunkSize = New Label()
-        Me.nudChunkSize = New NumericUpDown()
-        Me.lblPollInterval = New Label()
-        Me.nudPollInterval = New NumericUpDown()
-        Me.lblChunkTimeout = New Label()
-        Me.nudChunkTimeout = New NumericUpDown()
-        Me.chkKeepChunks = New CheckBox()
-        Me.chkKeepPreview = New CheckBox()
-        Me.chkSkipDownload = New CheckBox()
         Me.lblTheme = New Label()
         Me.cboTheme = New ComboBox()
         Me.btnResetSettings = New Button()
@@ -218,14 +140,15 @@ Partial Class FormMain
         Me.btnRefreshDevices = New Button()
         Me.lblLiveInputLang = New Label()
         Me.cboLiveInputLang = New ComboBox()
-        Me.lblLiveOutputLang = New Label()
-        Me.cboLiveOutputLang = New ComboBox()
-        Me.lblLiveModel = New Label()
-        Me.cboLiveModel = New ComboBox()
         Me.btnLiveStart = New Button()
         Me.btnLiveStop = New Button()
         Me.btnLiveSave = New Button()
         Me.btnLiveClear = New Button()
+        Me.tabLiveOutput = New TabControl()
+        Me.tabPageLiveClients = New TabPage()
+        Me.tabPageLiveLog = New TabPage()
+        Me.wvLiveClients = New Microsoft.Web.WebView2.WinForms.WebView2()
+        CType(Me.wvLiveClients, ComponentModel.ISupportInitialize).BeginInit()
         Me.rtbLiveOutput = New RichTextBox()
 
         Me.SuspendLayout()
@@ -233,7 +156,7 @@ Partial Class FormMain
         ' === TabControl ===
         Me.tabMain.Size = New Drawing.Size(880, 650)
         Me.tabMain.Dock = DockStyle.Fill
-        Me.tabMain.TabPages.AddRange({Me.tabPageLive, Me.tabPageServer, Me.tabPageJob, Me.tabPageWhisper, Me.tabPagePaths, Me.tabPageLog, Me.tabPageSettings, Me.tabPageHelp})
+        Me.tabMain.TabPages.AddRange({Me.tabPageLive, Me.tabPageServer, Me.tabPageJob, Me.tabPagePaths, Me.tabPageSettings, Me.tabPageHelp})
 
         ' Set tab page sizes explicitly so anchoring calculates correctly during SuspendLayout
         Dim tpSize = New Drawing.Size(872, 622)
@@ -242,19 +165,10 @@ Partial Class FormMain
         Me.tabPageJob.AutoScroll = True
         Me.tabPageJob.ClientSize = tpSize
 
-        Me.tabPageWhisper.Text = "Whisper Parameters"
-        Me.tabPageWhisper.Padding = New Padding(8)
-        Me.tabPageWhisper.AutoScroll = True
-        Me.tabPageWhisper.ClientSize = tpSize
-
         Me.tabPagePaths.Text = "Paths && Tools"
         Me.tabPagePaths.Padding = New Padding(8)
         Me.tabPagePaths.AutoScroll = True
         Me.tabPagePaths.ClientSize = tpSize
-
-        Me.tabPageLog.Text = "Log"
-        Me.tabPageLog.Padding = New Padding(8)
-        Me.tabPageLog.ClientSize = tpSize
 
         Me.tabPageSettings.Text = "Settings"
         Me.tabPageSettings.Padding = New Padding(8)
@@ -446,192 +360,56 @@ Partial Class FormMain
         Me.grpProgress.Controls.AddRange({Me.lblStepStatus, Me.pbOverall, Me.pbChunk,
             Me.btnStart, Me.btnResume, Me.btnCancel, Me.btnOpenOutput, Me.btnOpenSubtitleEdit, Me.lnkPreviewSrt})
 
-        Me.tabPageJob.Controls.AddRange({Me.lblMode, Me.cboMode, Me.grpInput, Me.grpOutputFormats, Me.grpProgress})
+        y += 170
+
+        ' --- Log Output ---
+        Me.grpLog.Text = "Log"
+        Me.grpLog.Location = New Drawing.Point(8, y)
+        Me.grpLog.Size = New Drawing.Size(856, 250)
+        Me.grpLog.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
+
+        Me.rtbLog.Dock = DockStyle.Fill
+        Me.rtbLog.ReadOnly = True
+        Me.rtbLog.BackColor = Drawing.Color.White
+        Me.rtbLog.Font = New Drawing.Font("Consolas", 9)
+        Me.rtbLog.WordWrap = False
+        Me.rtbLog.ScrollBars = RichTextBoxScrollBars.Both
+
+        Dim pnlLogButtons As New Panel()
+        pnlLogButtons.Dock = DockStyle.Bottom
+        pnlLogButtons.Height = 35
+
+        Me.btnClearLog.Text = "Clear Log"
+        Me.btnClearLog.Location = New Drawing.Point(4, 4)
+        Me.btnClearLog.Size = New Drawing.Size(100, 26)
+        Me.btnCopyLog.Text = "Copy to Clipboard"
+        Me.btnCopyLog.Location = New Drawing.Point(112, 4)
+        Me.btnCopyLog.Size = New Drawing.Size(140, 26)
+
+        pnlLogButtons.Controls.AddRange({Me.btnClearLog, Me.btnCopyLog})
+        Me.grpLog.Controls.Add(Me.rtbLog)
+        Me.grpLog.Controls.Add(pnlLogButtons)
+
+        Me.tabPageJob.Controls.AddRange({Me.lblMode, Me.cboMode, Me.grpInput, Me.grpOutputFormats, Me.grpProgress, Me.grpLog})
 
         ' ============================================
-        ' TAB 2 LAYOUT: Whisper Parameters
-        ' ============================================
-        Me.pnlWhisperScroll.Dock = DockStyle.Fill
-        Me.pnlWhisperScroll.AutoScroll = True
-
-        Dim wy As Integer = 6
-
-        ' --- Language & Model ---
-        Me.grpLanguageModel.Text = "Language && Model"
-        Me.grpLanguageModel.Location = New Drawing.Point(8, wy)
-        Me.grpLanguageModel.Size = New Drawing.Size(810, 68)
-        Me.grpLanguageModel.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
-
-        Me.lblWLanguage.Text = "Language:"
-        Me.lblWLanguage.Location = New Drawing.Point(10, 22)
-        Me.lblWLanguage.AutoSize = True
-        Me.cboWLanguage.Location = New Drawing.Point(10, 38)
-        Me.cboWLanguage.Size = New Drawing.Size(200, 23)
-        Me.cboWLanguage.DropDownStyle = ComboBoxStyle.DropDownList
-        Me.grpLanguageModel.Controls.AddRange({Me.lblWLanguage, Me.cboWLanguage})
-
-        wy += 76
-
-        ' --- Beam Search / Sampling ---
-        Me.grpBeamSampling.Text = "Beam Search / Sampling"
-        Me.grpBeamSampling.Location = New Drawing.Point(8, wy)
-        Me.grpBeamSampling.Size = New Drawing.Size(810, 170)
-        Me.grpBeamSampling.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
-
-        Dim bsy = 22
-        Me.lblThreads.Text = "Threads:" : Me.lblThreads.Location = New Drawing.Point(10, bsy) : Me.lblThreads.AutoSize = True
-        Me.nudThreads.Location = New Drawing.Point(10, bsy + 16) : Me.nudThreads.Size = New Drawing.Size(100, 23) : Me.nudThreads.Minimum = 1 : Me.nudThreads.Maximum = 64 : Me.nudThreads.Value = 4
-        Me.lblProcessors.Text = "Processors:" : Me.lblProcessors.Location = New Drawing.Point(250, bsy) : Me.lblProcessors.AutoSize = True
-        Me.nudProcessors.Location = New Drawing.Point(250, bsy + 16) : Me.nudProcessors.Size = New Drawing.Size(100, 23) : Me.nudProcessors.Minimum = 1 : Me.nudProcessors.Maximum = 8 : Me.nudProcessors.Value = 1
-
-        bsy += 48
-        Me.lblBeamSize.Text = "Beam size:" : Me.lblBeamSize.Location = New Drawing.Point(10, bsy) : Me.lblBeamSize.AutoSize = True
-        Me.nudBeamSize.Location = New Drawing.Point(10, bsy + 16) : Me.nudBeamSize.Size = New Drawing.Size(100, 23) : Me.nudBeamSize.Minimum = -1 : Me.nudBeamSize.Maximum = 15 : Me.nudBeamSize.Value = 5
-        Me.lblBestOf.Text = "Best of:" : Me.lblBestOf.Location = New Drawing.Point(250, bsy) : Me.lblBestOf.AutoSize = True
-        Me.nudBestOf.Location = New Drawing.Point(250, bsy + 16) : Me.nudBestOf.Size = New Drawing.Size(100, 23) : Me.nudBestOf.Minimum = 1 : Me.nudBestOf.Maximum = 10 : Me.nudBestOf.Value = 5
-
-        bsy += 48
-        Me.lblTemperature.Text = "Temperature:" : Me.lblTemperature.Location = New Drawing.Point(10, bsy) : Me.lblTemperature.AutoSize = True
-        Me.nudTemperature.Location = New Drawing.Point(10, bsy + 16) : Me.nudTemperature.Size = New Drawing.Size(100, 23) : Me.nudTemperature.Minimum = 0 : Me.nudTemperature.Maximum = 1 : Me.nudTemperature.DecimalPlaces = 1 : Me.nudTemperature.Increment = 0.1D : Me.nudTemperature.Value = 0D
-        Me.lblTemperatureInc.Text = "Temp increment:" : Me.lblTemperatureInc.Location = New Drawing.Point(250, bsy) : Me.lblTemperatureInc.AutoSize = True
-        Me.nudTemperatureInc.Location = New Drawing.Point(250, bsy + 16) : Me.nudTemperatureInc.Size = New Drawing.Size(100, 23) : Me.nudTemperatureInc.Minimum = 0 : Me.nudTemperatureInc.Maximum = 1 : Me.nudTemperatureInc.DecimalPlaces = 1 : Me.nudTemperatureInc.Increment = 0.1D : Me.nudTemperatureInc.Value = 0.2D
-
-        Me.grpBeamSampling.Controls.AddRange({Me.lblThreads, Me.nudThreads, Me.lblProcessors, Me.nudProcessors,
-            Me.lblBeamSize, Me.nudBeamSize, Me.lblBestOf, Me.nudBestOf,
-            Me.lblTemperature, Me.nudTemperature, Me.lblTemperatureInc, Me.nudTemperatureInc})
-
-        wy += 178
-
-        ' --- Quality / Filtering ---
-        Me.grpQualityFiltering.Text = "Quality / Filtering"
-        Me.grpQualityFiltering.Location = New Drawing.Point(8, wy)
-        Me.grpQualityFiltering.Size = New Drawing.Size(810, 170)
-        Me.grpQualityFiltering.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
-
-        Dim qy = 22
-        Me.lblMaxContext.Text = "Max context:" : Me.lblMaxContext.Location = New Drawing.Point(10, qy) : Me.lblMaxContext.AutoSize = True
-        Me.nudMaxContext.Location = New Drawing.Point(10, qy + 16) : Me.nudMaxContext.Size = New Drawing.Size(100, 23) : Me.nudMaxContext.Minimum = -1 : Me.nudMaxContext.Maximum = 512 : Me.nudMaxContext.Value = 0
-        Me.lblWordThreshold.Text = "Word threshold:" : Me.lblWordThreshold.Location = New Drawing.Point(250, qy) : Me.lblWordThreshold.AutoSize = True
-        Me.nudWordThreshold.Location = New Drawing.Point(250, qy + 16) : Me.nudWordThreshold.Size = New Drawing.Size(100, 23) : Me.nudWordThreshold.Minimum = 0 : Me.nudWordThreshold.Maximum = 1 : Me.nudWordThreshold.DecimalPlaces = 2 : Me.nudWordThreshold.Increment = 0.01D : Me.nudWordThreshold.Value = 0.01D
-
-        qy += 48
-        Me.lblEntropyThreshold.Text = "Entropy threshold:" : Me.lblEntropyThreshold.Location = New Drawing.Point(10, qy) : Me.lblEntropyThreshold.AutoSize = True
-        Me.nudEntropyThreshold.Location = New Drawing.Point(10, qy + 16) : Me.nudEntropyThreshold.Size = New Drawing.Size(100, 23) : Me.nudEntropyThreshold.Minimum = 0 : Me.nudEntropyThreshold.Maximum = 5 : Me.nudEntropyThreshold.DecimalPlaces = 1 : Me.nudEntropyThreshold.Increment = 0.1D : Me.nudEntropyThreshold.Value = 2.4D
-        Me.lblLogProbThreshold.Text = "Log prob threshold:" : Me.lblLogProbThreshold.Location = New Drawing.Point(250, qy) : Me.lblLogProbThreshold.AutoSize = True
-        Me.nudLogProbThreshold.Location = New Drawing.Point(250, qy + 16) : Me.nudLogProbThreshold.Size = New Drawing.Size(100, 23) : Me.nudLogProbThreshold.Minimum = -10 : Me.nudLogProbThreshold.Maximum = 0 : Me.nudLogProbThreshold.DecimalPlaces = 1 : Me.nudLogProbThreshold.Increment = 0.1D : Me.nudLogProbThreshold.Value = -1D
-
-        qy += 48
-        Me.lblNoSpeechThreshold.Text = "No speech threshold:" : Me.lblNoSpeechThreshold.Location = New Drawing.Point(10, qy) : Me.lblNoSpeechThreshold.AutoSize = True
-        Me.nudNoSpeechThreshold.Location = New Drawing.Point(10, qy + 16) : Me.nudNoSpeechThreshold.Size = New Drawing.Size(100, 23) : Me.nudNoSpeechThreshold.Minimum = 0 : Me.nudNoSpeechThreshold.Maximum = 1 : Me.nudNoSpeechThreshold.DecimalPlaces = 1 : Me.nudNoSpeechThreshold.Increment = 0.1D : Me.nudNoSpeechThreshold.Value = 0.6D
-
-        Me.grpQualityFiltering.Controls.AddRange({Me.lblMaxContext, Me.nudMaxContext, Me.lblWordThreshold, Me.nudWordThreshold,
-            Me.lblEntropyThreshold, Me.nudEntropyThreshold, Me.lblLogProbThreshold, Me.nudLogProbThreshold,
-            Me.lblNoSpeechThreshold, Me.nudNoSpeechThreshold})
-
-        wy += 178
-
-        ' --- Segment Control ---
-        Me.grpSegmentControl.Text = "Segment Control"
-        Me.grpSegmentControl.Location = New Drawing.Point(8, wy)
-        Me.grpSegmentControl.Size = New Drawing.Size(810, 68)
-        Me.grpSegmentControl.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
-
-        Me.lblMaxSegmentLength.Text = "Max segment length:" : Me.lblMaxSegmentLength.Location = New Drawing.Point(10, 22) : Me.lblMaxSegmentLength.AutoSize = True
-        Me.nudMaxSegmentLength.Location = New Drawing.Point(10, 38) : Me.nudMaxSegmentLength.Size = New Drawing.Size(100, 23) : Me.nudMaxSegmentLength.Minimum = 0 : Me.nudMaxSegmentLength.Maximum = 200 : Me.nudMaxSegmentLength.Value = 0
-        Me.lblMaxTokens.Text = "Max tokens:" : Me.lblMaxTokens.Location = New Drawing.Point(250, 22) : Me.lblMaxTokens.AutoSize = True
-        Me.nudMaxTokens.Location = New Drawing.Point(250, 38) : Me.nudMaxTokens.Size = New Drawing.Size(100, 23) : Me.nudMaxTokens.Minimum = 0 : Me.nudMaxTokens.Maximum = 256 : Me.nudMaxTokens.Value = 0
-        Me.lblAudioContext.Text = "Audio context:" : Me.lblAudioContext.Location = New Drawing.Point(490, 22) : Me.lblAudioContext.AutoSize = True
-        Me.nudAudioContext.Location = New Drawing.Point(490, 38) : Me.nudAudioContext.Size = New Drawing.Size(100, 23) : Me.nudAudioContext.Minimum = 0 : Me.nudAudioContext.Maximum = 1500 : Me.nudAudioContext.Value = 0
-
-        Me.grpSegmentControl.Controls.AddRange({Me.lblMaxSegmentLength, Me.nudMaxSegmentLength,
-            Me.lblMaxTokens, Me.nudMaxTokens, Me.lblAudioContext, Me.nudAudioContext})
-
-        wy += 76
-
-        ' --- Prompting ---
-        Me.grpPrompting.Text = "Prompting"
-        Me.grpPrompting.Location = New Drawing.Point(8, wy)
-        Me.grpPrompting.Size = New Drawing.Size(810, 155)
-        Me.grpPrompting.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
-
-        Me.lblInitialPrompt.Text = "Initial prompt:" : Me.lblInitialPrompt.Location = New Drawing.Point(10, 22) : Me.lblInitialPrompt.AutoSize = True
-        Me.txtInitialPrompt.Location = New Drawing.Point(10, 38) : Me.txtInitialPrompt.Size = New Drawing.Size(780, 60)
-        Me.txtInitialPrompt.Multiline = True : Me.txtInitialPrompt.WordWrap = True : Me.txtInitialPrompt.ScrollBars = ScrollBars.Vertical
-        Me.lblHotwords.Text = "Hotwords:" : Me.lblHotwords.Location = New Drawing.Point(10, 106) : Me.lblHotwords.AutoSize = True
-        Me.txtHotwords.Location = New Drawing.Point(10, 122) : Me.txtHotwords.Size = New Drawing.Size(780, 23) : Me.txtHotwords.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
-
-        Me.grpPrompting.Controls.AddRange({Me.lblInitialPrompt, Me.txtInitialPrompt, Me.lblHotwords, Me.txtHotwords})
-
-        wy += 163
-
-        ' --- Flags ---
-        Me.grpFlags.Text = "Flags"
-        Me.grpFlags.Location = New Drawing.Point(8, wy)
-        Me.grpFlags.Size = New Drawing.Size(810, 90)
-        Me.grpFlags.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
-
-        Dim fx = 15
-        Dim fy1 = 20
-        Dim fy2 = 45
-        Dim fSpacing = 155
-
-        Me.chkSplitOnWord.Text = "Split on word" : Me.chkSplitOnWord.Location = New Drawing.Point(fx, fy1) : Me.chkSplitOnWord.AutoSize = True : Me.chkSplitOnWord.Checked = True
-        Me.chkNoGpu.Text = "No GPU" : Me.chkNoGpu.Location = New Drawing.Point(fx + fSpacing, fy1) : Me.chkNoGpu.AutoSize = True
-        Me.chkFlashAttn.Text = "Flash attention" : Me.chkFlashAttn.Location = New Drawing.Point(fx + fSpacing * 2, fy1) : Me.chkFlashAttn.AutoSize = True
-        Me.chkPrintProgress.Text = "Print progress" : Me.chkPrintProgress.Location = New Drawing.Point(fx + fSpacing * 3, fy1) : Me.chkPrintProgress.AutoSize = True
-        Me.chkPrintColours.Text = "Print colours" : Me.chkPrintColours.Location = New Drawing.Point(fx + fSpacing * 4, fy1) : Me.chkPrintColours.AutoSize = True
-        Me.chkPrintRealtime.Text = "Print realtime" : Me.chkPrintRealtime.Location = New Drawing.Point(fx, fy2) : Me.chkPrintRealtime.AutoSize = True
-        Me.chkDiarize.Text = "Diarize" : Me.chkDiarize.Location = New Drawing.Point(fx + fSpacing, fy2) : Me.chkDiarize.AutoSize = True
-        Me.chkTinydiarize.Text = "Tinydiarize" : Me.chkTinydiarize.Location = New Drawing.Point(fx + fSpacing * 2, fy2) : Me.chkTinydiarize.AutoSize = True
-        Me.chkNoTimestamps.Text = "No timestamps" : Me.chkNoTimestamps.Location = New Drawing.Point(fx + fSpacing * 3, fy2) : Me.chkNoTimestamps.AutoSize = True
-        Me.chkTranslate.Text = "Translate to English" : Me.chkTranslate.Location = New Drawing.Point(fx + fSpacing * 4, fy2) : Me.chkTranslate.AutoSize = True
-
-        Me.grpFlags.Controls.AddRange({Me.chkSplitOnWord, Me.chkNoGpu, Me.chkFlashAttn, Me.chkPrintProgress, Me.chkPrintColours,
-            Me.chkPrintRealtime, Me.chkDiarize, Me.chkTinydiarize, Me.chkNoTimestamps, Me.chkTranslate})
-
-        wy += 98
-
-        ' --- VAD ---
-        Me.grpVad.Text = "VAD (Voice Activity Detection)"
-        Me.grpVad.Location = New Drawing.Point(8, wy)
-        Me.grpVad.Size = New Drawing.Size(810, 68)
-        Me.grpVad.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
-
-        Me.lblVadThreshold.Text = "VAD threshold:" : Me.lblVadThreshold.Location = New Drawing.Point(10, 22) : Me.lblVadThreshold.AutoSize = True
-        Me.nudVadThreshold.Location = New Drawing.Point(10, 38) : Me.nudVadThreshold.Size = New Drawing.Size(100, 23) : Me.nudVadThreshold.Minimum = 0 : Me.nudVadThreshold.Maximum = 1 : Me.nudVadThreshold.DecimalPlaces = 1 : Me.nudVadThreshold.Increment = 0.1D : Me.nudVadThreshold.Value = 0.6D
-        Me.lblFreqThreshold.Text = "Frequency threshold:" : Me.lblFreqThreshold.Location = New Drawing.Point(250, 22) : Me.lblFreqThreshold.AutoSize = True
-        Me.nudFreqThreshold.Location = New Drawing.Point(250, 38) : Me.nudFreqThreshold.Size = New Drawing.Size(100, 23) : Me.nudFreqThreshold.Minimum = 0 : Me.nudFreqThreshold.Maximum = 3000 : Me.nudFreqThreshold.DecimalPlaces = 1 : Me.nudFreqThreshold.Increment = 10D : Me.nudFreqThreshold.Value = 100D
-
-        Me.grpVad.Controls.AddRange({Me.lblVadThreshold, Me.nudVadThreshold, Me.lblFreqThreshold, Me.nudFreqThreshold})
-
-        wy += 76
-
-        ' Restore defaults button
-        Me.btnRestoreDefaults.Text = "Restore Defaults"
-        Me.btnRestoreDefaults.Location = New Drawing.Point(8, wy)
-        Me.btnRestoreDefaults.Size = New Drawing.Size(150, 30)
-
-        Me.pnlWhisperScroll.Controls.AddRange({Me.grpLanguageModel, Me.grpBeamSampling, Me.grpQualityFiltering,
-            Me.grpSegmentControl, Me.grpPrompting, Me.grpFlags, Me.grpVad, Me.btnRestoreDefaults})
-        Me.tabPageWhisper.Controls.Add(Me.pnlWhisperScroll)
-
-        ' ============================================
-        ' TAB 3 LAYOUT: Paths & Tools
+        ' TAB 2 LAYOUT: Paths & Tools
         ' ============================================
         Me.grpPaths.Text = "Tool Paths"
         Me.grpPaths.Location = New Drawing.Point(8, 6)
-        Me.grpPaths.Size = New Drawing.Size(830, 420)
+        Me.grpPaths.Size = New Drawing.Size(830, 516)
         Me.grpPaths.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
 
         Dim py = 22
         Dim pathRows = {
             (Me.lblPathWhisper, Me.txtPathWhisper, Me.btnBrowseWhisper, "whisper-cli.exe:"),
-            (Me.lblPathStream, Me.txtPathStream, Me.btnBrowseStream, "whisper-stream.exe:"),
             (Me.lblPathYtdlp, Me.txtPathYtdlp, Me.btnBrowseYtdlp, "yt-dlp.exe:"),
             (Me.lblPathFfmpeg, Me.txtPathFfmpeg, Me.btnBrowseFfmpeg, "ffmpeg.exe:"),
             (Me.lblPathFfprobe, Me.txtPathFfprobe, Me.btnBrowseFfprobe, "ffprobe.exe:"),
             (Me.lblPathModel, Me.txtPathModel, Me.btnBrowseModel, "YouTube model (.bin):"),
             (Me.lblPathModelAudio, Me.txtPathModelAudio, Me.btnBrowseModelAudio, "Audio File model (.bin):"),
+            (Me.lblPathFasterWhisper, Me.txtPathFasterWhisper, Me.btnBrowseFasterWhisper, "faster-whisper model (folder):"),
+            (Me.lblPathNllbModel, Me.txtPathNllbModel, Me.btnBrowseNllbModel, "NLLB translation model (folder):"),
             (Me.lblPathOutputRoot, Me.txtPathOutputRoot, Me.btnBrowseOutputRoot, "Default output root:")
         }
 
@@ -660,47 +438,22 @@ Partial Class FormMain
         Me.grpPaths.Controls.AddRange({Me.lblYtdlpFormat, Me.txtYtdlpFormat})
 
         Me.btnVerifyPaths.Text = "Verify All Paths"
-        Me.btnVerifyPaths.Location = New Drawing.Point(8, 435)
+        Me.btnVerifyPaths.Location = New Drawing.Point(8, 530)
         Me.btnVerifyPaths.Size = New Drawing.Size(150, 30)
 
         Me.lnkDownloadModels = New LinkLabel()
         Me.lnkDownloadModels.Text = "Download whisper models..."
-        Me.lnkDownloadModels.Location = New Drawing.Point(170, 442)
+        Me.lnkDownloadModels.Location = New Drawing.Point(170, 537)
         Me.lnkDownloadModels.AutoSize = True
 
         Me.tabPagePaths.Controls.AddRange({Me.grpPaths, Me.btnVerifyPaths, Me.lnkDownloadModels})
 
         ' ============================================
-        ' TAB 4 LAYOUT: Log
-        ' ============================================
-        Me.rtbLog.Dock = DockStyle.Fill
-        Me.rtbLog.ReadOnly = True
-        Me.rtbLog.BackColor = Drawing.Color.White
-        Me.rtbLog.Font = New Drawing.Font("Consolas", 9)
-        Me.rtbLog.WordWrap = False
-        Me.rtbLog.ScrollBars = RichTextBoxScrollBars.Both
-
-        Dim pnlLogButtons As New Panel()
-        pnlLogButtons.Dock = DockStyle.Bottom
-        pnlLogButtons.Height = 40
-
-        Me.btnClearLog.Text = "Clear Log"
-        Me.btnClearLog.Location = New Drawing.Point(8, 8)
-        Me.btnClearLog.Size = New Drawing.Size(100, 28)
-        Me.btnCopyLog.Text = "Copy to Clipboard"
-        Me.btnCopyLog.Location = New Drawing.Point(118, 8)
-        Me.btnCopyLog.Size = New Drawing.Size(140, 28)
-
-        pnlLogButtons.Controls.AddRange({Me.btnClearLog, Me.btnCopyLog})
-        Me.tabPageLog.Controls.Add(Me.rtbLog)
-        Me.tabPageLog.Controls.Add(pnlLogButtons)
-
-        ' ============================================
-        ' TAB 5 LAYOUT: Settings
+        ' TAB 4 LAYOUT: Settings
         ' ============================================
         Me.grpSettings.Text = "Application Settings"
         Me.grpSettings.Location = New Drawing.Point(8, 6)
-        Me.grpSettings.Size = New Drawing.Size(830, 420)
+        Me.grpSettings.Size = New Drawing.Size(830, 120)
         Me.grpSettings.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
 
         Dim sy = 25
@@ -709,49 +462,21 @@ Partial Class FormMain
         Me.cboUiLanguage.Location = New Drawing.Point(10, sy + 16) : Me.cboUiLanguage.Size = New Drawing.Size(200, 23) : Me.cboUiLanguage.DropDownStyle = ComboBoxStyle.DropDownList
         sy += 48
 
-        Me.lblParallelJobs.Text = "Parallel transcription jobs:" : Me.lblParallelJobs.Location = New Drawing.Point(10, sy) : Me.lblParallelJobs.AutoSize = True
-        Me.nudParallelJobs.Location = New Drawing.Point(10, sy + 16) : Me.nudParallelJobs.Size = New Drawing.Size(100, 23) : Me.nudParallelJobs.Minimum = 1 : Me.nudParallelJobs.Maximum = 16 : Me.nudParallelJobs.Value = 4
-        sy += 48
-
-        Me.lblChunkSize.Text = "Chunk size (seconds):" : Me.lblChunkSize.Location = New Drawing.Point(10, sy) : Me.lblChunkSize.AutoSize = True
-        Me.nudChunkSize.Location = New Drawing.Point(10, sy + 16) : Me.nudChunkSize.Size = New Drawing.Size(100, 23) : Me.nudChunkSize.Minimum = 60 : Me.nudChunkSize.Maximum = 1800 : Me.nudChunkSize.Value = 300
-        sy += 48
-
-        Me.lblPollInterval.Text = "Poll interval (ms):" : Me.lblPollInterval.Location = New Drawing.Point(10, sy) : Me.lblPollInterval.AutoSize = True
-        Me.nudPollInterval.Location = New Drawing.Point(10, sy + 16) : Me.nudPollInterval.Size = New Drawing.Size(100, 23) : Me.nudPollInterval.Minimum = 500 : Me.nudPollInterval.Maximum = 10000 : Me.nudPollInterval.Value = 2000
-        sy += 48
-
-        Me.lblChunkTimeout.Text = "Chunk timeout (min):" : Me.lblChunkTimeout.Location = New Drawing.Point(10, sy) : Me.lblChunkTimeout.AutoSize = True
-        Me.nudChunkTimeout.Location = New Drawing.Point(10, sy + 16) : Me.nudChunkTimeout.Size = New Drawing.Size(100, 23) : Me.nudChunkTimeout.Minimum = 1 : Me.nudChunkTimeout.Maximum = 120 : Me.nudChunkTimeout.Value = 60
-        sy += 48
-
-        Me.chkKeepChunks.Text = "Keep chunk files" : Me.chkKeepChunks.Location = New Drawing.Point(10, sy) : Me.chkKeepChunks.AutoSize = True
-        sy += 28
-        Me.chkKeepPreview.Text = "Keep trimmed preview.mp4" : Me.chkKeepPreview.Location = New Drawing.Point(10, sy) : Me.chkKeepPreview.AutoSize = True : Me.chkKeepPreview.Checked = True
-        sy += 28
-        Me.chkSkipDownload.Text = "Skip download if file exists" : Me.chkSkipDownload.Location = New Drawing.Point(10, sy) : Me.chkSkipDownload.AutoSize = True
-        sy += 35
-
         Me.lblTheme.Text = "Theme:" : Me.lblTheme.Location = New Drawing.Point(10, sy) : Me.lblTheme.AutoSize = True
         Me.cboTheme.Location = New Drawing.Point(10, sy + 16) : Me.cboTheme.Size = New Drawing.Size(150, 23) : Me.cboTheme.DropDownStyle = ComboBoxStyle.DropDownList
         Me.cboTheme.Items.AddRange({"System", "Light", "Dark"})
         Me.cboTheme.SelectedIndex = 0
 
         Me.grpSettings.Controls.AddRange({Me.lblUiLanguage, Me.cboUiLanguage,
-            Me.lblParallelJobs, Me.nudParallelJobs,
-            Me.lblChunkSize, Me.nudChunkSize,
-            Me.lblPollInterval, Me.nudPollInterval,
-            Me.lblChunkTimeout, Me.nudChunkTimeout,
-            Me.chkKeepChunks, Me.chkKeepPreview, Me.chkSkipDownload,
             Me.lblTheme, Me.cboTheme})
 
         Me.btnResetSettings.Text = "Reset All Settings"
-        Me.btnResetSettings.Location = New Drawing.Point(8, 435)
+        Me.btnResetSettings.Location = New Drawing.Point(8, 135)
         Me.btnResetSettings.Size = New Drawing.Size(150, 30)
 
         Me.btnCheckToolUpdates = New Button()
         Me.btnCheckToolUpdates.Text = "Check for Tool Updates"
-        Me.btnCheckToolUpdates.Location = New Drawing.Point(170, 435)
+        Me.btnCheckToolUpdates.Location = New Drawing.Point(170, 135)
         Me.btnCheckToolUpdates.Size = New Drawing.Size(180, 30)
 
         Me.tabPageSettings.Controls.AddRange({Me.grpSettings, Me.btnResetSettings, Me.btnCheckToolUpdates})
@@ -759,14 +484,14 @@ Partial Class FormMain
         ' ============================================
         ' TAB 6 LAYOUT: Live Translation
         ' ============================================
-        Me.tabPageLive.Text = "Live Translation (Test)"
+        Me.tabPageLive.Text = "Live Translation"
         Me.tabPageLive.Padding = New Padding(8)
         Me.tabPageLive.ClientSize = tpSize
 
         ' Input settings group
         Me.grpLiveInput.Text = "Live Translation Settings"
         Me.grpLiveInput.Location = New Drawing.Point(8, 6)
-        Me.grpLiveInput.Size = New Drawing.Size(830, 178)
+        Me.grpLiveInput.Size = New Drawing.Size(830, 130)
         Me.grpLiveInput.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
 
         Dim ly = 22
@@ -791,28 +516,12 @@ Partial Class FormMain
         Me.cboLiveInputLang.Size = New Drawing.Size(150, 23)
         Me.cboLiveInputLang.DropDownStyle = ComboBoxStyle.DropDownList
 
-        Me.lblLiveOutputLang.Text = "Output Language:"
-        Me.lblLiveOutputLang.Location = New Drawing.Point(250, ly)
-        Me.lblLiveOutputLang.AutoSize = True
-        Me.cboLiveOutputLang.Location = New Drawing.Point(250, ly + 16)
-        Me.cboLiveOutputLang.Size = New Drawing.Size(150, 23)
-        Me.cboLiveOutputLang.DropDownStyle = ComboBoxStyle.DropDownList
-        ly += 48
-
-        Me.lblLiveModel.Text = "Model:"
-        Me.lblLiveModel.Location = New Drawing.Point(10, ly)
-        Me.lblLiveModel.AutoSize = True
-        Me.cboLiveModel.Location = New Drawing.Point(10, ly + 16)
-        Me.cboLiveModel.Size = New Drawing.Size(250, 23)
-        Me.cboLiveModel.DropDownStyle = ComboBoxStyle.DropDownList
-
         Me.grpLiveInput.Controls.AddRange({Me.lblLiveDevice, Me.cboLiveDevice, Me.btnRefreshDevices,
-            Me.lblLiveInputLang, Me.cboLiveInputLang, Me.lblLiveOutputLang, Me.cboLiveOutputLang,
-            Me.lblLiveModel, Me.cboLiveModel})
+            Me.lblLiveInputLang, Me.cboLiveInputLang})
 
         ' Buttons panel
         Dim pnlLiveButtons As New Panel()
-        pnlLiveButtons.Location = New Drawing.Point(8, 190)
+        pnlLiveButtons.Location = New Drawing.Point(8, 142)
         pnlLiveButtons.Size = New Drawing.Size(830, 35)
         pnlLiveButtons.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
 
@@ -826,26 +535,50 @@ Partial Class FormMain
         Me.btnLiveStop.Enabled = False
 
         Me.btnLiveSave.Text = "Save Transcript..."
-        Me.btnLiveSave.Location = New Drawing.Point(220, 0)
-        Me.btnLiveSave.Size = New Drawing.Size(130, 30)
 
-        Me.btnLiveClear.Text = "Clear"
-        Me.btnLiveClear.Location = New Drawing.Point(360, 0)
-        Me.btnLiveClear.Size = New Drawing.Size(80, 30)
+        Me.btnLiveSaveLog = New Button()
+        Me.btnLiveSaveLog.Text = "Save Log..."
+        Me.btnLiveClear.Text = "Clear Log"
 
-        pnlLiveButtons.Controls.AddRange({Me.btnLiveStart, Me.btnLiveStop, Me.btnLiveSave, Me.btnLiveClear})
+        pnlLiveButtons.Controls.AddRange({Me.btnLiveStart, Me.btnLiveStop})
 
-        ' Real-time output
-        Me.rtbLiveOutput.Location = New Drawing.Point(8, 231)
-        Me.rtbLiveOutput.Size = New Drawing.Size(830, 382)
-        Me.rtbLiveOutput.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
+        ' Output tab control
+        Me.tabLiveOutput.Location = New Drawing.Point(8, 183)
+        Me.tabLiveOutput.Size = New Drawing.Size(830, 430)
+        Me.tabLiveOutput.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
+
+        Me.tabPageLiveClients.Text = "Live Output"
+        Me.tabPageLiveClients.Padding = New Padding(2)
+        Me.wvLiveClients.Name = "wvLiveClients"
+        Me.wvLiveClients.Dock = DockStyle.Fill
+        Me.wvLiveClients.DefaultBackgroundColor = Drawing.Color.Black
+        CType(Me.wvLiveClients, ComponentModel.ISupportInitialize).EndInit()
+        Me.btnLiveSave.Dock = DockStyle.Bottom
+        Me.btnLiveSave.Height = 30
+        Me.tabPageLiveClients.Controls.Add(Me.wvLiveClients)
+        Me.tabPageLiveClients.Controls.Add(Me.btnLiveSave)
+
+        Me.tabPageLiveLog.Text = "Log"
+        Me.tabPageLiveLog.Padding = New Padding(2)
+        Dim pnlLiveLogButtons As New FlowLayoutPanel()
+        pnlLiveLogButtons.Dock = DockStyle.Bottom
+        pnlLiveLogButtons.Height = 34
+        pnlLiveLogButtons.Padding = New Padding(0, 2, 0, 0)
+        Me.btnLiveSaveLog.Size = New Drawing.Size(100, 30)
+        Me.btnLiveClear.Size = New Drawing.Size(100, 30)
+        pnlLiveLogButtons.Controls.AddRange({Me.btnLiveSaveLog, Me.btnLiveClear})
+        Me.rtbLiveOutput.Dock = DockStyle.Fill
         Me.rtbLiveOutput.[ReadOnly] = True
         Me.rtbLiveOutput.BackColor = Drawing.Color.Black
         Me.rtbLiveOutput.ForeColor = Drawing.Color.FromArgb(0, 255, 100)
         Me.rtbLiveOutput.Font = New Drawing.Font("Consolas", 11)
         Me.rtbLiveOutput.ScrollBars = RichTextBoxScrollBars.Vertical
+        Me.tabPageLiveLog.Controls.Add(Me.rtbLiveOutput)
+        Me.tabPageLiveLog.Controls.Add(pnlLiveLogButtons)
 
-        Me.tabPageLive.Controls.AddRange({Me.grpLiveInput, pnlLiveButtons, Me.rtbLiveOutput})
+        Me.tabLiveOutput.TabPages.AddRange({Me.tabPageLiveClients, Me.tabPageLiveLog})
+
+        Me.tabPageLive.Controls.AddRange({Me.grpLiveInput, pnlLiveButtons, Me.tabLiveOutput})
 
         ' ============================================
         ' TAB: Subtitle Server
@@ -1062,8 +795,7 @@ Partial Class FormMain
 
         ' Send labels to back so they don't paint over adjacent controls
         Me.lblMode.SendToBack()
-        For Each grp As Control In {Me.grpInput, Me.grpLanguageModel, Me.grpBeamSampling,
-            Me.grpQualityFiltering, Me.grpSegmentControl, Me.grpPrompting, Me.grpVad,
+        For Each grp As Control In {Me.grpInput,
             Me.grpPaths, Me.grpSettings, Me.grpLiveInput, Me.grpServerSettings}
             For Each child As Control In grp.Controls
                 If TypeOf child Is Label Then child.SendToBack()
@@ -1076,9 +808,7 @@ Partial Class FormMain
     ' TabControl
     Friend WithEvents tabMain As TabControl
     Friend WithEvents tabPageJob As TabPage
-    Friend WithEvents tabPageWhisper As TabPage
     Friend WithEvents tabPagePaths As TabPage
-    Friend WithEvents tabPageLog As TabPage
     Friend WithEvents tabPageSettings As TabPage
     Friend WithEvents tabPageLive As TabPage
     Friend WithEvents tabPageHelp As TabPage
@@ -1134,66 +864,7 @@ Partial Class FormMain
     Friend WithEvents btnOpenSubtitleEdit As Button
     Friend WithEvents lnkPreviewSrt As LinkLabel
 
-    ' Tab 2: Whisper Parameters
-    Friend WithEvents pnlWhisperScroll As Panel
-    Friend WithEvents grpLanguageModel As GroupBox
-    Friend WithEvents lblWLanguage As Label
-    Friend WithEvents cboWLanguage As ComboBox
-    Friend WithEvents grpBeamSampling As GroupBox
-    Friend WithEvents lblThreads As Label
-    Friend WithEvents nudThreads As NumericUpDown
-    Friend WithEvents lblProcessors As Label
-    Friend WithEvents nudProcessors As NumericUpDown
-    Friend WithEvents lblBeamSize As Label
-    Friend WithEvents nudBeamSize As NumericUpDown
-    Friend WithEvents lblBestOf As Label
-    Friend WithEvents nudBestOf As NumericUpDown
-    Friend WithEvents lblTemperature As Label
-    Friend WithEvents nudTemperature As NumericUpDown
-    Friend WithEvents lblTemperatureInc As Label
-    Friend WithEvents nudTemperatureInc As NumericUpDown
-    Friend WithEvents grpQualityFiltering As GroupBox
-    Friend WithEvents lblMaxContext As Label
-    Friend WithEvents nudMaxContext As NumericUpDown
-    Friend WithEvents lblWordThreshold As Label
-    Friend WithEvents nudWordThreshold As NumericUpDown
-    Friend WithEvents lblEntropyThreshold As Label
-    Friend WithEvents nudEntropyThreshold As NumericUpDown
-    Friend WithEvents lblLogProbThreshold As Label
-    Friend WithEvents nudLogProbThreshold As NumericUpDown
-    Friend WithEvents lblNoSpeechThreshold As Label
-    Friend WithEvents nudNoSpeechThreshold As NumericUpDown
-    Friend WithEvents grpSegmentControl As GroupBox
-    Friend WithEvents lblMaxSegmentLength As Label
-    Friend WithEvents nudMaxSegmentLength As NumericUpDown
-    Friend WithEvents lblMaxTokens As Label
-    Friend WithEvents nudMaxTokens As NumericUpDown
-    Friend WithEvents lblAudioContext As Label
-    Friend WithEvents nudAudioContext As NumericUpDown
-    Friend WithEvents grpPrompting As GroupBox
-    Friend WithEvents lblInitialPrompt As Label
-    Friend WithEvents txtInitialPrompt As TextBox
-    Friend WithEvents lblHotwords As Label
-    Friend WithEvents txtHotwords As TextBox
-    Friend WithEvents grpFlags As GroupBox
-    Friend WithEvents chkSplitOnWord As CheckBox
-    Friend WithEvents chkNoGpu As CheckBox
-    Friend WithEvents chkFlashAttn As CheckBox
-    Friend WithEvents chkPrintProgress As CheckBox
-    Friend WithEvents chkPrintColours As CheckBox
-    Friend WithEvents chkPrintRealtime As CheckBox
-    Friend WithEvents chkDiarize As CheckBox
-    Friend WithEvents chkTinydiarize As CheckBox
-    Friend WithEvents chkNoTimestamps As CheckBox
-    Friend WithEvents chkTranslate As CheckBox
-    Friend WithEvents grpVad As GroupBox
-    Friend WithEvents lblVadThreshold As Label
-    Friend WithEvents nudVadThreshold As NumericUpDown
-    Friend WithEvents lblFreqThreshold As Label
-    Friend WithEvents nudFreqThreshold As NumericUpDown
-    Friend WithEvents btnRestoreDefaults As Button
-
-    ' Tab 3: Paths & Tools
+    ' Tab 2: Paths & Tools
     Friend WithEvents grpPaths As GroupBox
     Friend WithEvents lblPathWhisper As Label
     Friend WithEvents txtPathWhisper As TextBox
@@ -1218,13 +889,17 @@ Partial Class FormMain
     Friend WithEvents btnBrowseOutputRoot As Button
     Friend WithEvents lblYtdlpFormat As Label
     Friend WithEvents txtYtdlpFormat As TextBox
-    Friend WithEvents lblPathStream As Label
-    Friend WithEvents txtPathStream As TextBox
-    Friend WithEvents btnBrowseStream As Button
+    Friend WithEvents lblPathFasterWhisper As Label
+    Friend WithEvents txtPathFasterWhisper As TextBox
+    Friend WithEvents btnBrowseFasterWhisper As Button
+    Friend WithEvents lblPathNllbModel As Label
+    Friend WithEvents txtPathNllbModel As TextBox
+    Friend WithEvents btnBrowseNllbModel As Button
     Friend WithEvents btnVerifyPaths As Button
     Friend WithEvents lnkDownloadModels As LinkLabel
 
-    ' Tab 4: Log
+    ' Log (on Job tab)
+    Friend WithEvents grpLog As GroupBox
     Friend WithEvents rtbLog As RichTextBox
     Friend WithEvents rtbHelp As RichTextBox
     Friend WithEvents btnClearLog As Button
@@ -1234,17 +909,6 @@ Partial Class FormMain
     Friend WithEvents grpSettings As GroupBox
     Friend WithEvents lblUiLanguage As Label
     Friend WithEvents cboUiLanguage As ComboBox
-    Friend WithEvents lblParallelJobs As Label
-    Friend WithEvents nudParallelJobs As NumericUpDown
-    Friend WithEvents lblChunkSize As Label
-    Friend WithEvents nudChunkSize As NumericUpDown
-    Friend WithEvents lblPollInterval As Label
-    Friend WithEvents nudPollInterval As NumericUpDown
-    Friend WithEvents lblChunkTimeout As Label
-    Friend WithEvents nudChunkTimeout As NumericUpDown
-    Friend WithEvents chkKeepChunks As CheckBox
-    Friend WithEvents chkKeepPreview As CheckBox
-    Friend WithEvents chkSkipDownload As CheckBox
     Friend WithEvents lblTheme As Label
     Friend WithEvents cboTheme As ComboBox
     Friend WithEvents btnResetSettings As Button
@@ -1284,14 +948,15 @@ Partial Class FormMain
     Friend WithEvents btnRefreshDevices As Button
     Friend WithEvents lblLiveInputLang As Label
     Friend WithEvents cboLiveInputLang As ComboBox
-    Friend WithEvents lblLiveOutputLang As Label
-    Friend WithEvents cboLiveOutputLang As ComboBox
-    Friend WithEvents lblLiveModel As Label
-    Friend WithEvents cboLiveModel As ComboBox
     Friend WithEvents btnLiveStart As Button
     Friend WithEvents btnLiveStop As Button
     Friend WithEvents btnLiveSave As Button
     Friend WithEvents btnLiveClear As Button
+    Friend WithEvents btnLiveSaveLog As Button
+    Friend WithEvents tabLiveOutput As TabControl
+    Friend WithEvents tabPageLiveClients As TabPage
+    Friend WithEvents tabPageLiveLog As TabPage
+    Friend WithEvents wvLiveClients As Microsoft.Web.WebView2.WinForms.WebView2
     Friend WithEvents rtbLiveOutput As RichTextBox
 
     ' System Tray

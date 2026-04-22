@@ -7,301 +7,308 @@
 \f0\fs36\b\cf2 Transcription Tools \endash  Gu\'eda del usuario\b0\cf0\fs20\par
 
 \fs24\b Descripci\'f3n general\b0\fs20\par
-Transcription Tools es una aplicaci\'f3n de escritorio de Windows que genera archivos de subt\'edtulos a partir de fuentes de audio y v\'eddeo. Proporciona una interfaz gr\'e1fica para el motor de reconocimiento de voz whisper.cpp y admite cuatro modos de procesamiento por lotes m\'e1s un modo experimental de traducci\'f3n en vivo en tiempo real.\par
+Transcription Tools es una aplicaci\'f3n de escritorio para Windows que genera archivos de subt\'edtulos a partir de fuentes de audio y v\'eddeo. Proporciona una interfaz gr\'e1fica para el motor de conversi\'f3n de voz a texto whisper.cpp y admite cuatro modos de procesamiento por lotes, adem\'e1s de un modo de transcripci\'f3n en vivo en tiempo real con traducci\'f3n opcional basada en inteligencia artificial.\par
 
 \b Modos de procesamiento por lotes\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b YouTube -> Subt\'edtulos\b0  \endash  Descargar un v\'eddeo de YouTube (o usar un archivo de v\'eddeo local), opcionalmente recortarlo a un intervalo de tiempo y generar subt\'edtulos.\par
-\bullet\tab\b Archivo de Audio -> Subt\'edtulos\b0  \endash  Transcribir directamente cualquier archivo de audio (OGG, MP3, WAV, FLAC, M4A, etc.) en subt\'edtulos.\par
-\bullet\tab\b YouTube -> V\'eddeo Completo\b0  \endash  Descargar un v\'eddeo de YouTube (o copiar un v\'eddeo local) y recortarlo, sin transcripci\'f3n.\par
-\bullet\tab\b YouTube -> Solo Audio\b0  \endash  Descargar un v\'eddeo de YouTube (o copiar un v\'eddeo local), recortarlo y extraer el audio a un archivo MP3 de alta calidad, sin transcripci\'f3n.\par
+\bullet\tab\b YouTube -> Subtitles\b0  \endash  Descarga un v\'eddeo de YouTube (o usa un archivo de v\'eddeo local), lo recorta opcionalmente a un intervalo de tiempo y genera subt\'edtulos.\par
+\bullet\tab\b Audio File -> Subtitles\b0  \endash  Transcribe directamente cualquier archivo de audio (OGG, MP3, WAV, FLAC, M4A, etc.) en subt\'edtulos.\par
+\bullet\tab\b YouTube -> Full Video\b0  \endash  Descarga un v\'eddeo de YouTube (o copia un v\'eddeo local) y lo recorta, sin realizar transcripci\'f3n.\par
+\bullet\tab\b YouTube -> Audio Only\b0  \endash  Descarga un v\'eddeo de YouTube (o copia un v\'eddeo local), lo recorta y extrae el audio a un archivo MP3 de alta calidad, sin realizar transcripci\'f3n.\par
 
 \pard\sa200\sl276\slmult1
 \b Modo en vivo\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Traducci\'f3n en Vivo (Prueba)\b0  \endash  Reconocimiento de voz a texto en tiempo real desde un micr\'f3fono o dispositivo de entrada de audio usando whisper-stream.exe. Esta funci\'f3n es experimental.\par
+\bullet\tab\b Live Translation\b0  \endash  Voz a texto en tiempo real desde un micr\'f3fono o dispositivo de entrada de audio, utilizando faster-whisper con Silero VAD (detecci\'f3n de actividad de voz). El texto se segmenta en pausas naturales del habla para obtener oraciones completas y limpias. Admite traducci\'f3n en tiempo real a m\'e1s de 200 idiomas mediante NLLB.\par
 
 \pard\sa200\sl276\slmult1
 \fs24\b\cf2 Pesta\'f1a Principal / Trabajo\b0\cf0\fs20\par
 
 \b Selector de modo\b0\par
-Utilice el desplegable en la parte superior para cambiar entre modos. El modo predeterminado es \b YouTube -> Subt\'edtulos\b0 . La interfaz se adapta para mostrar solo los controles relevantes para el modo seleccionado. Los controles de intervalo de tiempo y el bot\'f3n Reanudar solo se muestran para los modos basados en YouTube. Las casillas de formato de salida solo se muestran para los modos que producen subt\'edtulos (YouTube -> Subt\'edtulos y Archivo de Audio -> Subt\'edtulos).\par
+Use el men\'fa desplegable en la parte superior para cambiar entre modos. El modo predeterminado es \b YouTube -> Subtitles\b0 . La interfaz se adapta para mostrar solo los controles relevantes al modo seleccionado. Los controles de intervalo de tiempo y el bot\'f3n Reanudar solo se muestran para los modos basados en YouTube. Las casillas de formato de salida solo se muestran para los modos que producen subt\'edtulos (YouTube -> Subtitles y Audio File -> Subtitles).\par
 
-\b Modo YouTube -> Subt\'edtulos\b0\par
+\b Modo YouTube -> Subtitles\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b URL / Archivo\b0  \endash  Introducir una URL de YouTube o hacer clic en Examinar para seleccionar un archivo de v\'eddeo local.\par
-\bullet\tab\b Idioma de entrada\b0  \endash  El idioma hablado en el audio. Establecer en \b auto\b0  para que el motor lo detecte autom\'e1ticamente, o seleccionar un idioma espec\'edfico para mayor precisi\'f3n.\par
-\bullet\tab\b Idioma de salida\b0  \endash  El idioma para los subt\'edtulos generados. Establecer en \b auto\b0  para mantener el mismo idioma que la entrada. Establecer en \b en\b0  (ingl\'e9s) para traducir audio en otro idioma a subt\'edtulos en ingl\'e9s. Whisper solo puede traducir \i al\i0  ingl\'e9s.\par
-\bullet\tab\b Modelo\b0  \endash  Elegir qu\'e9 modelo whisper usar. Los modelos m\'e1s grandes (p. ej. ggml-large-v3.bin) son m\'e1s precisos pero m\'e1s lentos. Los modelos m\'e1s peque\'f1os (p. ej. ggml-tiny.bin, ggml-base.bin) son m\'e1s r\'e1pidos pero menos precisos.\par
-\bullet\tab\b Hora de inicio / Hora de fin\b0  \endash  Opcionalmente, especificar un intervalo de tiempo (HH:MM:SS) para recortar el v\'eddeo antes de transcribir. Dejar en 00:00:00 para procesar el v\'eddeo completo.\par
-\bullet\tab\b Directorio de salida\b0  \endash  Donde se guardar\'e1n todos los archivos de trabajo y el archivo de subt\'edtulos final. Por defecto, una carpeta con marca de tiempo bajo la ra\'edz de salida.\par
-\bullet\tab\b Reanudar\b0  \endash  Si un trabajo anterior fue interrumpido, haga clic en Reanudar para seleccionar la carpeta de salida y continuar desde donde se qued\'f3. Los fragmentos ya completados se omiten autom\'e1ticamente.\par
+\bullet\tab\b URL / File\b0  \endash  Ingrese una URL de YouTube o haga clic en Examinar para seleccionar un archivo de v\'eddeo local.\par
+\bullet\tab\b Input Language\b0  \endash  El idioma hablado en el audio. Establ\'e9zcalo en \b auto\b0  para que el motor lo detecte autom\'e1ticamente, o seleccione un idioma espec\'edfico para mayor precisi\'f3n.\par
+\bullet\tab\b Output Language\b0  \endash  El idioma de los subt\'edtulos generados. Establ\'e9zcalo en \b auto\b0  para mantener el mismo idioma que el audio de entrada. Establ\'e9zcalo en \b en\b0  (ingl\'e9s) para traducir audio en otros idiomas a subt\'edtulos en ingl\'e9s. Whisper solo puede traducir \i al\i0  ingl\'e9s.\par
+\bullet\tab\b Model\b0  \endash  Elija qu\'e9 modelo de whisper usar. Los modelos m\'e1s grandes (p. ej., ggml-large-v3.bin) son m\'e1s precisos pero m\'e1s lentos. Los modelos m\'e1s peque\'f1os (p. ej., ggml-tiny.bin, ggml-base.bin) son m\'e1s r\'e1pidos pero menos precisos.\par
+\bullet\tab\b Start Time / End Time\b0  \endash  Especifique opcionalmente un intervalo de tiempo (HH:MM:SS) para recortar el v\'eddeo antes de transcribirlo. D\'e9jelo en 00:00:00 para procesar el v\'eddeo completo.\par
+\bullet\tab\b Output Directory\b0  \endash  Ubicaci\'f3n donde se guardar\'e1n todos los archivos de trabajo y el archivo de subt\'edtulos final. De forma predeterminada, se crea una carpeta con marca de tiempo dentro del directorio ra\'edz de salida.\par
+\bullet\tab\b Resume\b0  \endash  Si un trabajo anterior fue interrumpido, haga clic en Reanudar para seleccionar la carpeta de salida y continuar desde donde se detuvo. Los fragmentos ya completados se omiten autom\'e1ticamente.\par
 
 \pard\sa200\sl276\slmult1
-\b Modo Archivo de Audio -> Subt\'edtulos\b0\par
+\b Modo Audio File -> Subtitles\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Archivo de audio\b0  \endash  Haga clic en Examinar Audio para seleccionar un archivo de audio. Los formatos compatibles incluyen OGG, MP3, WAV, FLAC, M4A, WMA, AAC, OPUS y m\'e1s.\par
-\bullet\tab\b Directorio de salida\b0  \endash  Igual que el modo YouTube. El archivo SRT de salida lleva el nombre del archivo de entrada.\par
-\bullet\tab Este modo recuerda su propio modelo predeterminado por separado, de modo que puede usar un modelo grande para v\'eddeos de YouTube y un modelo m\'e1s peque\'f1o para transcripciones r\'e1pidas de audio.\par
+\bullet\tab\b Audio file\b0  \endash  Haga clic en Examinar audio para seleccionar un archivo de audio. Los formatos compatibles incluyen OGG, MP3, WAV, FLAC, M4A, WMA, AAC, OPUS y m\'e1s.\par
+\bullet\tab\b Output Directory\b0  \endash  Igual que en el modo YouTube. El archivo SRT de salida recibe el nombre del archivo de entrada.\par
+\bullet\tab Este modo recuerda su propio modelo predeterminado de forma independiente, por lo que puede usar un modelo grande para v\'eddeos de YouTube y un modelo m\'e1s peque\'f1o y r\'e1pido para transcripciones de audio r\'e1pidas.\par
 
 \pard\sa200\sl276\slmult1
-\b Modo YouTube -> V\'eddeo Completo\b0\par
+\b Modo YouTube -> Full Video\b0\par
 \pard\fi-360\li720\sa100
 \bullet\tab Descarga y recorta un v\'eddeo sin realizar ninguna transcripci\'f3n.\par
 \bullet\tab El archivo de salida es \b preview.mp4\b0  en el directorio de salida.\par
-\bullet\tab Solo se necesitan yt-dlp y ffmpeg.\par
+\bullet\tab Solo se requieren yt-dlp y ffmpeg.\par
 
 \pard\sa200\sl276\slmult1
-\b Modo YouTube -> Solo Audio\b0\par
+\b Modo YouTube -> Audio Only\b0\par
 \pard\fi-360\li720\sa100
 \bullet\tab Descarga un v\'eddeo, lo recorta y extrae el audio a un archivo MP3 de alta calidad (\b yt_audio.mp3\b0 ) sin realizar ninguna transcripci\'f3n.\par
 \bullet\tab El audio se extrae con la m\'e1xima calidad VBR.\par
-\bullet\tab Solo se necesitan yt-dlp y ffmpeg.\par
+\bullet\tab Solo se requieren yt-dlp y ffmpeg.\par
 
 \pard\sa200\sl276\slmult1
 \b Formatos de salida\b0\par
-Disponibles en los modos YouTube -> Subt\'edtulos y Archivo de Audio -> Subt\'edtulos. Seleccionar qu\'e9 formatos generar:\par
+Disponibles al usar el modo YouTube -> Subtitles o Audio File -> Subtitles. Seleccione los formatos que desea generar:\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b SRT\b0  \endash  Formato de subt\'edtulos SubRip (el m\'e1s com\'fan, activado por defecto)\par
-\bullet\tab\b VTT\b0  \endash  Formato WebVTT (para uso web)\par
+\bullet\tab\b SRT\b0  \endash  Formato de subt\'edtulos SubRip (el m\'e1s com\'fan, habilitado de forma predeterminada)\par
+\bullet\tab\b VTT\b0  \endash  Formato WebVTT (para uso en la web)\par
 \bullet\tab\b TXT\b0  \endash  Transcripci\'f3n en texto plano\par
 \bullet\tab\b JSON\b0  \endash  Salida JSON estructurada\par
 \bullet\tab\b CSV\b0  \endash  Valores separados por comas\par
-\bullet\tab\b LRC\b0  \endash  Formato de letras de canciones\par
+\bullet\tab\b LRC\b0  \endash  Formato de letras\par
 
 \pard\sa200\sl276\slmult1
 \b Progreso\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab La barra de progreso superior muestra el progreso general del pipeline a trav\'e9s de todos los pasos.\par
+\bullet\tab La barra de progreso superior muestra el progreso general del proceso en todos los pasos.\par
 \bullet\tab Una segunda barra de progreso aparece durante la transcripci\'f3n y muestra el progreso a nivel de fragmento.\par
-\bullet\tab\b Iniciar\b0  \endash  Comenzar el procesamiento. La pesta\'f1a de Registro se muestra autom\'e1ticamente.\par
-\bullet\tab\b Cancelar\b0  \endash  Detener el trabajo actual.\par
-\bullet\tab\b Abrir carpeta de salida\b0  \endash  Abre el directorio de salida en el Explorador de Windows (disponible tras completar).\par
-\bullet\tab\b Subtitle Edit\b0  \endash  Abre el archivo SRT generado directamente en Subtitle Edit para revisi\'f3n (disponible tras completar, solo modos de subt\'edtulos).\par
-\bullet\tab\b Abrir preview.srt\b0  \endash  Abre el archivo SRT generado con la aplicaci\'f3n predeterminada (disponible tras completar, solo modos de subt\'edtulos).\par
+\bullet\tab\b Start\b0  \endash  Comienza el procesamiento. La pesta\'f1a Registro se muestra autom\'e1ticamente.\par
+\bullet\tab\b Cancel\b0  \endash  Detiene el trabajo actual.\par
+\bullet\tab\b Open Output Folder\b0  \endash  Abre el directorio de salida en el Explorador de Windows (disponible despu\'e9s de completar el proceso).\par
+\bullet\tab\b Subtitle Edit\b0  \endash  Abre el archivo SRT generado directamente en Subtitle Edit para su revisi\'f3n (disponible despu\'e9s de completar el proceso, solo en modos de subt\'edtulos).\par
+\bullet\tab\b Open preview.srt\b0  \endash  Abre el archivo SRT generado con la aplicaci\'f3n predeterminada (disponible despu\'e9s de completar el proceso, solo en modos de subt\'edtulos).\par
 
 \pard\sa200\sl276\slmult1
-\fs24\b\cf2 Pesta\'f1a Traducci\'f3n en Vivo (Prueba)\b0\cf0\fs20\par
-\b\i Nota: Esta funci\'f3n es experimental y est\'e1 destinada \'fanicamente para pruebas.\i0\b0\par
-La pesta\'f1a de Traducci\'f3n en Vivo proporciona transcripci\'f3n de voz a texto en tiempo real desde su micr\'f3fono u otro dispositivo de entrada de audio usando whisper-stream.exe (del proyecto whisper.cpp). El texto transcrito aparece en una ventana de salida con fondo negro mientras habla. La l\'ednea en curso se muestra en rojo y se refina continuamente. Los mensajes de estado aparecen en amarillo y la informaci\'f3n del sistema en gris.\par
+\fs24\b\cf2 Pesta\'f1a de Traducci\'f3n en Vivo\b0\cf0\fs20\par
+La pesta\'f1a de Traducci\'f3n en Vivo proporciona transcripci\'f3n de voz a texto en tiempo real desde su micr\'f3fono u otro dispositivo de entrada de audio. Utiliza faster-whisper con Silero VAD (detecci\'f3n de actividad de voz) para detectar pausas naturales del habla y segmentar el audio en enunciados completos. Esto produce transcripciones m\'e1s limpias y precisas que la fragmentaci\'f3n en ventanas fijas.\par
 
-\b Importante:\b0  El rendimiento de esta funci\'f3n depende en gran medida del tipo y rendimiento de su GPU. Los sistemas con una GPU dedicada potente producir\'e1n resultados m\'e1s r\'e1pidos y receptivos. En hardware m\'e1s lento, puede haber retrasos notables o menor precisi\'f3n.\par
+El texto transcrito aparece en dos subpesta\'f1as:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Live Output\b0  \endash  Una vista basada en web (igual que la p\'e1gina del servidor de subt\'edtulos) integrada directamente en la aplicaci\'f3n.\par
+\bullet\tab\b Log\b0  \endash  Un registro de texto con desplazamiento que muestra la salida de transcripci\'f3n con codificaci\'f3n de colores. El texto en curso se refina continuamente mientras habla. Los mensajes de estado aparecen en amarillo y la informaci\'f3n del sistema en gris.\par
 
+\pard\sa200\sl276\slmult1
 \b Controles\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Dispositivo de audio\b0  \endash  Seleccione su dispositivo de entrada de audio. Los dispositivos se detectan autom\'e1ticamente mediante SDL al iniciar la aplicaci\'f3n. Haga clic en \b Actualizar\b0  para volver a escanear si conecta un nuevo dispositivo despu\'e9s de iniciar la aplicaci\'f3n.\par
-\bullet\tab\b Idioma de entrada\b0  \endash  El idioma hablado. Establezca en \b auto\b0  para detecci\'f3n autom\'e1tica, o seleccione un idioma espec\'edfico para mayor precisi\'f3n.\par
-\bullet\tab\b Idioma de salida\b0  \endash  Establezca en \b auto\b0  para mantener el mismo idioma que la entrada, o \b en\b0  (ingl\'e9s) para traducir al ingl\'e9s. Whisper solo puede traducir \i al\i0  ingl\'e9s, por lo que estas son las \'fanicas dos opciones disponibles.\par
-\bullet\tab\b Modelo\b0  \endash  Elija un modelo whisper. Los modelos m\'e1s grandes son m\'e1s precisos pero requieren m\'e1s potencia de GPU para uso en tiempo real.\par
-\bullet\tab\b Iniciar\b0  \endash  Comenzar la transcripci\'f3n en vivo.\par
-\bullet\tab\b Detener\b0  \endash  Detener la sesi\'f3n de transcripci\'f3n en vivo.\par
-\bullet\tab\b Guardar\b0  \endash  Guardar la transcripci\'f3n completa en un archivo de texto.\par
-\bullet\tab\b Limpiar\b0  \endash  Limpiar la pantalla de salida.\par
+\bullet\tab\b Audio Device\b0  \endash  Seleccione su dispositivo de entrada de audio. Los dispositivos se detectan a trav\'e9s de la biblioteca Python sounddevice al iniciar. Haga clic en \b Refresh\b0  para volver a buscar si conecta un nuevo dispositivo.\par
+\bullet\tab\b Input Language\b0  \endash  El idioma que se habla. Establ\'e9zcalo en \b auto\b0  para detecci\'f3n autom\'e1tica, o seleccione un idioma espec\'edfico para mayor precisi\'f3n.\par
+\bullet\tab\b Start\b0  \endash  Inicia la transcripci\'f3n en vivo. En el primer uso, la aplicaci\'f3n descargar\'e1 el modelo faster-whisper (~3 GB) e instalar\'e1 las dependencias de Python si no est\'e1n presentes.\par
+\bullet\tab\b Stop\b0  \endash  Detiene la sesi\'f3n de transcripci\'f3n en vivo.\par
+\bullet\tab\b Save\b0  \endash  Guarda la transcripci\'f3n completa en un archivo de texto.\par
+\bullet\tab\b Clear\b0  \endash  Borra la pantalla de salida.\par
 
 \pard\sa200\sl276\slmult1
-\b Requisitos\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab La ruta a \b whisper-stream.exe\b0  debe estar configurada en la pesta\'f1a de \b Rutas y Herramientas\b0 .\par
-\bullet\tab Un archivo de modelo whisper (.bin) debe estar disponible.\par
-\bullet\tab Un dispositivo de entrada de audio (micr\'f3fono) debe estar conectado.\par
+\b Traducci\'f3n en tiempo real\b0\par
+Cuando el Servidor de Subt\'edtulos est\'e1 en ejecuci\'f3n, los clientes web conectados pueden seleccionar un idioma de traducci\'f3n en el men\'fa desplegable de la p\'e1gina web. La aplicaci\'f3n inicia autom\'e1ticamente un servidor de traducci\'f3n NLLB-200 (en el primer uso, esto descarga ~3.5 GB de dependencias, incluido el modelo de inteligencia artificial). El texto transcrito se traduce en tiempo real y se env\'eda a cada cliente en el idioma elegido. Se admiten m\'e1s de 200 idiomas. Los clientes que no seleccionen un idioma de traducci\'f3n reciben la transcripci\'f3n original.\par
 
 \pard\sa200\sl276\slmult1
 \fs24\b\cf2 Pesta\'f1a del Servidor de Subt\'edtulos\b0\cf0\fs20\par
-El Servidor de Subt\'edtulos proporciona una superposici\'f3n de subt\'edtulos en vivo basada en web que se puede ver en cualquier dispositivo (tel\'e9fono, tableta, segundo monitor) conectado a la misma red. Cuando el servidor est\'e1 en ejecuci\'f3n, sirve una p\'e1gina web que muestra el texto de transcripci\'f3n en vivo a trav\'e9s de WebSocket. El servidor funciona en HTTP y tambi\'e9n inicia un receptor HTTPS en el puerto siguiente (p. ej. 5081) para soportar la funci\'f3n de mantener la pantalla encendida. Las nuevas l\'edneas de subt\'edtulos se resaltan brevemente en amarillo antes de cambiar al color de texto elegido.\par
+El Servidor de Subt\'edtulos proporciona una superposici\'f3n de subt\'edtulos en vivo basada en web que se puede ver en cualquier dispositivo (tel\'e9fono, tableta, segundo monitor) conectado a la misma red. Cuando el servidor est\'e1 en ejecuci\'f3n, sirve una p\'e1gina web que muestra el texto de transcripci\'f3n en vivo mediante WebSocket. El servidor funciona en HTTP y tambi\'e9n inicia un listener HTTPS en el puerto siguiente (p. ej., 5081) para admitir la funci\'f3n de bloqueo de pantalla activa. Las nuevas l\'edneas de subt\'edtulos se resaltan brevemente en amarillo antes de pasar al color de texto elegido.\par
 
 \b Configuraci\'f3n del servidor\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Puerto\b0  \endash  El puerto HTTP en el que escucha el servidor (por defecto: 5080). Un puerto HTTPS tambi\'e9n se abre autom\'e1ticamente en puerto+1 (por defecto: 5081) usando un certificado autofirmado.\par
-\bullet\tab\b Iniciar / Detener / Reiniciar Servidor\b0  \endash  Controlar el servidor de subt\'edtulos.\par
-\bullet\tab\b Simular\b0  \endash  Enviar texto de muestra (Juan 3:16-18) para probar la visualizaci\'f3n sin una fuente de audio en vivo.\par
-\bullet\tab\b Detener Sim\b0  \endash  Detener la simulaci\'f3n.\par
-\bullet\tab\b Color de fondo / Color de texto\b0  \endash  Personalizar los colores de visualizaci\'f3n de subt\'edtulos. Estos colores se aplican tanto a la p\'e1gina web como al cuadro de texto de salida en vivo. Haga clic en la muestra de color para abrir un di\'e1logo de selecci\'f3n de color. Los colores se guardan en la configuraci\'f3n.\par
+\bullet\tab\b Port\b0  \endash  El puerto HTTP en el que escucha el servidor (predeterminado: 5080). Un puerto HTTPS tambi\'e9n se abre autom\'e1ticamente en puerto+1 (predeterminado: 5081) usando un certificado autofirmado.\par
+\bullet\tab\b Start / Stop / Restart Server\b0  \endash  Controla el servidor de subt\'edtulos.\par
+\bullet\tab\b Simulate\b0  \endash  Env\'eda texto de muestra (Juan 3:16-18) para probar la pantalla sin una fuente de audio en vivo.\par
+\bullet\tab\b Stop Sim\b0  \endash  Detiene la simulaci\'f3n.\par
+\bullet\tab\b Background / Text Color\b0  \endash  Personaliza los colores de la pantalla de subt\'edtulos. Estos colores se aplican tanto a la p\'e1gina web como al cuadro de texto de salida en vivo. Haga clic en la muestra de color para abrir un selector de colores. Los colores se guardan en la configuraci\'f3n.\par
 
 \pard\sa200\sl276\slmult1
 \b Informaci\'f3n de conexi\'f3n\b0\par
 \pard\fi-360\li720\sa100
 \bullet\tab Muestra el estado del servidor, la URL y el n\'famero de clientes conectados.\par
-\bullet\tab\b Copiar URL\b0  \endash  Copia la URL del servidor al portapapeles para compartirla con otros dispositivos.\par
+\bullet\tab\b Copy URL\b0  \endash  Copia la URL del servidor al portapapeles para que pueda compartirla con otros dispositivos.\par
 
 \pard\sa200\sl276\slmult1
 \b Barra de herramientas de la p\'e1gina web\b0\par
-La p\'e1gina web de subt\'edtulos incluye una barra de herramientas en la esquina superior derecha con los siguientes botones:\par
+La p\'e1gina web de subt\'edtulos incluye una barra de herramientas en la esquina superior derecha con los siguientes controles:\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Control Remoto\b0  (icono de engranaje) \endash  Abre un panel de administraci\'f3n para iniciar, detener, reiniciar o simular remotamente la transcripci\'f3n en vivo sin volver a la aplicaci\'f3n de escritorio. El panel consulta el estado del servidor cada 3 segundos.\par
-\bullet\tab\b Ajustes\b0  (Aa) \endash  Abre un panel de ajustes para modificar el tama\'f1o de fuente, la familia tipogr\'e1fica, negrita y el color del texto. Tambi\'e9n incluye la selecci\'f3n de voz y velocidad para la funci\'f3n de lectura en voz alta. Todas las preferencias se guardan localmente en el navegador.\par
-\bullet\tab\b Leer en voz alta\b0  (icono de altavoz) \endash  Activa o desactiva la lectura en voz alta. Cuando est\'e1 activada, cada nueva l\'ednea de subt\'edtulos se lee en voz alta usando la s\'edntesis de voz del navegador. La voz y la velocidad se configuran en el panel de Ajustes.\par
-\bullet\tab\b Mantener pantalla encendida\b0  (icono de luz) \endash  Evita que la pantalla del tel\'e9fono o tableta se aten\'fae o bloquee. Utiliza la API Wake Lock del navegador, que requiere una conexi\'f3n segura (HTTPS). En el primer uso desde HTTP, una gu\'eda explica c\'f3mo aceptar la advertencia del certificado autofirmado en su navegador (configuraci\'f3n \'fanica). Una vez aceptado, la pantalla permanece encendida mientras la p\'e1gina est\'e9 abierta.\par
+\bullet\tab\b Remote Control\b0  (icono de engranaje) \endash  Abre un panel de administraci\'f3n para iniciar, detener, reiniciar o simular remotamente la transcripci\'f3n en vivo sin volver a la aplicaci\'f3n de escritorio. El panel consulta el estado del servidor cada 3 segundos.\par
+\bullet\tab\b Settings\b0  (Aa) \endash  Abre un panel de configuraci\'f3n para ajustar el tama\'f1o de fuente, la familia de fuentes, el negrita y el color del texto. Tambi\'e9n incluye selecci\'f3n de voz y velocidad para la funci\'f3n de lectura en voz alta, direcci\'f3n de desplazamiento y opciones de visualizaci\'f3n de etiquetas. Todas las preferencias se guardan localmente en el navegador.\par
+\bullet\tab\b Translation\b0  \endash  Un men\'fa desplegable para seleccionar un idioma de traducci\'f3n. Cuando se selecciona un idioma, el cliente recibe texto traducido por inteligencia artificial en ese idioma en lugar de la transcripci\'f3n original. Seleccione \ldblquote Original\rdblquote  para recibir el texto sin traducir.\par
+\bullet\tab\b Tags\b0  \endash  Elige qu\'e9 informaci\'f3n mostrar antes de cada l\'ednea de subt\'edtulos: Desactivado, Idioma (muestra el c\'f3digo del idioma detectado o traducido), Hora (muestra la marca de tiempo), o ambos.\par
+\bullet\tab\b Read Aloud\b0  (icono de altavoz) \endash  Activa o desactiva la s\'edntesis de voz. Cuando est\'e1 habilitada, cada nueva l\'ednea de subt\'edtulos confirmada se lee en voz alta usando la s\'edntesis de voz del navegador. La voz y la velocidad se pueden configurar en el panel de Configuraci\'f3n.\par
+\bullet\tab\b Keep Screen On\b0  (icono de luz) \endash  Evita que la pantalla del tel\'e9fono o tableta se aten\'fae o bloquee. Esto utiliza la API Wake Lock del navegador, que requiere una conexi\'f3n segura (HTTPS). En el primer uso desde HTTP, una superposici\'f3n guiada explica c\'f3mo aceptar la advertencia de certificado autofirmado en el navegador (configuraci\'f3n por \'fanica vez). Una vez aceptado, la pantalla permanece encendida mientras la p\'e1gina est\'e9 abierta.\par
+\bullet\tab\b Save Transcript\b0  \endash  Descarga la transcripci\'f3n actual como archivo de texto.\par
 
 \pard\sa200\sl276\slmult1
 \b Localizaci\'f3n\b0\par
-La interfaz de la p\'e1gina web detecta autom\'e1ticamente el idioma del navegador y muestra todas las etiquetas, botones y mensajes en el idioma correspondiente. Idiomas soportados: ingl\'e9s, espa\'f1ol, franc\'e9s, alem\'e1n, catal\'e1n, portugu\'e9s, japon\'e9s y chino. Si el idioma del navegador no est\'e1 soportado, se utiliza el ingl\'e9s como idioma predeterminado.\par
+La interfaz de la p\'e1gina web detecta autom\'e1ticamente el idioma del navegador y muestra todas las etiquetas, botones y mensajes en el idioma correspondiente. Idiomas compatibles: ingl\'e9s, espa\'f1ol, franc\'e9s, alem\'e1n, catal\'e1n, portugu\'e9s, japon\'e9s y chino. Si el idioma del navegador no es compatible, se usa el ingl\'e9s como alternativa.\par
 
-\fs24\b\cf2 Pesta\'f1a de Par\'e1metros Whisper\b0\cf0\fs20\par
-Configuraci\'f3n avanzada para el motor de reconocimiento de voz whisper-cli. Estos par\'e1metros se aplican solo a los modos de procesamiento por lotes (no a la Traducci\'f3n en Vivo). La mayor\'eda de usuarios pueden dejar estos valores por defecto.\par
+\fs24\b\cf2 Pesta\'f1a de Par\'e1metros de Whisper\b0\cf0\fs20\par
+Configuraci\'f3n avanzada para el motor de reconocimiento de voz whisper-cli. Estos par\'e1metros se aplican solo a los modos de procesamiento por lotes (no a la Traducci\'f3n en Vivo). La mayor\'eda de los usuarios puede dejarlos en sus valores predeterminados.\par
 
 \b Idioma y modelo\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Idioma\b0  \endash  Refleja la configuraci\'f3n de Idioma de entrada de la pesta\'f1a Principal.\par
-\bullet\tab\b Hilos\b0  \endash  N\'famero de hilos de CPU para el procesamiento (por defecto: 4).\par
-\bullet\tab\b Procesadores\b0  \endash  N\'famero de procesadores paralelos (por defecto: 1).\par
+\bullet\tab\b Language\b0  \endash  Refleja la configuraci\'f3n de Idioma de entrada de la pesta\'f1a Principal.\par
+\bullet\tab\b Threads\b0  \endash  N\'famero de hilos de CPU para el procesamiento (predeterminado: 4).\par
+\bullet\tab\b Processors\b0  \endash  N\'famero de procesadores paralelos (predeterminado: 1).\par
 
 \pard\sa200\sl276\slmult1
-\b B\'fasqueda en haz / Muestreo\b0\par
+\b B\'fasqueda de haz / Muestreo\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Tama\'f1o del haz\b0  \endash  Anchura de la b\'fasqueda en haz (por defecto: 5). Valores m\'e1s altos pueden mejorar la precisi\'f3n pero son m\'e1s lentos.\par
-\bullet\tab\b Mejor de\b0  \endash  N\'famero de candidatos a considerar (por defecto: 5).\par
-\bullet\tab\b Temperatura\b0  \endash  Temperatura de muestreo (por defecto: 0.0). Valores m\'e1s altos aumentan la aleatoriedad.\par
-\bullet\tab\b Incremento de temperatura\b0  \endash  Incremento de temperatura en retroceso (por defecto: 0.2).\par
+\bullet\tab\b Beam Size\b0  \endash  Amplitud de la b\'fasqueda de haz (predeterminado: 5). Valores m\'e1s altos pueden mejorar la precisi\'f3n pero son m\'e1s lentos.\par
+\bullet\tab\b Best Of\b0  \endash  N\'famero de candidatos a considerar (predeterminado: 5).\par
+\bullet\tab\b Temperature\b0  \endash  Temperatura de muestreo (predeterminado: 0.0). Valores m\'e1s altos aumentan la aleatoriedad.\par
+\bullet\tab\b Temperature Inc\b0  \endash  Incremento de temperatura al recurrir a alternativas (predeterminado: 0.2).\par
 
 \pard\sa200\sl276\slmult1
 \b Calidad / Filtrado\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Contexto m\'e1ximo\b0  \endash  Tokens de contexto m\'e1ximos (0 = usar por defecto).\par
-\bullet\tab\b Umbral de palabra\b0  \endash  Umbral de confianza a nivel de palabra (por defecto: 0.01).\par
-\bullet\tab\b Umbral de entrop\'eda\b0  \endash  Umbral de entrop\'eda para el filtrado de calidad (por defecto: 2.4).\par
-\bullet\tab\b Umbral de probabilidad logar\'edtmica\b0  \endash  Umbral de probabilidad logar\'edtmica (por defecto: -1.0).\par
-\bullet\tab\b Umbral de no-voz\b0  \endash  Umbral para detectar segmentos sin voz (por defecto: 0.6).\par
+\bullet\tab\b Max Context\b0  \endash  M\'e1ximo de tokens de contexto (0 = usar predeterminado).\par
+\bullet\tab\b Word Threshold\b0  \endash  Umbral de confianza a nivel de palabra (predeterminado: 0.01).\par
+\bullet\tab\b Entropy Threshold\b0  \endash  Umbral de entrop\'eda para filtrado de calidad (predeterminado: 2.4).\par
+\bullet\tab\b Log Prob Threshold\b0  \endash  Umbral de probabilidad logar\'edtmica (predeterminado: -1.0).\par
+\bullet\tab\b No Speech Threshold\b0  \endash  Umbral para detectar segmentos sin habla (predeterminado: 0.6).\par
 
 \pard\sa200\sl276\slmult1
 \b Control de segmentos\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Longitud m\'e1xima del segmento\b0  \endash  Caracteres m\'e1ximos por segmento de subt\'edtulo (0 = ilimitado).\par
-\bullet\tab\b Tokens m\'e1ximos\b0  \endash  Tokens m\'e1ximos por segmento (0 = ilimitado).\par
-\bullet\tab\b Contexto de audio\b0  \endash  Tama\'f1o del contexto de audio (0 = usar por defecto).\par
+\bullet\tab\b Max Segment Length\b0  \endash  M\'e1ximo de caracteres por segmento de subt\'edtulo (0 = sin l\'edmite).\par
+\bullet\tab\b Max Tokens\b0  \endash  M\'e1ximo de tokens por segmento (0 = sin l\'edmite).\par
+\bullet\tab\b Audio Context\b0  \endash  Tama\'f1o del contexto de audio (0 = usar predeterminado).\par
 
 \pard\sa200\sl276\slmult1
 \b Indicaciones\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Indicaci\'f3n inicial\b0  \endash  Texto de indicaci\'f3n para guiar la transcripci\'f3n. \'datil para proporcionar contexto, ortograf\'eda de nombres o vocabulario espec\'edfico del dominio.\par
-\bullet\tab\b Palabras clave\b0  \endash  Lista de palabras separadas por comas para mejorar su reconocimiento.\par
+\bullet\tab\b Initial Prompt\b0  \endash  Texto indicativo para guiar la transcripci\'f3n. \'datil para proporcionar contexto, escritura de nombres o vocabulario espec\'edfico del dominio.\par
+\bullet\tab\b Hotwords\b0  \endash  Lista de palabras separadas por comas para potenciar su reconocimiento.\par
 
 \pard\sa200\sl276\slmult1
 \b Opciones\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Dividir por palabra\b0  \endash  Dividir segmentos en los l\'edmites de las palabras (activado por defecto).\par
-\bullet\tab\b Sin GPU\b0  \endash  Forzar el procesamiento solo con CPU.\par
-\bullet\tab\b Flash Attention\b0  \endash  Activar flash attention para una inferencia m\'e1s r\'e1pida con GPU.\par
-\bullet\tab\b Mostrar progreso\b0  \endash  Mostrar el porcentaje de progreso en la salida de whisper.\par
-\bullet\tab\b Mostrar colores\b0  \endash  Codificar la salida por colores seg\'fan el nivel de confianza.\par
-\bullet\tab\b Mostrar en tiempo real\b0  \endash  Imprimir la salida en tiempo real a medida que se genera.\par
-\bullet\tab\b Diarizaci\'f3n\b0  \endash  Activar la diarizaci\'f3n de hablantes (identificar hablantes diferentes).\par
-\bullet\tab\b Diarizaci\'f3n ligera\b0  \endash  Usar detecci\'f3n ligera de cambio de hablante.\par
-\bullet\tab\b Sin marcas de tiempo\b0  \endash  Suprimir la salida de marcas de tiempo.\par
+\bullet\tab\b Split on Word\b0  \endash  Divide los segmentos en los l\'edmites de palabras (habilitado de forma predeterminada).\par
+\bullet\tab\b No GPU\b0  \endash  Fuerza el procesamiento solo por CPU.\par
+\bullet\tab\b Flash Attention\b0  \endash  Habilita la atenci\'f3n flash para una inferencia m\'e1s r\'e1pida en GPU.\par
+\bullet\tab\b Print Progress\b0  \endash  Muestra el porcentaje de progreso en la salida de whisper.\par
+\bullet\tab\b Print Colours\b0  \endash  Codifica la salida por colores seg\'fan el nivel de confianza.\par
+\bullet\tab\b Print Realtime\b0  \endash  Imprime la salida en tiempo real a medida que se genera.\par
+\bullet\tab\b Diarize\b0  \endash  Habilita la diarizaci\'f3n de hablantes (identifica diferentes hablantes).\par
+\bullet\tab\b Tinydiarize\b0  \endash  Usa detecci\'f3n ligera de turnos de hablante.\par
+\bullet\tab\b No Timestamps\b0  \endash  Suprime la salida de marcas de tiempo.\par
 
 \pard\sa200\sl276\slmult1
-\b DAV (Detecci\'f3n de Actividad de Voz)\b0\par
+\b VAD (Detecci\'f3n de actividad de voz)\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Umbral DAV\b0  \endash  Sensibilidad para detectar la voz (por defecto: 0.6).\par
-\bullet\tab\b Umbral de frecuencia\b0  \endash  Filtro de frecuencia de paso alto en Hz (por defecto: 100).\par
+\bullet\tab\b VAD Threshold\b0  \endash  Sensibilidad para detectar habla (predeterminado: 0.6).\par
+\bullet\tab\b Frequency Threshold\b0  \endash  Filtro de frecuencia de paso alto en Hz (predeterminado: 100).\par
 
 \pard\sa200\sl276\slmult1
-Haga clic en \b Restaurar valores predeterminados\b0  para restablecer todos los par\'e1metros de whisper a sus valores predeterminados.\par
+Haga clic en \b Restore Defaults\b0  para restablecer todos los par\'e1metros de whisper a sus valores predeterminados.\par
 
 \fs24\b\cf2 Pesta\'f1a de Rutas y Herramientas\b0\cf0\fs20\par
-Configurar las rutas de archivos a las herramientas externas y modelos:\par
+Configure las rutas de archivo a las herramientas y modelos externos:\par
 \pard\fi-360\li720\sa100
 \bullet\tab\b whisper-cli.exe\b0  \endash  El motor de reconocimiento de voz whisper (usado por los modos de transcripci\'f3n por lotes).\par
-\bullet\tab\b whisper-stream.exe\b0  \endash  El motor de transmisi\'f3n en tiempo real de whisper (usado por la Traducci\'f3n en Vivo).\par
 \bullet\tab\b yt-dlp.exe\b0  \endash  Descargador de v\'eddeos de YouTube.\par
 \bullet\tab\b ffmpeg.exe\b0  \endash  Herramienta de procesamiento de audio/v\'eddeo (recorte, conversi\'f3n, fragmentaci\'f3n).\par
 \bullet\tab\b ffprobe.exe\b0  \endash  Herramienta de an\'e1lisis de audio/v\'eddeo (detecci\'f3n de duraci\'f3n).\par
-\bullet\tab\b Modelo YouTube (.bin)\b0  \endash  El archivo de modelo whisper usado para el modo YouTube -> Subt\'edtulos.\par
-\bullet\tab\b Modelo Archivo de Audio (.bin)\b0  \endash  El archivo de modelo whisper usado para el modo Archivo de Audio -> Subt\'edtulos.\par
-\bullet\tab\b Ra\'edz de salida predeterminada\b0  \endash  Directorio base donde se crean las carpetas de salida con marca de tiempo.\par
-\bullet\tab\b Cadena de formato yt-dlp\b0  \endash  Preferencia de formato de descarga para yt-dlp (por defecto: mejor v\'eddeo MP4 + audio M4A).\par
+\bullet\tab\b YouTube Model (.bin)\b0  \endash  El archivo de modelo whisper usado para el modo YouTube -> Subtitles.\par
+\bullet\tab\b Audio File Model (.bin)\b0  \endash  El archivo de modelo whisper usado para el modo Audio File -> Subtitles.\par
+\bullet\tab\b Default Output Root\b0  \endash  Directorio base donde se crean las carpetas de salida con marca de tiempo.\par
+\bullet\tab\b yt-dlp Format String\b0  \endash  Preferencia de formato de descarga para yt-dlp (predeterminado: mejor v\'eddeo MP4 + audio M4A).\par
 
 \pard\sa200\sl276\slmult1
-Haga clic en \b Verificar todas las rutas\b0  para comprobar que todas las herramientas y archivos configurados existen. Utilice el enlace \b Descargar modelos whisper\b0  para obtener archivos de modelo.\par
+Haga clic en \b Verify All Paths\b0  para verificar que todas las herramientas y archivos configurados existen. Use el enlace \b Download whisper models\b0  para obtener los archivos de modelo.\par
 
 \fs24\b\cf2 Pesta\'f1a de Registro\b0\cf0\fs20\par
-Muestra la salida en tiempo real del pipeline de procesamiento. Cada entrada del registro tiene marca de tiempo y est\'e1 codificada por colores:\par
+Muestra la salida en tiempo real del proceso de procesamiento. Cada entrada del registro tiene marca de tiempo y codificaci\'f3n de colores:\par
 \pard\fi-360\li720\sa100
 \bullet\tab\cf5\b Verde oscuro\b0\cf0  \endash  Mensajes de \'e9xito y pasos completados.\par
 \bullet\tab\cf1\b Negro\b0\cf0  \endash  Informaci\'f3n general.\par
-\bullet\tab\cf3\b Gris\b0\cf0  \endash  Salida detallada/depuraci\'f3n (l\'edneas de comando, c\'f3digos de salida, salida de ffprobe).\par
+\bullet\tab\cf3\b Gris\b0\cf0  \endash  Salida detallada/de depuraci\'f3n (l\'edneas de comando, c\'f3digos de salida, salida de ffprobe).\par
 \bullet\tab\b Rojo\b0  \endash  Errores y advertencias.\par
 
 \pard\sa200\sl276\slmult1
-El registro se desplaza autom\'e1ticamente para mostrar la \'faltima salida. Si se desplaza hacia arriba para revisar entradas anteriores, el desplazamiento autom\'e1tico se pausa. Se reanuda cuando vuelve a desplazarse hasta el final.\par
-Utilice \b Borrar registro\b0  para reiniciar el registro y \b Copiar al portapapeles\b0  para copiar todo el texto del registro.\par
+El registro se desplaza autom\'e1ticamente para mostrar la \'fatima salida. Si se desplaza hacia arriba para revisar entradas anteriores, el desplazamiento autom\'e1tico se pausa. Se reanuda cuando vuelve a desplazarse hasta el final.\par
+Use \b Clear Log\b0  para restablecer el registro y \b Copy to Clipboard\b0  para copiar el texto completo del registro.\par
 
 \fs24\b\cf2 Pesta\'f1a de Configuraci\'f3n\b0\cf0\fs20\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Idioma de la interfaz\b0  \endash  Cambiar el idioma de la interfaz. Disponibles: ingl\'e9s, espa\'f1ol, franc\'e9s, alem\'e1n, catal\'e1n, portugu\'e9s, chino simplificado, japon\'e9s.\par
-\bullet\tab\b Trabajos de transcripci\'f3n paralelos\b0  \endash  N\'famero de fragmentos de audio a transcribir simult\'e1neamente (por defecto: 4). Valores m\'e1s altos usan m\'e1s RAM y CPU pero terminan m\'e1s r\'e1pido.\par
-\bullet\tab\b Tama\'f1o del fragmento (segundos)\b0  \endash  Duraci\'f3n de cada fragmento de audio (por defecto: 300 = 5 minutos). El audio largo se divide en fragmentos para el procesamiento paralelo.\par
-\bullet\tab\b Intervalo de sondeo (ms)\b0  \endash  Cada cu\'e1nto comprobar si los fragmentos de transcripci\'f3n se han completado (por defecto: 2000 ms).\par
-\bullet\tab\b Tiempo l\'edmite del fragmento (min)\b0  \endash  Tiempo m\'e1ximo de espera para que un fragmento individual termine (por defecto: 60 minutos).\par
-\bullet\tab\b Conservar archivos de fragmentos\b0  \endash  Conservar los archivos WAV y SRT intermedios tras el procesamiento.\par
-\bullet\tab\b Conservar preview.mp4 recortado\b0  \endash  Conservar el archivo de v\'eddeo recortado. Si est\'e1 desactivado, preview.mp4 se elimina tras la extracci\'f3n de audio o la finalizaci\'f3n.\par
-\bullet\tab\b Omitir descarga si el archivo existe\b0  \endash  Omitir el paso de descarga de yt-dlp si el archivo de v\'eddeo ya existe en la carpeta de salida.\par
-\bullet\tab\b Tema\b0  \endash  Elegir entre tema del Sistema, Claro u Oscuro.\par
+\bullet\tab\b UI Language\b0  \endash  Cambia el idioma de la interfaz. Disponibles: ingl\'e9s, espa\'f1ol, franc\'e9s, alem\'e1n, catal\'e1n, portugu\'e9s, chino simplificado, japon\'e9s.\par
+\bullet\tab\b Parallel Transcription Jobs\b0  \endash  N\'famero de fragmentos de audio a transcribir simult\'e1neamente (predeterminado: 4). Valores m\'e1s altos usan m\'e1s RAM y CPU pero terminan m\'e1s r\'e1pido.\par
+\bullet\tab\b Chunk Size (seconds)\b0  \endash  Duraci\'f3n de cada fragmento de audio (predeterminado: 300 = 5 minutos). El audio largo se divide en fragmentos para el procesamiento paralelo.\par
+\bullet\tab\b Poll Interval (ms)\b0  \endash  Con qu\'e9 frecuencia verificar si los fragmentos de transcripci\'f3n han finalizado (predeterminado: 2000 ms).\par
+\bullet\tab\b Chunk Timeout (min)\b0  \endash  Tiempo m\'e1ximo de espera para que un solo fragmento finalice (predeterminado: 60 minutos).\par
+\bullet\tab\b Keep Chunk Files\b0  \endash  Conserva los archivos intermedios de fragmento WAV y SRT despu\'e9s del procesamiento.\par
+\bullet\tab\b Keep Trimmed preview.mp4\b0  \endash  Conserva el archivo de v\'eddeo recortado. Si est\'e1 desactivado, preview.mp4 se elimina despu\'e9s de la extracci\'f3n de audio o al finalizar.\par
+\bullet\tab\b Skip Download if File Exists\b0  \endash  Omite el paso de descarga de yt-dlp si el archivo de v\'eddeo ya existe en la carpeta de salida.\par
+\bullet\tab\b Theme\b0  \endash  Elige el tema: Sistema, Claro u Oscuro.\par
 
 \pard\sa200\sl276\slmult1
-Haga clic en \b Restablecer toda la configuraci\'f3n\b0  para restaurar toda la configuraci\'f3n a los valores de f\'e1brica.\par
+Haga clic en \b Reset All Settings\b0  para restaurar toda la configuraci\'f3n a los valores de f\'e1brica.\par
 
 \fs24\b\cf2 Pipeline de procesamiento\b0\cf0\fs20\par
 
-\b Modo YouTube -> Subt\'edtulos (8 pasos):\b0\par
+\b Modo YouTube -> Subtitles (8 pasos):\b0\par
 \pard\fi-360\li720\sa100
 0.\tab Validar entradas y rutas de herramientas\par
 1.\tab Descargar v\'eddeo con yt-dlp (o copiar archivo local)\par
 2.\tab Recortar v\'eddeo al intervalo de tiempo especificado con ffmpeg\par
-3.\tab Extraer audio en formato WAV (16kHz mono) para whisper\par
-4.\tab Detectar la duraci\'f3n del audio con ffprobe\par
-5.\tab Dividir el audio en fragmentos para el procesamiento paralelo\par
+3.\tab Extraer audio a formato WAV (16 kHz mono) para whisper\par
+4.\tab Detectar duraci\'f3n del audio con ffprobe\par
+5.\tab Dividir audio en fragmentos para procesamiento paralelo\par
 6.\tab Transcribir todos los fragmentos en lotes paralelos con whisper-cli\par
-7.\tab Fusionar los archivos SRT de los fragmentos en el archivo de subt\'edtulos final (preview.srt) con marcas de tiempo corregidas\par
+7.\tab Combinar los archivos SRT de fragmentos en el archivo de subt\'edtulos final (preview.srt) con marcas de tiempo corregidas\par
 
 \pard\sa200\sl276\slmult1
-\b Modo Archivo de Audio -> Subt\'edtulos (6 pasos):\b0\par
+\b Modo Audio File -> Subtitles (6 pasos):\b0\par
 \pard\fi-360\li720\sa100
 0.\tab Validar entradas y rutas de herramientas\par
-1.\tab Convertir audio a formato WAV (16kHz mono) para whisper\par
-2.\tab Detectar la duraci\'f3n del audio\par
-3.\tab Dividir el audio en fragmentos\par
+1.\tab Convertir audio a formato WAV (16 kHz mono) para whisper\par
+2.\tab Detectar duraci\'f3n del audio\par
+3.\tab Dividir audio en fragmentos\par
 4.\tab Transcribir todos los fragmentos en lotes paralelos\par
-5.\tab Fusionar en el archivo SRT final (nombrado seg\'fan el archivo de entrada)\par
+5.\tab Combinar en el archivo SRT final (con el nombre del archivo de entrada)\par
 
 \pard\sa200\sl276\slmult1
-\b Modo YouTube -> V\'eddeo Completo (3 pasos):\b0\par
+\b Modo YouTube -> Full Video (3 pasos):\b0\par
 \pard\fi-360\li720\sa100
 0.\tab Validar entradas y rutas de herramientas\par
 1.\tab Descargar v\'eddeo con yt-dlp (o copiar archivo local)\par
 2.\tab Recortar v\'eddeo al intervalo de tiempo especificado con ffmpeg (salida: preview.mp4)\par
 
 \pard\sa200\sl276\slmult1
-\b Modo YouTube -> Solo Audio (4 pasos):\b0\par
+\b Modo YouTube -> Audio Only (4 pasos):\b0\par
 \pard\fi-360\li720\sa100
 0.\tab Validar entradas y rutas de herramientas\par
 1.\tab Descargar v\'eddeo con yt-dlp (o copiar archivo local)\par
 2.\tab Recortar v\'eddeo al intervalo de tiempo especificado con ffmpeg\par
-3.\tab Extraer audio en formato MP3 de alta calidad (salida: yt_audio.mp3)\par
+3.\tab Extraer audio a MP3 de alta calidad (salida: yt_audio.mp3)\par
 
 \pard\sa200\sl276\slmult1
 \fs24\b\cf2 Consejos\b0\cf0\fs20\par
 \pard\fi-360\li720\sa100
-\bullet\tab Para la mejor calidad de subt\'edtulos, utilice el modelo \b ggml-large-v3\b0 . Para resultados r\'e1pidos en audio corto (p. ej. mensajes de voz), utilice \b ggml-tiny\b0  o \b ggml-base\b0 .\par
-\bullet\tab Si la transcripci\'f3n parece bloqueada, compruebe la pesta\'f1a de Registro para una salida detallada.\par
-\bullet\tab Utilice \b Reanudar\b0  para continuar un trabajo interrumpido sin volver a descargar ni refragmentar.\par
-\bullet\tab El campo \b Indicaci\'f3n inicial\b0  es potente \endash  \'faselo para proporcionar la ortograf\'eda de nombres, t\'e9rminos t\'e9cnicos o contexto que ayude al modelo a producir mejores resultados.\par
-\bullet\tab Al salir de la aplicaci\'f3n, se le preguntar\'e1 si desea limpiar las carpetas de trabajo creadas durante la sesi\'f3n actual.\par
-\bullet\tab Establezca el \b Idioma de salida\b0  en \b en\b0  para traducir audio en idioma extranjero directamente a subt\'edtulos en ingl\'e9s.\par
-\bullet\tab Use el modo \b YouTube -> V\'eddeo Completo\b0  cuando solo necesite el archivo de v\'eddeo sin subt\'edtulos.\par
-\bullet\tab Use el modo \b YouTube -> Solo Audio\b0  para obtener un archivo de audio MP3 de alta calidad de un v\'eddeo de YouTube o un archivo de v\'eddeo local.\par
-\bullet\tab Para la Traducci\'f3n en Vivo, un modelo m\'e1s peque\'f1o (p. ej. ggml-base o ggml-small) puede ofrecer mejor respuesta en tiempo real que un modelo grande, dependiendo de su GPU.\par
-\bullet\tab El archivo de ayuda se carga autom\'e1ticamente en el idioma de interfaz seleccionado si est\'e1 disponible; de lo contrario, se usa el ingl\'e9s.\par
+\bullet\tab Para obtener la mejor calidad de subt\'edtulos, use el modelo \b ggml-large-v3\b0 . Para resultados r\'e1pidos con audio corto (p. ej., mensajes de voz), use \b ggml-tiny\b0  o \b ggml-base\b0 .\par
+\bullet\tab Si la transcripci\'f3n parece bloqueada, revise la pesta\'f1a de Registro para ver la salida detallada.\par
+\bullet\tab Use \b Resume\b0  para continuar un trabajo interrumpido sin volver a descargar ni volver a fragmentar.\par
+\bullet\tab El campo \b Initial Prompt\b0  es muy poderoso \endash  \'faselo para proporcionar la escritura de nombres, t\'e9rminos t\'e9cnicos o contexto que ayude al modelo a producir mejores resultados.\par
+\bullet\tab Al salir de la aplicaci\'f3n, se le solicitar\'e1 limpiar las carpetas de trabajo creadas durante la sesi\'f3n actual.\par
+\bullet\tab Establezca \b Output Language\b0  en \b en\b0  para traducir audio en otros idiomas directamente a subt\'edtulos en ingl\'e9s.\par
+\bullet\tab Use el modo \b YouTube -> Full Video\b0  cuando solo necesite el archivo de v\'eddeo sin subt\'edtulos.\par
+\bullet\tab Use el modo \b YouTube -> Audio Only\b0  para obtener un archivo de audio MP3 de alta calidad desde un v\'eddeo de YouTube o un archivo de v\'eddeo local.\par
+\bullet\tab Para la Traducci\'f3n en Vivo, se recomienda una GPU compatible con CUDA con al menos 4 GB de VRAM. El modelo faster-whisper usa ~1.5 GB y el modelo de traducci\'f3n NLLB usa ~2.6 GB.\par
+\bullet\tab El archivo de ayuda se carga autom\'e1ticamente en el idioma de interfaz seleccionado si est\'e1 disponible; de lo contrario, utiliza el ingl\'e9s como alternativa.\par
 
 \pard\sa200\sl276\slmult1
-\fs24\b\cf2 Herramientas externas necesarias\b0\cf0\fs20\par
-Esta aplicaci\'f3n requiere las siguientes herramientas instaladas y configuradas en la pesta\'f1a de Rutas y Herramientas:\par
+\fs24\b\cf2 Herramientas externas requeridas\b0\cf0\fs20\par
+Esta aplicaci\'f3n requiere que las siguientes herramientas est\'e9n instaladas y configuradas en la pesta\'f1a de Rutas y Herramientas:\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b whisper-cli\b0  \endash  Motor de reconocimiento de voz (whisper.cpp) \endash  necesario para la transcripci\'f3n por lotes\par
-\bullet\tab\b whisper-stream\b0  \endash  Motor de transmisi\'f3n en tiempo real (whisper.cpp) \endash  necesario para la Traducci\'f3n en Vivo\par
-\bullet\tab\b yt-dlp\b0  \endash  Descargador de YouTube (necesario para todos los modos basados en YouTube)\par
-\bullet\tab\b ffmpeg\b0  \endash  Procesamiento de audio/v\'eddeo (necesario para todos los modos)\par
-\bullet\tab\b ffprobe\b0  \endash  An\'e1lisis de medios, incluido con ffmpeg (necesario para los modos de transcripci\'f3n)\par
+\bullet\tab\b whisper-cli\b0  \endash  Motor de reconocimiento de voz (whisper.cpp) \endash  requerido para transcripci\'f3n por lotes\par
+\bullet\tab\b yt-dlp\b0  \endash  Descargador de YouTube (requerido para todos los modos basados en YouTube)\par
+\bullet\tab\b ffmpeg\b0  \endash  Procesamiento de audio/v\'eddeo (requerido para todos los modos)\par
+\bullet\tab\b ffprobe\b0  \endash  An\'e1lisis de medios, incluido con ffmpeg (requerido para los modos de transcripci\'f3n)\par
 \bullet\tab\b Subtitle Edit\b0  (opcional) \endash  Para revisar y editar los archivos de subt\'edtulos generados\par
+
+\pard\sa200\sl276\slmult1
+\b Dependencias gestionadas autom\'e1ticamente\b0\par
+Los siguientes componentes se descargan autom\'e1ticamente en el primer uso y no requieren configuraci\'f3n manual:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Python (embedded)\b0  \endash  Un entorno de ejecuci\'f3n portable de Python usado por los servidores de transcripci\'f3n y traducci\'f3n en vivo.\par
+\bullet\tab\b faster-whisper model\b0  \endash  El modelo de reconocimiento de voz faster-whisper large-v3 (~3 GB), descargado al iniciar la Traducci\'f3n en Vivo por primera vez.\par
+\bullet\tab\b NLLB-200 model\b0  \endash  El modelo de traducci\'f3n Meta NLLB-200 1.3B (~2.6 GB), descargado cuando un cliente web selecciona por primera vez un idioma de traducci\'f3n.\par
 
 \pard\sa200\sl276\slmult1
 \par

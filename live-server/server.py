@@ -36,10 +36,24 @@ logging.getLogger("uvicorn").setLevel(logging.WARNING)
 logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
 
 
+class _SharedFileHandler(logging.Handler):
+    """File handler that opens/closes per write so other processes can share the file."""
+    def __init__(self, path):
+        super().__init__()
+        self._path = path
+
+    def emit(self, record):
+        try:
+            with open(self._path, "a", encoding="utf-8") as f:
+                f.write(self.format(record) + "\n")
+        except Exception:
+            pass
+
+
 def setup_logging(log_dir: str):
     """Set up file logging to pipeline-debug.log in the given directory."""
     log_path = os.path.join(log_dir, "pipeline-debug.log")
-    handler = logging.FileHandler(log_path, mode="a", encoding="utf-8")
+    handler = _SharedFileHandler(log_path)
     handler.setFormatter(logging.Formatter("%(asctime)s [LIVE] %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
     handler.setLevel(logging.DEBUG)
     logger.addHandler(handler)
@@ -282,6 +296,7 @@ def capture_and_transcribe():
                     initial_prompt=initial_prompt or None,
                     vad_filter=True,
                     vad_parameters={
+                        "threshold": 0.3,
                         "min_silence_duration_ms": vad_min_silence_ms,
                         "max_speech_duration_s": vad_max_segment_s,
                         "speech_pad_ms": 100,

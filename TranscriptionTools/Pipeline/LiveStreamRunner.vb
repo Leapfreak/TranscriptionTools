@@ -173,7 +173,39 @@ Namespace Pipeline
             _process = Nothing
         End Sub
 
+        Private Shared Sub KillProcessOnPort(port As Integer)
+            Try
+                Dim psi As New ProcessStartInfo() With {
+                    .FileName = "netstat",
+                    .Arguments = "-ano",
+                    .UseShellExecute = False,
+                    .RedirectStandardOutput = True,
+                    .CreateNoWindow = True
+                }
+                Using proc = Process.Start(psi)
+                    Dim output = proc.StandardOutput.ReadToEnd()
+                    proc.WaitForExit(5000)
+                    For Each line In output.Split({vbCrLf, vbLf}, StringSplitOptions.RemoveEmptyEntries)
+                        If line.Contains($":{port}") AndAlso line.Contains("LISTENING") Then
+                            Dim parts = line.Trim().Split({" "c}, StringSplitOptions.RemoveEmptyEntries)
+                            Dim pid As Integer
+                            If parts.Length > 0 AndAlso Integer.TryParse(parts(parts.Length - 1), pid) AndAlso pid > 0 Then
+                                Try
+                                    Process.GetProcessById(pid).Kill(True)
+                                Catch
+                                End Try
+                            End If
+                        End If
+                    Next
+                End Using
+            Catch
+            End Try
+        End Sub
+
         Private Sub StartServer(config As AppConfig)
+            ' Kill any leftover process from a previous session holding our port
+            KillProcessOnPort(_port)
+
             Dim pythonPath = FindPython()
             If String.IsNullOrEmpty(pythonPath) Then
                 RaiseEvent ErrorReceived(Me, "Python not found (need python-embed or system Python)")

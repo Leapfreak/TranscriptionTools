@@ -92,7 +92,6 @@ Public Class FormMain
 
         ' Initialize live translation tab
         PopulateLiveLanguageDropdowns()
-        PopulateLiveModelDropdown()
         cboLiveDevice.Items.Add("Detecting devices...")
         cboLiveDevice.SelectedIndex = 0
         btnLiveStart.Enabled = False
@@ -459,7 +458,6 @@ del ""%~f0""
     Private Sub UpdateConfigPaths(toolsDir As String)
         Dim whisperDir = IO.Path.Combine(toolsDir, "whisper")
         _config.PathWhisper = IO.Path.Combine(whisperDir, "whisper-cli.exe")
-        _config.PathStream = IO.Path.Combine(whisperDir, "whisper-stream.exe")
         _config.PathYtdlp = IO.Path.Combine(toolsDir, "yt-dlp.exe")
         _config.PathFfmpeg = IO.Path.Combine(toolsDir, "ffmpeg.exe")
         _config.PathFfprobe = IO.Path.Combine(toolsDir, "ffprobe.exe")
@@ -470,7 +468,6 @@ del ""%~f0""
         Models.ConfigManager.Save(_config)
         LoadConfigToUi()
         PopulateModelDropdown()
-        PopulateLiveModelDropdown()
 
         ' Re-enumerate audio devices
         Dim pythonPath2 = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "python-embed", "python.exe")
@@ -492,11 +489,9 @@ del ""%~f0""
     Private Sub PopulateLanguageDropdowns()
         cboInputLanguage.Items.Clear()
         cboOutputLanguage.Items.Clear()
-        cboWLanguage.Items.Clear()
         For Each lang In _whisperLanguages
             cboInputLanguage.Items.Add(lang)
             cboOutputLanguage.Items.Add(lang)
-            cboWLanguage.Items.Add(lang)
         Next
     End Sub
 
@@ -536,24 +531,18 @@ del ""%~f0""
     Private Sub LoadConfigToUi()
         ' Paths tab
         txtPathWhisper.Text = _config.PathWhisper
-        txtPathStream.Text = _config.PathStream
         txtPathYtdlp.Text = _config.PathYtdlp
         txtPathFfmpeg.Text = _config.PathFfmpeg
         txtPathFfprobe.Text = _config.PathFfprobe
         txtPathModel.Text = _config.PathModel
         txtPathModelAudio.Text = _config.PathModelAudio
+        txtPathFasterWhisper.Text = _config.PathFasterWhisperModel
+        txtPathNllbModel.Text = _config.TranslationModelPath
         txtPathOutputRoot.Text = _config.PathOutputRoot
         txtYtdlpFormat.Text = _config.YtdlpFormat
 
         ' Settings tab
         SelectComboByValue(cboUiLanguage, _config.UiLanguage, _uiLocales)
-        nudParallelJobs.Value = Math.Max(nudParallelJobs.Minimum, Math.Min(nudParallelJobs.Maximum, _config.ParallelJobs))
-        nudChunkSize.Value = Math.Max(nudChunkSize.Minimum, Math.Min(nudChunkSize.Maximum, _config.ChunkSizeSec))
-        nudPollInterval.Value = Math.Max(nudPollInterval.Minimum, Math.Min(nudPollInterval.Maximum, _config.PollIntervalMs))
-        nudChunkTimeout.Value = Math.Max(nudChunkTimeout.Minimum, Math.Min(nudChunkTimeout.Maximum, _config.ChunkTimeoutMin))
-        chkKeepChunks.Checked = _config.KeepChunkFiles
-        chkKeepPreview.Checked = _config.KeepPreview
-        chkSkipDownload.Checked = _config.SkipDownloadIfExists
         SelectComboItem(cboTheme, _config.Theme)
 
         ' Output formats
@@ -567,37 +556,6 @@ del ""%~f0""
         ' Language on main tab
         SelectComboItem(cboInputLanguage, _config.Language)
         SelectComboItem(cboOutputLanguage, _config.OutputLanguage)
-
-        ' Whisper params
-        SelectComboItem(cboWLanguage, _config.Language)
-        nudThreads.Value = Math.Max(nudThreads.Minimum, Math.Min(nudThreads.Maximum, _config.Threads))
-        nudProcessors.Value = Math.Max(nudProcessors.Minimum, Math.Min(nudProcessors.Maximum, _config.Processors))
-        nudBeamSize.Value = Math.Max(nudBeamSize.Minimum, Math.Min(nudBeamSize.Maximum, _config.BeamSize))
-        nudBestOf.Value = Math.Max(nudBestOf.Minimum, Math.Min(nudBestOf.Maximum, _config.BestOf))
-        nudTemperature.Value = CDec(Math.Max(0, Math.Min(1, _config.Temperature)))
-        nudTemperatureInc.Value = CDec(Math.Max(0, Math.Min(1, _config.TemperatureInc)))
-        nudMaxContext.Value = Math.Max(nudMaxContext.Minimum, Math.Min(nudMaxContext.Maximum, _config.MaxContext))
-        nudWordThreshold.Value = CDec(Math.Max(0, Math.Min(1, _config.WordThreshold)))
-        nudEntropyThreshold.Value = CDec(Math.Max(0, Math.Min(5, _config.EntropyThreshold)))
-        nudLogProbThreshold.Value = CDec(Math.Max(-10, Math.Min(0, _config.LogProbThreshold)))
-        nudNoSpeechThreshold.Value = CDec(Math.Max(0, Math.Min(1, _config.NoSpeechThreshold)))
-        nudMaxSegmentLength.Value = Math.Max(nudMaxSegmentLength.Minimum, Math.Min(nudMaxSegmentLength.Maximum, _config.MaxSegmentLength))
-        nudMaxTokens.Value = Math.Max(nudMaxTokens.Minimum, Math.Min(nudMaxTokens.Maximum, _config.MaxTokens))
-        nudAudioContext.Value = Math.Max(nudAudioContext.Minimum, Math.Min(nudAudioContext.Maximum, _config.AudioContext))
-        txtInitialPrompt.Text = _config.InitialPrompt
-        txtHotwords.Text = _config.Hotwords
-        chkSplitOnWord.Checked = _config.SplitOnWord
-        chkNoGpu.Checked = _config.NoGpu
-        chkFlashAttn.Checked = _config.FlashAttn
-        chkPrintProgress.Checked = _config.PrintProgress
-        chkPrintColours.Checked = _config.PrintColours
-        chkPrintRealtime.Checked = _config.PrintRealtime
-        chkDiarize.Checked = _config.Diarize
-        chkTinydiarize.Checked = _config.Tinydiarize
-        chkNoTimestamps.Checked = _config.NoTimestamps
-        chkTranslate.Checked = _config.TranslateToEnglish
-        nudVadThreshold.Value = CDec(Math.Max(0, Math.Min(1, _config.VadThreshold)))
-        nudFreqThreshold.Value = CDec(Math.Max(0, Math.Min(3000, _config.FreqThreshold)))
 
         ' Subtitle Server
         nudServerPort.Value = Math.Max(nudServerPort.Minimum, Math.Min(nudServerPort.Maximum, _config.SubtitleServerPort))
@@ -623,12 +581,13 @@ del ""%~f0""
         If _config Is Nothing OrElse _isInitializing Then Return
         ' Paths
         _config.PathWhisper = txtPathWhisper.Text
-        _config.PathStream = txtPathStream.Text
         _config.PathYtdlp = txtPathYtdlp.Text
         _config.PathFfmpeg = txtPathFfmpeg.Text
         _config.PathFfprobe = txtPathFfprobe.Text
         _config.PathModel = txtPathModel.Text
         _config.PathModelAudio = txtPathModelAudio.Text
+        _config.PathFasterWhisperModel = txtPathFasterWhisper.Text
+        _config.TranslationModelPath = txtPathNllbModel.Text
         _config.PathOutputRoot = txtPathOutputRoot.Text
         _config.YtdlpFormat = txtYtdlpFormat.Text
 
@@ -636,13 +595,6 @@ del ""%~f0""
         If cboUiLanguage.SelectedIndex >= 0 AndAlso cboUiLanguage.SelectedIndex < _uiLocales.Length Then
             _config.UiLanguage = _uiLocales(cboUiLanguage.SelectedIndex).Code
         End If
-        _config.ParallelJobs = CInt(nudParallelJobs.Value)
-        _config.ChunkSizeSec = CInt(nudChunkSize.Value)
-        _config.PollIntervalMs = CInt(nudPollInterval.Value)
-        _config.ChunkTimeoutMin = CInt(nudChunkTimeout.Value)
-        _config.KeepChunkFiles = chkKeepChunks.Checked
-        _config.KeepPreview = chkKeepPreview.Checked
-        _config.SkipDownloadIfExists = chkSkipDownload.Checked
         If cboTheme.SelectedItem IsNot Nothing Then _config.Theme = cboTheme.SelectedItem.ToString()
 
         ' Output formats
@@ -660,36 +612,6 @@ del ""%~f0""
         If cboOutputLanguage.SelectedItem IsNot Nothing Then
             _config.OutputLanguage = cboOutputLanguage.SelectedItem.ToString()
         End If
-
-        ' Whisper params
-        _config.Threads = CInt(nudThreads.Value)
-        _config.Processors = CInt(nudProcessors.Value)
-        _config.BeamSize = CInt(nudBeamSize.Value)
-        _config.BestOf = CInt(nudBestOf.Value)
-        _config.Temperature = CSng(nudTemperature.Value)
-        _config.TemperatureInc = CSng(nudTemperatureInc.Value)
-        _config.MaxContext = CInt(nudMaxContext.Value)
-        _config.WordThreshold = CSng(nudWordThreshold.Value)
-        _config.EntropyThreshold = CSng(nudEntropyThreshold.Value)
-        _config.LogProbThreshold = CSng(nudLogProbThreshold.Value)
-        _config.NoSpeechThreshold = CSng(nudNoSpeechThreshold.Value)
-        _config.MaxSegmentLength = CInt(nudMaxSegmentLength.Value)
-        _config.MaxTokens = CInt(nudMaxTokens.Value)
-        _config.AudioContext = CInt(nudAudioContext.Value)
-        _config.InitialPrompt = txtInitialPrompt.Text
-        _config.Hotwords = txtHotwords.Text
-        _config.SplitOnWord = chkSplitOnWord.Checked
-        _config.NoGpu = chkNoGpu.Checked
-        _config.FlashAttn = chkFlashAttn.Checked
-        _config.PrintProgress = chkPrintProgress.Checked
-        _config.PrintColours = chkPrintColours.Checked
-        _config.PrintRealtime = chkPrintRealtime.Checked
-        _config.Diarize = chkDiarize.Checked
-        _config.Tinydiarize = chkTinydiarize.Checked
-        _config.NoTimestamps = chkNoTimestamps.Checked
-        _config.TranslateToEnglish = chkTranslate.Checked
-        _config.VadThreshold = CSng(nudVadThreshold.Value)
-        _config.FreqThreshold = CSng(nudFreqThreshold.Value)
 
         ' Subtitle Server
         _config.SubtitleServerPort = CInt(nudServerPort.Value)
@@ -730,9 +652,7 @@ del ""%~f0""
     Private Sub ApplyLocale()
         Try
             tabPageJob.Text = GetString("Tab_Main")
-            tabPageWhisper.Text = GetString("Tab_WhisperParams")
             tabPagePaths.Text = GetString("Tab_Paths")
-            tabPageLog.Text = GetString("Tab_Log")
             tabPageSettings.Text = GetString("Tab_Settings")
             tabPageLive.Text = GetString("Tab_Live")
             tabPageHelp.Text = GetString("Tab_Help")
@@ -757,49 +677,7 @@ del ""%~f0""
             btnOpenSubtitleEdit.Text = GetString("Btn_SubtitleEdit")
             lnkPreviewSrt.Text = GetString("Lnk_PreviewSrt")
 
-            grpLanguageModel.Text = GetString("Grp_LanguageModel")
-            grpBeamSampling.Text = GetString("Grp_BeamSampling")
-            grpQualityFiltering.Text = GetString("Grp_QualityFiltering")
-            grpSegmentControl.Text = GetString("Grp_SegmentControl")
-            grpPrompting.Text = GetString("Grp_Prompting")
-            grpFlags.Text = GetString("Grp_Flags")
-            grpVad.Text = GetString("Grp_Vad")
-
-            lblWLanguage.Text = GetString("Lbl_Language")
-            lblThreads.Text = GetString("Lbl_Threads")
-            lblProcessors.Text = GetString("Lbl_Processors")
-            lblBeamSize.Text = GetString("Lbl_BeamSize")
-            lblBestOf.Text = GetString("Lbl_BestOf")
-            lblTemperature.Text = GetString("Lbl_Temperature")
-            lblTemperatureInc.Text = GetString("Lbl_TemperatureInc")
-            lblMaxContext.Text = GetString("Lbl_MaxContext")
-            lblWordThreshold.Text = GetString("Lbl_WordThreshold")
-            lblEntropyThreshold.Text = GetString("Lbl_EntropyThreshold")
-            lblLogProbThreshold.Text = GetString("Lbl_LogProbThreshold")
-            lblNoSpeechThreshold.Text = GetString("Lbl_NoSpeechThreshold")
-            lblMaxSegmentLength.Text = GetString("Lbl_MaxSegmentLength")
-            lblMaxTokens.Text = GetString("Lbl_MaxTokens")
-            lblAudioContext.Text = GetString("Lbl_AudioContext")
-            lblInitialPrompt.Text = GetString("Lbl_InitialPrompt")
-            lblHotwords.Text = GetString("Lbl_Hotwords")
-            lblVadThreshold.Text = GetString("Lbl_VadThreshold")
-            lblFreqThreshold.Text = GetString("Lbl_FreqThreshold")
-
-            chkSplitOnWord.Text = GetString("Chk_SplitOnWord")
-            chkNoGpu.Text = GetString("Chk_NoGpu")
-            chkFlashAttn.Text = GetString("Chk_FlashAttn")
-            chkPrintProgress.Text = GetString("Chk_PrintProgress")
-            chkPrintColours.Text = GetString("Chk_PrintColours")
-            chkPrintRealtime.Text = GetString("Chk_PrintRealtime")
-            chkDiarize.Text = GetString("Chk_Diarize")
-            chkTinydiarize.Text = GetString("Chk_Tinydiarize")
-            chkNoTimestamps.Text = GetString("Chk_NoTimestamps")
-            chkTranslate.Text = GetString("Chk_Translate")
-
-            btnRestoreDefaults.Text = GetString("Btn_RestoreDefaults")
-
             lblPathWhisper.Text = GetString("Lbl_PathWhisper")
-            lblPathStream.Text = GetString("Lbl_PathStream")
             lblPathYtdlp.Text = GetString("Lbl_PathYtdlp")
             lblPathFfmpeg.Text = GetString("Lbl_PathFfmpeg")
             lblPathFfprobe.Text = GetString("Lbl_PathFfprobe")
@@ -816,13 +694,6 @@ del ""%~f0""
 
             grpSettings.Text = GetString("Grp_AppSettings")
             lblUiLanguage.Text = GetString("Lbl_UiLanguage")
-            lblParallelJobs.Text = GetString("Lbl_ParallelJobs")
-            lblChunkSize.Text = GetString("Lbl_ChunkSize")
-            lblPollInterval.Text = GetString("Lbl_PollInterval")
-            lblChunkTimeout.Text = GetString("Lbl_ChunkTimeout")
-            chkKeepChunks.Text = GetString("Chk_KeepChunks")
-            chkKeepPreview.Text = GetString("Chk_KeepPreview")
-            chkSkipDownload.Text = GetString("Chk_SkipDownload")
             lblTheme.Text = GetString("Lbl_Theme")
             btnResetSettings.Text = GetString("Btn_ResetSettings")
             btnCheckToolUpdates.Text = GetString("Btn_CheckToolUpdates")
@@ -832,12 +703,13 @@ del ""%~f0""
             lblLiveDevice.Text = GetString("Lbl_LiveDevice")
             btnRefreshDevices.Text = GetString("Btn_RefreshDevices")
             lblLiveInputLang.Text = GetString("Lbl_LiveInputLang")
-            lblLiveOutputLang.Text = GetString("Lbl_LiveOutputLang")
-            lblLiveModel.Text = GetString("Lbl_LiveModel")
             btnLiveStart.Text = GetString("Btn_LiveStart")
             btnLiveStop.Text = GetString("Btn_LiveStop")
             btnLiveSave.Text = GetString("Btn_LiveSave")
-            btnLiveClear.Text = GetString("Btn_LiveClear")
+            btnLiveClear.Text = GetString("Btn_LiveClearLog")
+            btnLiveSaveLog.Text = GetString("Btn_LiveSaveLog")
+            tabPageLiveClients.Text = GetString("Tab_LiveOutput")
+            tabPageLiveLog.Text = GetString("Tab_LiveLog")
 
             ' Subtitle Server tab
             tabPageServer.Text = GetString("Tab_Server")
@@ -865,35 +737,6 @@ del ""%~f0""
         tipMain.SetToolTip(txtUrl, GetString("Tip_Url"))
         tipMain.SetToolTip(cboInputLanguage, GetString("Tip_InputLanguage"))
         tipMain.SetToolTip(cboOutputLanguage, GetString("Tip_OutputLanguage"))
-        tipMain.SetToolTip(cboWLanguage, GetString("Tip_Language"))
-        tipMain.SetToolTip(nudThreads, GetString("Tip_Threads"))
-        tipMain.SetToolTip(nudProcessors, GetString("Tip_Processors"))
-        tipMain.SetToolTip(nudBeamSize, GetString("Tip_BeamSize"))
-        tipMain.SetToolTip(nudBestOf, GetString("Tip_BestOf"))
-        tipMain.SetToolTip(nudTemperature, GetString("Tip_Temperature"))
-        tipMain.SetToolTip(nudTemperatureInc, GetString("Tip_TemperatureInc"))
-        tipMain.SetToolTip(nudMaxContext, GetString("Tip_MaxContext"))
-        tipMain.SetToolTip(nudWordThreshold, GetString("Tip_WordThreshold"))
-        tipMain.SetToolTip(nudEntropyThreshold, GetString("Tip_EntropyThreshold"))
-        tipMain.SetToolTip(nudLogProbThreshold, GetString("Tip_LogProbThreshold"))
-        tipMain.SetToolTip(nudNoSpeechThreshold, GetString("Tip_NoSpeechThreshold"))
-        tipMain.SetToolTip(chkSplitOnWord, GetString("Tip_SplitOnWord"))
-        tipMain.SetToolTip(chkNoGpu, GetString("Tip_NoGpu"))
-        tipMain.SetToolTip(chkFlashAttn, GetString("Tip_FlashAttn"))
-        tipMain.SetToolTip(chkDiarize, GetString("Tip_Diarize"))
-        tipMain.SetToolTip(chkTinydiarize, GetString("Tip_Tinydiarize"))
-        tipMain.SetToolTip(chkTranslate, GetString("Tip_Translate"))
-        tipMain.SetToolTip(chkPrintProgress, GetString("Tip_PrintProgress"))
-        tipMain.SetToolTip(chkPrintColours, GetString("Tip_PrintColours"))
-        tipMain.SetToolTip(chkPrintRealtime, GetString("Tip_PrintRealtime"))
-        tipMain.SetToolTip(chkNoTimestamps, GetString("Tip_NoTimestamps"))
-        tipMain.SetToolTip(nudMaxSegmentLength, GetString("Tip_MaxSegmentLength"))
-        tipMain.SetToolTip(nudMaxTokens, GetString("Tip_MaxTokens"))
-        tipMain.SetToolTip(nudAudioContext, GetString("Tip_AudioContext"))
-        tipMain.SetToolTip(txtInitialPrompt, GetString("Tip_InitialPrompt"))
-        tipMain.SetToolTip(txtHotwords, GetString("Tip_Hotwords"))
-        tipMain.SetToolTip(nudVadThreshold, GetString("Tip_VadThreshold"))
-        tipMain.SetToolTip(nudFreqThreshold, GetString("Tip_FreqThreshold"))
     End Sub
 
     Private Function GetString(key As String) As String
@@ -995,8 +838,8 @@ del ""%~f0""
         pbChunk.Value = 0
         pbChunk.Visible = False
 
-        ' Switch to Log tab
-        tabMain.SelectedTab = tabPageLog
+        ' Switch to Job tab (log is visible there)
+        tabMain.SelectedTab = tabPageJob
         Application.DoEvents()
 
         Dim progress As New Progress(Of PipelineProgress)(
@@ -1083,8 +926,8 @@ del ""%~f0""
         pbChunk.Value = 0
         pbChunk.Visible = False
 
-        ' Switch to Log tab
-        tabMain.SelectedTab = tabPageLog
+        ' Switch to Job tab (log is visible there)
+        tabMain.SelectedTab = tabPageJob
         Application.DoEvents()
 
         Dim progress As New Progress(Of PipelineProgress)(
@@ -1308,9 +1151,6 @@ del ""%~f0""
         BrowseForExe(txtPathWhisper)
     End Sub
 
-    Private Sub btnBrowseStream_Click(sender As Object, e As EventArgs) Handles btnBrowseStream.Click
-        BrowseForExe(txtPathStream)
-    End Sub
 
     Private Sub btnBrowseYtdlp_Click(sender As Object, e As EventArgs) Handles btnBrowseYtdlp.Click
         BrowseForExe(txtPathYtdlp)
@@ -1346,21 +1186,23 @@ del ""%~f0""
 
         Dim checks = {
             ("whisper-cli", txtPathWhisper.Text),
-            ("whisper-stream", txtPathStream.Text),
             ("yt-dlp", txtPathYtdlp.Text),
             ("ffmpeg", txtPathFfmpeg.Text),
             ("ffprobe", txtPathFfprobe.Text),
             ("YouTube Model", txtPathModel.Text),
             ("Audio File Model", txtPathModelAudio.Text),
+            ("faster-whisper Model", txtPathFasterWhisper.Text),
+            ("NLLB Translation Model", txtPathNllbModel.Text),
             ("Output root", txtPathOutputRoot.Text)
         }
 
+        Dim folderChecks = {"Output root", "faster-whisper Model", "NLLB Translation Model"}
         For Each chk In checks
             Dim exists As Boolean
-            If chk.Item1 = "Output root" Then
-                exists = Directory.Exists(chk.Item2)
+            If folderChecks.Contains(chk.Item1) Then
+                exists = Directory.Exists(AppConfig.ResolvePath(chk.Item2))
             Else
-                exists = File.Exists(chk.Item2)
+                exists = File.Exists(AppConfig.ResolvePath(chk.Item2))
             End If
 
             Dim status = If(exists, "OK", "NOT FOUND")
@@ -1418,61 +1260,6 @@ del ""%~f0""
         End Select
 
         ConfigManager.Save(_config)
-    End Sub
-
-    Private Sub cboInputLanguage_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboInputLanguage.SelectedIndexChanged
-        ' Sync whisper params language dropdown
-        If cboInputLanguage.SelectedItem IsNot Nothing Then
-            SelectComboItem(cboWLanguage, cboInputLanguage.SelectedItem.ToString())
-        End If
-    End Sub
-
-    Private Sub cboWLanguage_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboWLanguage.SelectedIndexChanged
-        ' Sync main tab language dropdown
-        If cboWLanguage.SelectedItem IsNot Nothing Then
-            SelectComboItem(cboInputLanguage, cboWLanguage.SelectedItem.ToString())
-        End If
-    End Sub
-
-    Private Sub btnRestoreDefaults_Click(sender As Object, e As EventArgs) Handles btnRestoreDefaults.Click
-        Dim result = MessageBox.Show(GetString("Msg_RestoreDefaults"),
-                                      GetString("Msg_RestoreDefaultsTitle"), MessageBoxButtons.YesNo, MessageBoxIcon.Question)
-        If result = DialogResult.Yes Then
-            Dim defaults As New AppConfig()
-            ' Only restore whisper params, keep paths and settings
-            _config.Language = defaults.Language
-            _config.OutputLanguage = defaults.OutputLanguage
-            _config.Threads = defaults.Threads
-            _config.Processors = defaults.Processors
-            _config.BeamSize = defaults.BeamSize
-            _config.BestOf = defaults.BestOf
-            _config.Temperature = defaults.Temperature
-            _config.TemperatureInc = defaults.TemperatureInc
-            _config.MaxContext = defaults.MaxContext
-            _config.WordThreshold = defaults.WordThreshold
-            _config.EntropyThreshold = defaults.EntropyThreshold
-            _config.LogProbThreshold = defaults.LogProbThreshold
-            _config.NoSpeechThreshold = defaults.NoSpeechThreshold
-            _config.MaxSegmentLength = defaults.MaxSegmentLength
-            _config.MaxTokens = defaults.MaxTokens
-            _config.AudioContext = defaults.AudioContext
-            _config.InitialPrompt = defaults.InitialPrompt
-            _config.Hotwords = defaults.Hotwords
-            _config.SplitOnWord = defaults.SplitOnWord
-            _config.NoGpu = defaults.NoGpu
-            _config.FlashAttn = defaults.FlashAttn
-            _config.PrintProgress = defaults.PrintProgress
-            _config.PrintColours = defaults.PrintColours
-            _config.PrintRealtime = defaults.PrintRealtime
-            _config.Diarize = defaults.Diarize
-            _config.Tinydiarize = defaults.Tinydiarize
-            _config.NoTimestamps = defaults.NoTimestamps
-            _config.TranslateToEnglish = defaults.TranslateToEnglish
-            _config.VadThreshold = defaults.VadThreshold
-            _config.FreqThreshold = defaults.FreqThreshold
-            LoadConfigToUi()
-            SaveUiToConfig()
-        End If
     End Sub
 
     Private Sub btnResetSettings_Click(sender As Object, e As EventArgs) Handles btnResetSettings.Click
@@ -1555,33 +1342,11 @@ del ""%~f0""
 
     Private Sub PopulateLiveLanguageDropdowns()
         cboLiveInputLang.Items.Clear()
-        cboLiveOutputLang.Items.Clear()
         For Each lang In _whisperLanguages
             cboLiveInputLang.Items.Add(lang)
         Next
-        cboLiveOutputLang.Items.AddRange({"auto", "en"})
 
         SelectComboItem(cboLiveInputLang, _config.Language)
-        SelectComboItem(cboLiveOutputLang, _config.OutputLanguage)
-    End Sub
-
-    Private Sub PopulateLiveModelDropdown()
-        cboLiveModel.Items.Clear()
-
-        ' Scan the model directory for .bin files
-        Dim modelDir = Path.GetDirectoryName(AppConfig.ResolvePath(_config.PathModel))
-        If String.IsNullOrWhiteSpace(modelDir) Then modelDir = Path.GetDirectoryName(AppConfig.ResolvePath(_config.PathModelAudio))
-        If Not String.IsNullOrWhiteSpace(modelDir) AndAlso Directory.Exists(modelDir) Then
-            For Each f In Directory.GetFiles(modelDir, "ggml-*.bin")
-                cboLiveModel.Items.Add(Path.GetFileName(f))
-            Next
-        End If
-
-        If cboLiveModel.Items.Count > 0 Then
-            ' Try to select the current model
-            Dim currentModel = Path.GetFileName(_config.PathModel)
-            SelectComboItem(cboLiveModel, currentModel)
-        End If
     End Sub
 
     Private Sub cboLiveDevice_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboLiveDevice.SelectedIndexChanged
@@ -1599,14 +1364,6 @@ del ""%~f0""
         If _isInitializing OrElse cboLiveInputLang.SelectedItem Is Nothing Then Return
         _config.Language = cboLiveInputLang.SelectedItem.ToString()
         SelectComboItem(cboInputLanguage, _config.Language)
-        SelectComboItem(cboWLanguage, _config.Language)
-        ConfigManager.Save(_config)
-    End Sub
-
-    Private Sub cboLiveOutputLang_SelectedIndexChanged(sender As Object, e As EventArgs) Handles cboLiveOutputLang.SelectedIndexChanged
-        If _isInitializing OrElse cboLiveOutputLang.SelectedItem Is Nothing Then Return
-        _config.OutputLanguage = cboLiveOutputLang.SelectedItem.ToString()
-        SelectComboItem(cboOutputLanguage, _config.OutputLanguage)
         ConfigManager.Save(_config)
     End Sub
 
@@ -1682,11 +1439,7 @@ del ""%~f0""
         Dim inputLang = "auto"
         If cboLiveInputLang.SelectedItem IsNot Nothing Then inputLang = cboLiveInputLang.SelectedItem.ToString()
 
-        ' Determine if translate to English
         Dim translateToEn = False
-        If cboLiveOutputLang.SelectedItem IsNot Nothing Then
-            translateToEn = cboLiveOutputLang.SelectedItem.ToString() = "en" AndAlso inputLang <> "en"
-        End If
 
         _liveRunner = New LiveStreamRunner()
 
@@ -1818,8 +1571,34 @@ del ""%~f0""
         End Using
     End Sub
 
+    Private Sub tabLiveOutput_SelectedIndexChanged(sender As Object, e As EventArgs) Handles tabLiveOutput.SelectedIndexChanged
+        If tabLiveOutput.SelectedTab Is tabPageLiveLog Then
+            ' Defer refresh until after tab switch completes and control is laid out
+            BeginInvoke(Sub()
+                            rtbLiveOutput.SelectionStart = rtbLiveOutput.TextLength
+                            rtbLiveOutput.SelectionLength = 0
+                            rtbLiveOutput.ScrollToCaret()
+                            rtbLiveOutput.Refresh()
+                        End Sub)
+        End If
+    End Sub
+
     Private Sub btnLiveClear_Click(sender As Object, e As EventArgs) Handles btnLiveClear.Click
         rtbLiveOutput.Clear()
+    End Sub
+
+    Private Sub btnLiveSaveLog_Click(sender As Object, e As EventArgs) Handles btnLiveSaveLog.Click
+        Using dlg As New SaveFileDialog()
+            dlg.Filter = "Text files|*.txt|All files|*.*"
+            dlg.DefaultExt = "txt"
+            dlg.FileName = $"live_log_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.txt"
+            Dim resolvedOutput = AppConfig.ResolvePath(_config.PathOutputRoot)
+            If Directory.Exists(resolvedOutput) Then dlg.InitialDirectory = resolvedOutput
+            If dlg.ShowDialog() = DialogResult.OK Then
+                File.WriteAllText(dlg.FileName, rtbLiveOutput.Text, System.Text.Encoding.UTF8)
+                MessageBox.Show($"Log saved.{Environment.NewLine}{dlg.FileName}", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            End If
+        End Using
     End Sub
 
     Private Sub AppendLiveText(text As String, color As Drawing.Color)
@@ -1838,6 +1617,7 @@ del ""%~f0""
         rtbLiveOutput.ScrollToCaret()
     End Sub
 
+
     Private Async Sub TranslateAndBroadcastAsync(commitData As String)
         ' Parse detected language from tab-separated format: "lang\ttext"
         Dim detectedLang = ""
@@ -1852,37 +1632,39 @@ del ""%~f0""
 
         ' Use detected language for NLLB source (convert whisper ISO code to NLLB code)
         Dim sourceLang = If(Not String.IsNullOrEmpty(detectedLang), WhisperToNllbCode(detectedLang), GetCurrentSourceNllbLang())
+        Dim sourceShort = NllbToShortCode(sourceLang)
 
         ' Check if translation is available
         Dim targets = _subtitleServer?.GetActiveTranslationLanguages()
+        Dim activeTargets = If(targets IsNot Nothing, String.Join(",", targets), "none")
         targets?.Remove(sourceLang)
 
         Dim translationReady = targets IsNot Nothing AndAlso targets.Count > 0 AndAlso
             _translationService IsNot Nothing AndAlso _translationService.IsRunning AndAlso _translationService.IsModelLoaded
 
-        ' Broadcast original text — skip translation clients only if we will translate for them
-        Dim sourceTag = $"[{NllbToShortCode(sourceLang)}] "
-        _subtitleServer?.BroadcastCommit(sourceTag & line, skipTranslationClients:=translationReady)
+        WriteDebugLog($"[BROADCAST] targets=[{activeTargets}] source={sourceLang} skip={translationReady}")
 
+        ' No translation clients or translation not ready — send to everyone immediately
         If Not translationReady Then
+            _subtitleServer?.BroadcastCommit(line, skipTranslationClients:=False, lang:=sourceShort)
             Return
         End If
 
-        WriteDebugLog($"[SOURCE LANG] {sourceLang} | targets: {String.Join(",", targets)}")
-
-        ' Filter garbage commits
+        ' Filter garbage commits — send to non-translation clients only
         If IsGarbageCommit(line) Then
-            WriteDebugLog($"[FILTERED] garbage commit skipped")
+            WriteDebugLog($"[FILTERED] garbage commit skipped for translation")
+            _subtitleServer?.BroadcastCommit(line, skipTranslationClients:=True, lang:=sourceShort)
             Return
         End If
 
-        ' Translate immediately
+        ' Translate for all target languages
         Dim sw = Diagnostics.Stopwatch.StartNew()
-        Dim translations As Dictionary(Of String, String) = Nothing
+        Dim translations As New Dictionary(Of String, String)()
         Try
-            translations = Await _translationService.TranslateAsync(line, sourceLang, targets)
-            If translations IsNot Nothing Then
-                For Each kvp In translations
+            Dim result = Await _translationService.TranslateAsync(line, sourceLang, targets)
+            If result IsNot Nothing Then
+                For Each kvp In result
+                    translations(kvp.Key) = kvp.Value
                     WriteDebugLog($"[TRANSLATION {kvp.Key}] {kvp.Value}")
                 Next
             End If
@@ -1890,17 +1672,43 @@ del ""%~f0""
             WriteDebugLog($"[TRANSLATE ERROR] {ex.Message}")
         End Try
 
-        sw.Stop()
-        WriteDebugLog($"[ROUND TRIP] {sw.ElapsedMilliseconds}ms (whisper commit -> broadcast)")
+        ' Include original text for source-language clients
+        translations(sourceLang) = line
 
-        ' Send translated text to translation clients with language tag
-        If translations IsNot Nothing AndAlso translations.Count > 0 Then
-            Dim tagged As New Dictionary(Of String, String)
-            For Each kvp In translations
-                tagged(kvp.Key) = $"[{NllbToShortCode(kvp.Key)}] {kvp.Value}"
+        ' Re-check: translate any new languages that appeared during the await
+        Dim currentTargets = _subtitleServer?.GetActiveTranslationLanguages()
+        If currentTargets IsNot Nothing Then
+            Dim missing As New List(Of String)
+            For Each t In currentTargets
+                If Not translations.ContainsKey(t) Then missing.Add(t)
             Next
-            _subtitleServer?.BroadcastTranslationsOnly(tagged)
+            If missing.Count > 0 Then
+                WriteDebugLog($"[CATCH-UP] new targets: {String.Join(",", missing)}")
+                Try
+                    Dim extra = Await _translationService.TranslateAsync(line, sourceLang, missing)
+                    If extra IsNot Nothing Then
+                        For Each kvp In extra
+                            translations(kvp.Key) = kvp.Value
+                        Next
+                    End If
+                Catch ex As Exception
+                    WriteDebugLog($"[CATCH-UP ERROR] {ex.Message}")
+                End Try
+            End If
         End If
+
+        sw.Stop()
+        WriteDebugLog($"[ROUND TRIP] {sw.ElapsedMilliseconds}ms")
+
+        ' Build lang tags for display
+        Dim langTags As New Dictionary(Of String, String)
+        For Each kvp In translations
+            langTags(kvp.Key) = NllbToShortCode(kvp.Key)
+        Next
+
+        ' Single atomic broadcast — sends the right text to each client based on their
+        ' current language. No two-phase race condition.
+        _subtitleServer?.BroadcastCommitTranslated(line, sourceShort, translations, langTags)
     End Sub
 
     Private Shared Function NllbToShortCode(nllbCode As String) As String
@@ -1924,6 +1732,76 @@ del ""%~f0""
             Case "JPN" : Return "JA"
             Case "KOR" : Return "KO"
             Case "ARB" : Return "AR"
+            Case "SWE" : Return "SV"
+            Case "NOB" : Return "NO"
+            Case "DAN" : Return "DA"
+            Case "FIN" : Return "FI"
+            Case "HUN" : Return "HU"
+            Case "CES" : Return "CS"
+            Case "SLK" : Return "SK"
+            Case "SLV" : Return "SL"
+            Case "HRV" : Return "HR"
+            Case "SRP" : Return "SR"
+            Case "BUL" : Return "BG"
+            Case "ELL" : Return "EL"
+            Case "TUR" : Return "TR"
+            Case "LIT" : Return "LT"
+            Case "LVS" : Return "LV"
+            Case "EST" : Return "ET"
+            Case "AFR" : Return "AF"
+            Case "AMH" : Return "AM"
+            Case "HYE" : Return "HY"
+            Case "AZJ" : Return "AZ"
+            Case "EUS" : Return "EU"
+            Case "BEL" : Return "BE"
+            Case "BEN" : Return "BN"
+            Case "BOS" : Return "BS"
+            Case "CYM" : Return "CY"
+            Case "PES" : Return "FA"
+            Case "GLG" : Return "GL"
+            Case "KAT" : Return "KA"
+            Case "GUJ" : Return "GU"
+            Case "HAT" : Return "HT"
+            Case "HAU" : Return "HA"
+            Case "HEB" : Return "HE"
+            Case "HIN" : Return "HI"
+            Case "ISL" : Return "IS"
+            Case "IND" : Return "ID"
+            Case "JAV" : Return "JW"
+            Case "KAN" : Return "KN"
+            Case "KAZ" : Return "KK"
+            Case "KHM" : Return "KM"
+            Case "LAO" : Return "LO"
+            Case "LTZ" : Return "LB"
+            Case "MKD" : Return "MK"
+            Case "ZSM" : Return "MS"
+            Case "MAL" : Return "ML"
+            Case "MLT" : Return "MT"
+            Case "MRI" : Return "MI"
+            Case "MAR" : Return "MR"
+            Case "KHK" : Return "MN"
+            Case "MYA" : Return "MY"
+            Case "NPI" : Return "NE"
+            Case "PBT" : Return "PS"
+            Case "PAN" : Return "PA"
+            Case "SND" : Return "SD"
+            Case "SIN" : Return "SI"
+            Case "SNA" : Return "SN"
+            Case "SOM" : Return "SO"
+            Case "SUN" : Return "SU"
+            Case "SWH" : Return "SW"
+            Case "TGL" : Return "TL"
+            Case "TGK" : Return "TG"
+            Case "TAM" : Return "TA"
+            Case "TAT" : Return "TT"
+            Case "TEL" : Return "TE"
+            Case "THA" : Return "TH"
+            Case "TUK" : Return "TK"
+            Case "URD" : Return "UR"
+            Case "UZN" : Return "UZ"
+            Case "VIE" : Return "VI"
+            Case "YOR" : Return "YO"
+            Case "ZUL" : Return "ZU"
             Case Else : Return prefix.Substring(0, Math.Min(2, prefix.Length))
         End Select
     End Function
@@ -1947,6 +1825,76 @@ del ""%~f0""
             Case "ja" : Return "jpn_Jpan"
             Case "ko" : Return "kor_Hang"
             Case "ar" : Return "arb_Arab"
+            Case "sv" : Return "swe_Latn"
+            Case "no" : Return "nob_Latn"
+            Case "da" : Return "dan_Latn"
+            Case "fi" : Return "fin_Latn"
+            Case "hu" : Return "hun_Latn"
+            Case "cs" : Return "ces_Latn"
+            Case "sk" : Return "slk_Latn"
+            Case "sl" : Return "slv_Latn"
+            Case "hr" : Return "hrv_Latn"
+            Case "sr" : Return "srp_Cyrl"
+            Case "bg" : Return "bul_Cyrl"
+            Case "el" : Return "ell_Grek"
+            Case "tr" : Return "tur_Latn"
+            Case "lt" : Return "lit_Latn"
+            Case "lv" : Return "lvs_Latn"
+            Case "et" : Return "est_Latn"
+            Case "af" : Return "afr_Latn"
+            Case "am" : Return "amh_Ethi"
+            Case "hy" : Return "hye_Armn"
+            Case "az" : Return "azj_Latn"
+            Case "eu" : Return "eus_Latn"
+            Case "be" : Return "bel_Cyrl"
+            Case "bn" : Return "ben_Beng"
+            Case "bs" : Return "bos_Latn"
+            Case "cy" : Return "cym_Latn"
+            Case "fa" : Return "pes_Arab"
+            Case "gl" : Return "glg_Latn"
+            Case "ka" : Return "kat_Geor"
+            Case "gu" : Return "guj_Gujr"
+            Case "ht" : Return "hat_Latn"
+            Case "ha" : Return "hau_Latn"
+            Case "he" : Return "heb_Hebr"
+            Case "hi" : Return "hin_Deva"
+            Case "is" : Return "isl_Latn"
+            Case "id" : Return "ind_Latn"
+            Case "jw" : Return "jav_Latn"
+            Case "kn" : Return "kan_Knda"
+            Case "kk" : Return "kaz_Cyrl"
+            Case "km" : Return "khm_Khmr"
+            Case "lo" : Return "lao_Laoo"
+            Case "lb" : Return "ltz_Latn"
+            Case "mk" : Return "mkd_Cyrl"
+            Case "ms" : Return "zsm_Latn"
+            Case "ml" : Return "mal_Mlym"
+            Case "mt" : Return "mlt_Latn"
+            Case "mi" : Return "mri_Latn"
+            Case "mr" : Return "mar_Deva"
+            Case "mn" : Return "khk_Cyrl"
+            Case "my" : Return "mya_Mymr"
+            Case "ne" : Return "npi_Deva"
+            Case "ps" : Return "pbt_Arab"
+            Case "pa" : Return "pan_Guru"
+            Case "sd" : Return "snd_Arab"
+            Case "si" : Return "sin_Sinh"
+            Case "sn" : Return "sna_Latn"
+            Case "so" : Return "som_Latn"
+            Case "su" : Return "sun_Latn"
+            Case "sw" : Return "swh_Latn"
+            Case "tl" : Return "tgl_Latn"
+            Case "tg" : Return "tgk_Cyrl"
+            Case "ta" : Return "tam_Taml"
+            Case "tt" : Return "tat_Cyrl"
+            Case "te" : Return "tel_Telu"
+            Case "th" : Return "tha_Thai"
+            Case "tk" : Return "tuk_Latn"
+            Case "ur" : Return "urd_Arab"
+            Case "uz" : Return "uzn_Latn"
+            Case "vi" : Return "vie_Latn"
+            Case "yo" : Return "yor_Latn"
+            Case "zu" : Return "zul_Latn"
             Case Else : Return "eng_Latn"
         End Select
     End Function
@@ -1971,25 +1919,15 @@ del ""%~f0""
     End Sub
 
     Private Function GetCurrentSourceNllbLang() As String
-        ' Determine the language of the TEXT that whisper outputs
-        ' If whisper translates to English, the output text is English regardless of input
-        Dim outputLang = ""
+        ' Fallback when faster-whisper doesn't provide a detected language
         Dim inputLang = ""
-        If cboLiveOutputLang.InvokeRequired Then
-            outputLang = CStr(cboLiveOutputLang.Invoke(Function() If(cboLiveOutputLang.SelectedItem, "auto").ToString()))
+        If cboLiveInputLang.InvokeRequired Then
             inputLang = CStr(cboLiveInputLang.Invoke(Function() If(cboLiveInputLang.SelectedItem, "auto").ToString()))
         Else
-            If cboLiveOutputLang.SelectedItem IsNot Nothing Then outputLang = cboLiveOutputLang.SelectedItem.ToString()
             If cboLiveInputLang.SelectedItem IsNot Nothing Then inputLang = cboLiveInputLang.SelectedItem.ToString()
         End If
 
-        ' If whisper is translating to English, the text is English
-        If outputLang = "en" AndAlso inputLang <> "en" Then
-            Return TranslationService.WhisperToNllbLang("en")
-        End If
-
-        ' Otherwise text is in the input language
-        If inputLang = "auto" Then inputLang = "es" ' Default to Spanish for this church context
+        If inputLang = "auto" Then inputLang = "es"
         Return TranslationService.WhisperToNllbLang(inputLang)
     End Function
 
@@ -2421,11 +2359,15 @@ del ""%~f0""
                                                   End Sub
 
         AddHandler _subtitleServer.ActiveLanguagesChanged, AddressOf HandleActiveLanguagesChanged
+        AddHandler _subtitleServer.LogMessage, Sub(s, msg)
+                                                   WriteDebugLog(msg)
+                                               End Sub
 
         Try
             _subtitleServer.Start(port, _config.AllowFirewall)
             UpdateServerUi(True)
             AppendServerLog($"Subtitle server started on port {port}")
+            NavigateLivePreview(port)
             Dim localIp = GetLocalIpAddress()
             AppendServerLog($"Phones should open: https://{localIp}:{_subtitleServer.HttpsPort}")
             AppendServerLog($"(Accept the certificate warning on first visit)")
@@ -2433,6 +2375,14 @@ del ""%~f0""
             AppendServerLog($"ERROR: {ex.Message}")
             AppendServerLog("Tip: Try running as Administrator, or use a different port.")
             _subtitleServer = Nothing
+        End Try
+    End Sub
+
+    Private Sub NavigateLivePreview(port As Integer)
+        Try
+            wvLiveClients.Source = New Uri($"http://127.0.0.1:{port}/")
+        Catch ex As Exception
+            AppendServerLog($"Live preview: {ex.Message}")
         End Try
     End Sub
 

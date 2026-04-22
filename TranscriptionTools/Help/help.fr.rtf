@@ -1,0 +1,315 @@
+{\rtf1\ansi\deff0
+{\fonttbl{\f0\fswiss\fcharset0 Segoe UI;}{\f1\fmodern\fcharset0 Consolas;}}
+{\colortbl;\red0\green0\blue0;\red0\green102\blue204;\red80\green80\blue80;\red0\green128\blue0;\red139\green0\blue0;}
+\viewkind4\uc1
+
+\pard\sa200\sl276\slmult1
+\f0\fs36\b\cf2 Transcription Tools \endash  Guide de l\'92utilisateur\b0\cf0\fs20\par
+
+\fs24\b Vue d\'92ensemble\b0\fs20\par
+Transcription Tools est une application de bureau Windows qui g\'e9n\'e8re des fichiers de sous-titres \'e0 partir de sources audio et vid\'e9o. Elle fournit une interface graphique pour le moteur de reconnaissance vocale whisper.cpp et prend en charge quatre modes de traitement par lot ainsi qu\'92un mode de transcription en direct avec traduction facultative bas\'e9e sur l\'92IA.\par
+
+\b Modes de traitement par lot\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b YouTube -> Subtitles\b0  \endash  T\'e9l\'e9charger une vid\'e9o YouTube (ou utiliser un fichier vid\'e9o local), la rogner \'e9ventuellement sur une plage horaire, et g\'e9n\'e9rer des sous-titres.\par
+\bullet\tab\b Audio File -> Subtitles\b0  \endash  Transcrire directement tout fichier audio (OGG, MP3, WAV, FLAC, M4A, etc.) en sous-titres.\par
+\bullet\tab\b YouTube -> Full Video\b0  \endash  T\'e9l\'e9charger une vid\'e9o YouTube (ou copier une vid\'e9o locale) et la rogner, sans transcription.\par
+\bullet\tab\b YouTube -> Audio Only\b0  \endash  T\'e9l\'e9charger une vid\'e9o YouTube (ou copier une vid\'e9o locale), la rogner et extraire l\'92audio en fichier MP3 haute qualit\'e9, sans transcription.\par
+
+\pard\sa200\sl276\slmult1
+\b Mode en direct\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Live Translation\b0  \endash  Reconnaissance vocale en temps r\'e9el depuis un microphone ou un p\'e9riph\'e9rique d\'92entr\'e9e audio, utilisant faster-whisper avec Silero VAD (d\'e9tection d\'92activit\'e9 vocale). Le texte est segment\'e9 sur les pauses naturelles de la parole pour des phrases propres et compl\'e8tes. Prend en charge la traduction en temps r\'e9el vers plus de 200 langues via NLLB.\par
+
+\pard\sa200\sl276\slmult1
+\fs24\b\cf2 Onglet Principal / T\'e2che\b0\cf0\fs20\par
+
+\b S\'e9lecteur de mode\b0\par
+Utilisez le menu d\'e9roulant en haut pour basculer entre les modes. Le mode par d\'e9faut est \b YouTube -> Subtitles\b0 . L\'92interface s\'92adapte pour n\'92afficher que les contr\'f4les pertinents au mode s\'e9lectionn\'e9. Les contr\'f4les de plage horaire et le bouton Reprendre ne sont affich\'e9s que pour les modes bas\'e9s sur YouTube. Les cases \'e0 cocher du format de sortie ne sont affich\'e9es que pour les modes produisant des sous-titres (YouTube -> Subtitles et Audio File -> Subtitles).\par
+
+\b Mode YouTube -> Subtitles\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b URL / Fichier\b0  \endash  Entrez une URL YouTube ou cliquez sur Parcourir pour s\'e9lectionner un fichier vid\'e9o local.\par
+\bullet\tab\b Langue d\'92entr\'e9e\b0  \endash  La langue parl\'e9e dans l\'92audio. R\'e9glez sur \b auto\b0  pour laisser le moteur la d\'e9tecter automatiquement, ou s\'e9lectionnez une langue sp\'e9cifique pour une meilleure pr\'e9cision.\par
+\bullet\tab\b Langue de sortie\b0  \endash  La langue des sous-titres g\'e9n\'e9r\'e9s. R\'e9glez sur \b auto\b0  pour conserver la m\'eame langue que l\'92entr\'e9e. R\'e9glez sur \b en\b0  (anglais) pour traduire un audio non anglais en sous-titres anglais. Whisper ne peut traduire que \i vers\i0  l\'92anglais.\par
+\bullet\tab\b Mod\'e8le\b0  \endash  Choisissez le mod\'e8le whisper \'e0 utiliser. Les mod\'e8les plus grands (ex. ggml-large-v3.bin) sont plus pr\'e9cis mais plus lents. Les mod\'e8les plus petits (ex. ggml-tiny.bin, ggml-base.bin) sont plus rapides mais moins pr\'e9cis.\par
+\bullet\tab\b Heure de d\'e9but / Heure de fin\b0  \endash  Sp\'e9cifiez \'e9ventuellement une plage horaire (HH:MM:SS) pour rogner la vid\'e9o avant la transcription. Laissez \'e0 00:00:00 pour traiter toute la vid\'e9o.\par
+\bullet\tab\b R\'e9pertoire de sortie\b0  \endash  O\'f9 tous les fichiers de travail et le fichier de sous-titres final seront enregistr\'e9s. Par d\'e9faut, un dossier horodat\'e9 sous la racine de sortie.\par
+\bullet\tab\b Reprendre\b0  \endash  Si une t\'e2che pr\'e9c\'e9dente a \'e9t\'e9 interrompue, cliquez sur Reprendre pour s\'e9lectionner le dossier de sortie et continuer l\'e0 o\'f9 elle s\'92\'e9tait arr\'eat\'e9e. Les segments d\'e9j\'e0 trait\'e9s sont automatiquement ignor\'e9s.\par
+
+\pard\sa200\sl276\slmult1
+\b Mode Audio File -> Subtitles\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Fichier audio\b0  \endash  Cliquez sur Parcourir Audio pour s\'e9lectionner un fichier audio. Les formats pris en charge incluent OGG, MP3, WAV, FLAC, M4A, WMA, AAC, OPUS, et d\'92autres.\par
+\bullet\tab\b R\'e9pertoire de sortie\b0  \endash  Identique au mode YouTube. Le fichier SRT de sortie porte le nom du fichier d\'92entr\'e9e.\par
+\bullet\tab Ce mode m\'e9morise son propre mod\'e8le par d\'e9faut s\'e9par\'e9ment, vous permettant d\'92utiliser un grand mod\'e8le pour les vid\'e9os YouTube et un mod\'e8le plus petit et plus rapide pour les transcriptions audio rapides.\par
+
+\pard\sa200\sl276\slmult1
+\b Mode YouTube -> Full Video\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab T\'e9l\'e9charge et rogne une vid\'e9o sans effectuer de transcription.\par
+\bullet\tab Le fichier de sortie est \b preview.mp4\b0  dans le r\'e9pertoire de sortie.\par
+\bullet\tab Seuls yt-dlp et ffmpeg sont requis.\par
+
+\pard\sa200\sl276\slmult1
+\b Mode YouTube -> Audio Only\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab T\'e9l\'e9charge une vid\'e9o, la rogne et extrait l\'92audio en fichier MP3 haute qualit\'e9 (\b yt_audio.mp3\b0 ) sans effectuer de transcription.\par
+\bullet\tab L\'92audio est extrait \'e0 la qualit\'e9 VBR maximale.\par
+\bullet\tab Seuls yt-dlp et ffmpeg sont requis.\par
+
+\pard\sa200\sl276\slmult1
+\b Formats de sortie\b0\par
+Disponible avec les modes YouTube -> Subtitles ou Audio File -> Subtitles. S\'e9lectionnez les formats \'e0 g\'e9n\'e9rer\u160?:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b SRT\b0  \endash  Format de sous-titres SubRip (le plus courant, activ\'e9 par d\'e9faut)\par
+\bullet\tab\b VTT\b0  \endash  Format WebVTT (pour usage web)\par
+\bullet\tab\b TXT\b0  \endash  Transcription en texte brut\par
+\bullet\tab\b JSON\b0  \endash  Sortie JSON structur\'e9e\par
+\bullet\tab\b CSV\b0  \endash  Valeurs s\'e9par\'e9es par des virgules\par
+\bullet\tab\b LRC\b0  \endash  Format de paroles\par
+
+\pard\sa200\sl276\slmult1
+\b Progression\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab La barre de progression sup\'e9rieure affiche la progression globale du pipeline sur toutes les \'e9tapes.\par
+\bullet\tab Une deuxi\'e8me barre de progression appara\'eet pendant la transcription et affiche la progression par segment.\par
+\bullet\tab\b D\'e9marrer\b0  \endash  Lancer le traitement. L\'92onglet Journal est affich\'e9 automatiquement.\par
+\bullet\tab\b Annuler\b0  \endash  Arr\'eater la t\'e2che en cours.\par
+\bullet\tab\b Ouvrir le dossier de sortie\b0  \endash  Ouvre le r\'e9pertoire de sortie dans l\'92Explorateur Windows (disponible apr\'e8s la fin du traitement).\par
+\bullet\tab\b Subtitle Edit\b0  \endash  Ouvre le fichier SRT g\'e9n\'e9r\'e9 directement dans Subtitle Edit pour r\'e9vision (disponible apr\'e8s la fin du traitement, modes sous-titres uniquement).\par
+\bullet\tab\b Ouvrir preview.srt\b0  \endash  Ouvre le fichier SRT g\'e9n\'e9r\'e9 avec votre application par d\'e9faut (disponible apr\'e8s la fin du traitement, modes sous-titres uniquement).\par
+
+\pard\sa200\sl276\slmult1
+\fs24\b\cf2 Onglet Traduction en direct\b0\cf0\fs20\par
+L\'92onglet Traduction en direct fournit une transcription vocale en temps r\'e9el depuis votre microphone ou un autre p\'e9riph\'e9rique d\'92entr\'e9e audio. Il utilise faster-whisper avec Silero VAD (d\'e9tection d\'92activit\'e9 vocale) pour d\'e9tecter les pauses naturelles de la parole et segmenter l\'92audio en \'e9nonc\'e9s complets. Cela produit des transcriptions plus propres et plus pr\'e9cises que le d\'e9coupage par fen\'eatres fixes.\par
+
+Le texte transcrit appara\'eet dans deux sous-onglets\u160?:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Sortie en direct\b0  \endash  Une vue web (identique \'e0 la page du serveur de sous-titres) int\'e9gr\'e9e directement dans l\'92application.\par
+\bullet\tab\b Journal\b0  \endash  Un journal d\'e9filant affichant la sortie de transcription avec un codage couleur. Le texte en cours est continuellement affin\'e9 pendant que vous parlez. Les messages de statut apparaissent en jaune et les informations syst\'e8me en gris.\par
+
+\pard\sa200\sl276\slmult1
+\b Contr\'f4les\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b P\'e9riph\'e9rique audio\b0  \endash  S\'e9lectionnez votre p\'e9riph\'e9rique d\'92entr\'e9e audio. Les p\'e9riph\'e9riques sont d\'e9tect\'e9s via la biblioth\'e8que Python sounddevice au d\'e9marrage. Cliquez sur \b Actualiser\b0  pour relancer la d\'e9tection si vous connectez un nouveau p\'e9riph\'e9rique.\par
+\bullet\tab\b Langue d\'92entr\'e9e\b0  \endash  La langue parl\'e9e. R\'e9glez sur \b auto\b0  pour la d\'e9tection automatique, ou s\'e9lectionnez une langue sp\'e9cifique pour une meilleure pr\'e9cision.\par
+\bullet\tab\b D\'e9marrer\b0  \endash  Lancer la transcription en direct. Lors de la premi\'e8re utilisation, l\'92application t\'e9l\'e9chargera le mod\'e8le faster-whisper (~3\u160?Go) et installera les d\'e9pendances Python si elles ne sont pas d\'e9j\'e0 pr\'e9sentes.\par
+\bullet\tab\b Arr\'eater\b0  \endash  Arr\'eater la session de transcription en direct.\par
+\bullet\tab\b Enregistrer\b0  \endash  Enregistrer la transcription compl\'e8te dans un fichier texte.\par
+\bullet\tab\b Effacer\b0  \endash  Effacer l\'92affichage de sortie.\par
+
+\pard\sa200\sl276\slmult1
+\b Traduction en temps r\'e9el\b0\par
+Lorsque le serveur de sous-titres est en cours d\'92ex\'e9cution, les clients web connect\'e9s peuvent s\'e9lectionner une langue de traduction dans le menu d\'e9roulant de la page web. L\'92application d\'e9marre automatiquement un serveur de traduction NLLB-200 (lors de la premi\'e8re utilisation, cela t\'e9l\'e9charge ~3,5\u160?Go de d\'e9pendances incluant le mod\'e8le IA). Le texte transcrit est traduit \'e0 la vol\'e9e et envoy\'e9 \'e0 chaque client dans la langue choisie. Plus de 200 langues sont prises en charge. Les clients qui ne s\'e9lectionnent pas de langue de traduction re\'e7oivent la transcription originale.\par
+
+\pard\sa200\sl276\slmult1
+\fs24\b\cf2 Onglet Serveur de sous-titres\b0\cf0\fs20\par
+Le serveur de sous-titres fournit une superposition de l\'e9gendes en direct bas\'e9e sur le web, consultable sur n\'92importe quel appareil (t\'e9l\'e9phone, tablette, second \'e9cran) connect\'e9 au m\'eame r\'e9seau. Lorsque le serveur est en cours d\'92ex\'e9cution, il sert une page web affichant le texte de transcription en direct via WebSocket. Le serveur fonctionne en HTTP et d\'e9marre \'e9galement un \'e9couteur HTTPS sur le port suivant (ex. 5081) pour prendre en charge la fonctionnalit\'e9 de verrouillage de l\'92\'e9cran. Les nouvelles lignes de sous-titres sont bri\'e8vement mises en \'e9vidence en jaune avant de passer \'e0 la couleur de texte choisie.\par
+
+\b Param\'e8tres du serveur\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Port\b0  \endash  Le port HTTP sur lequel le serveur \'e9coute (d\'e9faut\u160?: 5080). Un port HTTPS est \'e9galement ouvert automatiquement sur port+1 (d\'e9faut\u160?: 5081) en utilisant un certificat auto-sign\'e9.\par
+\bullet\tab\b D\'e9marrer / Arr\'eater / Red\'e9marrer le serveur\b0  \endash  Contr\'f4ler le serveur de sous-titres.\par
+\bullet\tab\b Simuler\b0  \endash  Envoyer un exemple de texte (Jean 3\u160?:16-18) pour tester l\'92affichage sans source audio en direct.\par
+\bullet\tab\b Arr\'eater la sim.\b0  \endash  Arr\'eater la simulation.\par
+\bullet\tab\b Couleur d\'92arri\'e8re-plan / Couleur du texte\b0  \endash  Personnaliser les couleurs d\'92affichage des sous-titres. Ces couleurs s\'92appliquent \'e0 la fois \'e0 la page web et \'e0 la zone de texte de sortie en direct. Cliquez sur la pastille de couleur pour ouvrir un s\'e9lecteur de couleurs. Les couleurs sont enregistr\'e9es dans la configuration.\par
+
+\pard\sa200\sl276\slmult1
+\b Informations de connexion\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab Affiche le statut du serveur, l\'92URL et le nombre de clients connect\'e9s.\par
+\bullet\tab\b Copier l\'92URL\b0  \endash  Copie l\'92URL du serveur dans le presse-papiers pour la partager avec d\'92autres appareils.\par
+
+\pard\sa200\sl276\slmult1
+\b Barre d\'92outils de la page web\b0\par
+La page web de sous-titres comprend une barre d\'92outils dans le coin sup\'e9rieur droit avec les contr\'f4les suivants\u160?:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b T\'e9l\'e9commande\b0  (ic\'f4ne engrenage) \endash  Ouvre un panneau d\'92administration pour D\'e9marrer, Arr\'eater, Red\'e9marrer ou Simuler la transcription en direct \'e0 distance sans revenir \'e0 l\'92application de bureau. Le panneau interroge le statut du serveur toutes les 3 secondes.\par
+\bullet\tab\b Param\'e8tres\b0  (Aa) \endash  Ouvre un panneau de param\'e8tres pour ajuster la taille de police, la famille de police, le gras et la couleur du texte. Comprend \'e9galement la s\'e9lection de la voix et la vitesse pour la lecture \'e0 voix haute, la direction de d\'e9filement et les options d\'92affichage des \'e9tiquettes. Toutes les pr\'e9f\'e9rences sont enregistr\'e9es localement dans le navigateur.\par
+\bullet\tab\b Traduction\b0  \endash  Un menu d\'e9roulant pour s\'e9lectionner une langue de traduction. Lorsqu\'92une langue est s\'e9lectionn\'e9e, le client re\'e7oit le texte traduit par IA dans cette langue au lieu de la transcription originale. S\'e9lectionnez \ldblquote Original\rdblquote  pour recevoir le texte non traduit.\par
+\bullet\tab\b \'c9tiquettes\b0  \endash  Choisissez les informations \'e0 afficher avant chaque ligne de sous-titres\u160?: D\'e9sactiv\'e9, Langue (affiche le code de langue d\'e9tect\'e9 ou traduit), Heure (affiche l\'92horodatage), ou les deux.\par
+\bullet\tab\b Lecture \'e0 voix haute\b0  (ic\'f4ne haut-parleur) \endash  Active/d\'e9sactive la synth\'e8se vocale. Lorsqu\'92elle est activ\'e9e, chaque nouvelle ligne de sous-titres valid\'e9e est lue \'e0 voix haute par la synth\'e8se vocale du navigateur. La voix et la vitesse peuvent \'eatre configur\'e9es dans le panneau Param\'e8tres.\par
+\bullet\tab\b Maintenir l\'92\'e9cran allum\'e9\b0  (ic\'f4ne lumi\'e8re) \endash  Emp\'eache l\'92\'e9cran du t\'e9l\'e9phone ou de la tablette de s\'92assombrir ou de se verrouiller. Cela utilise l\'92API Wake Lock du navigateur, qui n\'e9cessite une connexion s\'e9curis\'e9e (HTTPS). Lors de la premi\'e8re utilisation depuis HTTP, une superposition guid\'e9e explique comment accepter l\'92avertissement de certificat auto-sign\'e9 dans votre navigateur (configuration unique). Une fois accept\'e9, l\'92\'e9cran reste allum\'e9 tant que la page est ouverte.\par
+\bullet\tab\b Enregistrer la transcription\b0  \endash  T\'e9l\'e9charger la transcription actuelle sous forme de fichier texte.\par
+
+\pard\sa200\sl276\slmult1
+\b Localisation\b0\par
+La page web d\'e9tecte automatiquement la langue du navigateur et affiche toutes les \'e9tiquettes, boutons et messages dans la langue correspondante. Langues prises en charge\u160?: anglais, espagnol, fran\'e7ais, allemand, catalan, portugais, japonais et chinois. Si la langue du navigateur n\'92est pas prise en charge, l\'92anglais est utilis\'e9 par d\'e9faut.\par
+
+\fs24\b\cf2 Onglet Param\'e8tres Whisper\b0\cf0\fs20\par
+Param\'e8tres avanc\'e9s pour le moteur de reconnaissance vocale whisper-cli. Ces param\'e8tres s\'92appliquent uniquement aux modes de traitement par lot (pas \'e0 la traduction en direct). La plupart des utilisateurs peuvent laisser ces valeurs par d\'e9faut.\par
+
+\b Langue et mod\'e8le\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Langue\b0  \endash  Refl\'e8te le param\'e8tre Langue d\'92entr\'e9e de l\'92onglet Principal.\par
+\bullet\tab\b Threads\b0  \endash  Nombre de threads CPU pour le traitement (d\'e9faut\u160?: 4).\par
+\bullet\tab\b Processors\b0  \endash  Nombre de processeurs parall\'e8les (d\'e9faut\u160?: 1).\par
+
+\pard\sa200\sl276\slmult1
+\b Recherche par faisceau / \'e9chantillonnage\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Beam Size\b0  \endash  Largeur de la recherche par faisceau (d\'e9faut\u160?: 5). Des valeurs plus \'e9lev\'e9es peuvent am\'e9liorer la pr\'e9cision mais sont plus lentes.\par
+\bullet\tab\b Best Of\b0  \endash  Nombre de candidats \'e0 consid\'e9rer (d\'e9faut\u160?: 5).\par
+\bullet\tab\b Temperature\b0  \endash  Temp\'e9rature d\'92\'e9chantillonnage (d\'e9faut\u160?: 0,0). Des valeurs plus \'e9lev\'e9es augmentent le caract\'e8re al\'e9atoire.\par
+\bullet\tab\b Temperature Inc\b0  \endash  Incr\'e9ment de temp\'e9rature en cas de repli (d\'e9faut\u160?: 0,2).\par
+
+\pard\sa200\sl276\slmult1
+\b Qualit\'e9 / Filtrage\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Max Context\b0  \endash  Nombre maximum de tokens de contexte (0 = utiliser la valeur par d\'e9faut).\par
+\bullet\tab\b Word Threshold\b0  \endash  Seuil de confiance au niveau du mot (d\'e9faut\u160?: 0,01).\par
+\bullet\tab\b Entropy Threshold\b0  \endash  Seuil d\'92entropie pour le filtrage de qualit\'e9 (d\'e9faut\u160?: 2,4).\par
+\bullet\tab\b Log Prob Threshold\b0  \endash  Seuil de log-probabilit\'e9 (d\'e9faut\u160?: -1,0).\par
+\bullet\tab\b No Speech Threshold\b0  \endash  Seuil de d\'e9tection des segments sans parole (d\'e9faut\u160?: 0,6).\par
+
+\pard\sa200\sl276\slmult1
+\b Contr\'f4le des segments\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Max Segment Length\b0  \endash  Nombre maximum de caract\'e8res par segment de sous-titre (0 = illimit\'e9).\par
+\bullet\tab\b Max Tokens\b0  \endash  Nombre maximum de tokens par segment (0 = illimit\'e9).\par
+\bullet\tab\b Audio Context\b0  \endash  Taille du contexte audio (0 = utiliser la valeur par d\'e9faut).\par
+
+\pard\sa200\sl276\slmult1
+\b Invite\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Initial Prompt\b0  \endash  Invite textuelle pour guider la transcription. Utile pour fournir un contexte, l\'92orthographe de noms ou du vocabulaire sp\'e9cifique \'e0 un domaine.\par
+\bullet\tab\b Hotwords\b0  \endash  Liste de mots s\'e9par\'e9s par des virgules pour renforcer leur reconnaissance.\par
+
+\pard\sa200\sl276\slmult1
+\b Options\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Split on Word\b0  \endash  D\'e9couper les segments aux limites des mots (activ\'e9 par d\'e9faut).\par
+\bullet\tab\b No GPU\b0  \endash  Forcer le traitement uniquement sur CPU.\par
+\bullet\tab\b Flash Attention\b0  \endash  Activer l\'92attention flash pour une inf\'e9rence GPU plus rapide.\par
+\bullet\tab\b Print Progress\b0  \endash  Afficher le pourcentage de progression dans la sortie whisper.\par
+\bullet\tab\b Print Colours\b0  \endash  Colorier la sortie par niveau de confiance.\par
+\bullet\tab\b Print Realtime\b0  \endash  Afficher la sortie en temps r\'e9el \'e0 mesure qu\'92elle est g\'e9n\'e9r\'e9e.\par
+\bullet\tab\b Diarize\b0  \endash  Activer la diarisation des locuteurs (identifier les diff\'e9rents intervenants).\par
+\bullet\tab\b Tinydiarize\b0  \endash  Utiliser la d\'e9tection l\'e9g\'e8re des changements de locuteur.\par
+\bullet\tab\b No Timestamps\b0  \endash  Supprimer l\'92affichage des horodatages.\par
+
+\pard\sa200\sl276\slmult1
+\b VAD (d\'e9tection d\'92activit\'e9 vocale)\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b VAD Threshold\b0  \endash  Sensibilit\'e9 pour la d\'e9tection de la parole (d\'e9faut\u160?: 0,6).\par
+\bullet\tab\b Frequency Threshold\b0  \endash  Filtre passe-haut en Hz (d\'e9faut\u160?: 100).\par
+
+\pard\sa200\sl276\slmult1
+Cliquez sur \b Restaurer les valeurs par d\'e9faut\b0  pour r\'e9initialiser tous les param\'e8tres whisper \'e0 leurs valeurs par d\'e9faut.\par
+
+\fs24\b\cf2 Onglet Chemins et outils\b0\cf0\fs20\par
+Configurez les chemins de fichiers vers les outils et mod\'e8les externes\u160?:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b whisper-cli.exe\b0  \endash  Le moteur de reconnaissance vocale whisper (utilis\'e9 par les modes de transcription par lot).\par
+\bullet\tab\b yt-dlp.exe\b0  \endash  T\'e9l\'e9chargeur de vid\'e9os YouTube.\par
+\bullet\tab\b ffmpeg.exe\b0  \endash  Outil de traitement audio/vid\'e9o (rognage, conversion, d\'e9coupage).\par
+\bullet\tab\b ffprobe.exe\b0  \endash  Outil d\'92analyse audio/vid\'e9o (d\'e9tection de dur\'e9e).\par
+\bullet\tab\b Mod\'e8le YouTube (.bin)\b0  \endash  Le fichier de mod\'e8le whisper utilis\'e9 pour le mode YouTube -> Subtitles.\par
+\bullet\tab\b Mod\'e8le Audio File (.bin)\b0  \endash  Le fichier de mod\'e8le whisper utilis\'e9 pour le mode Audio File -> Subtitles.\par
+\bullet\tab\b Racine de sortie par d\'e9faut\b0  \endash  R\'e9pertoire de base o\'f9 les dossiers de sortie horodat\'e9s sont cr\'e9\'e9s.\par
+\bullet\tab\b Cha\'eene de format yt-dlp\b0  \endash  Pr\'e9f\'e9rence de format de t\'e9l\'e9chargement pour yt-dlp (d\'e9faut\u160?: meilleure vid\'e9o MP4 + audio M4A).\par
+
+\pard\sa200\sl276\slmult1
+Cliquez sur \b V\'e9rifier tous les chemins\b0  pour v\'e9rifier que tous les outils et fichiers configur\'e9s existent. Utilisez le lien \b T\'e9l\'e9charger les mod\'e8les whisper\b0  pour obtenir les fichiers de mod\'e8les.\par
+
+\fs24\b\cf2 Onglet Journal\b0\cf0\fs20\par
+Affiche la sortie en temps r\'e9el du pipeline de traitement. Chaque entr\'e9e du journal est horodat\'e9e et color\'e9e\u160?:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\cf5\b Vert fonc\'e9\b0\cf0  \endash  Messages de succ\'e8s et \'e9tapes termin\'e9es.\par
+\bullet\tab\cf1\b Noir\b0\cf0  \endash  Informations g\'e9n\'e9rales.\par
+\bullet\tab\cf3\b Gris\b0\cf0  \endash  Sortie d\'e9taill\'e9e/d\'e9bogage (lignes de commande, codes de sortie, sortie ffprobe).\par
+\bullet\tab\b Rouge\b0  \endash  Erreurs et avertissements.\par
+
+\pard\sa200\sl276\slmult1
+Le journal d\'e9file automatiquement pour afficher la derni\'e8re sortie. Si vous faites d\'e9filer vers le haut pour consulter les entr\'e9es ant\'e9rieures, le d\'e9filement automatique se met en pause. Il reprend lorsque vous revenez en bas.\par
+Utilisez \b Effacer le journal\b0  pour r\'e9initialiser le journal et \b Copier dans le presse-papiers\b0  pour copier l\'92int\'e9gralit\'e9 du texte du journal.\par
+
+\fs24\b\cf2 Onglet Param\'e8tres\b0\cf0\fs20\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Langue de l\'92interface\b0  \endash  Changer la langue de l\'92interface. Disponibles\u160?: anglais, espagnol, fran\'e7ais, allemand, catalan, portugais, chinois simplifi\'e9, japonais.\par
+\bullet\tab\b T\'e2ches de transcription parall\'e8les\b0  \endash  Nombre de segments audio \'e0 transcrire simultan\'e9ment (d\'e9faut\u160?: 4). Des valeurs plus \'e9lev\'e9es utilisent plus de RAM et de CPU mais terminent plus rapidement.\par
+\bullet\tab\b Taille des segments (secondes)\b0  \endash  Dur\'e9e de chaque segment audio (d\'e9faut\u160?: 300 = 5 minutes). L\'92audio long est divis\'e9 en segments pour le traitement parall\'e8le.\par
+\bullet\tab\b Intervalle d\'92interrogation (ms)\b0  \endash  Fr\'e9quence de v\'e9rification de l\'92ach\'e8vement des segments de transcription (d\'e9faut\u160?: 2000\u160?ms).\par
+\bullet\tab\b D\'e9lai d\'92expiration des segments (min)\b0  \endash  Temps maximum d\'92attente pour qu\'92un seul segment se termine (d\'e9faut\u160?: 60 minutes).\par
+\bullet\tab\b Conserver les fichiers de segments\b0  \endash  Conserver les fichiers WAV et SRT de segments interm\'e9diaires apr\'e8s le traitement.\par
+\bullet\tab\b Conserver preview.mp4 rogn\'e9\b0  \endash  Conserver le fichier vid\'e9o rogn\'e9. Si d\'e9coch\'e9, preview.mp4 est supprim\'e9 apr\'e8s l\'92extraction audio ou \'e0 la fin du traitement.\par
+\bullet\tab\b Ignorer le t\'e9l\'e9chargement si le fichier existe\b0  \endash  Ignorer l\'92\'e9tape de t\'e9l\'e9chargement yt-dlp si le fichier vid\'e9o existe d\'e9j\'e0 dans le dossier de sortie.\par
+\bullet\tab\b Th\'e8me\b0  \endash  Choisir le th\'e8me Syst\'e8me, Clair ou Sombre.\par
+
+\pard\sa200\sl276\slmult1
+Cliquez sur \b R\'e9initialiser tous les param\'e8tres\b0  pour restaurer toute la configuration aux valeurs d\'92usine.\par
+
+\fs24\b\cf2 Pipeline de traitement\b0\cf0\fs20\par
+
+\b Mode YouTube -> Subtitles (8 \'e9tapes)\u160?:\b0\par
+\pard\fi-360\li720\sa100
+0.\tab Valider les entr\'e9es et les chemins des outils\par
+1.\tab T\'e9l\'e9charger la vid\'e9o avec yt-dlp (ou copier le fichier local)\par
+2.\tab Rogner la vid\'e9o sur la plage horaire sp\'e9cifi\'e9e avec ffmpeg\par
+3.\tab Extraire l\'92audio au format WAV (16\u160?kHz mono) pour whisper\par
+4.\tab D\'e9tecter la dur\'e9e audio avec ffprobe\par
+5.\tab Diviser l\'92audio en segments pour le traitement parall\'e8le\par
+6.\tab Transcrire tous les segments en lots parall\'e8les avec whisper-cli\par
+7.\tab Fusionner les fichiers SRT des segments dans le fichier de sous-titres final (preview.srt) avec les horodatages corrig\'e9s\par
+
+\pard\sa200\sl276\slmult1
+\b Mode Audio File -> Subtitles (6 \'e9tapes)\u160?:\b0\par
+\pard\fi-360\li720\sa100
+0.\tab Valider les entr\'e9es et les chemins des outils\par
+1.\tab Convertir l\'92audio au format WAV (16\u160?kHz mono) pour whisper\par
+2.\tab D\'e9tecter la dur\'e9e audio\par
+3.\tab Diviser l\'92audio en segments\par
+4.\tab Transcrire tous les segments en lots parall\'e8les\par
+5.\tab Fusionner dans le fichier SRT final (nomm\'e9 d\'92apr\'e8s le fichier d\'92entr\'e9e)\par
+
+\pard\sa200\sl276\slmult1
+\b Mode YouTube -> Full Video (3 \'e9tapes)\u160?:\b0\par
+\pard\fi-360\li720\sa100
+0.\tab Valider les entr\'e9es et les chemins des outils\par
+1.\tab T\'e9l\'e9charger la vid\'e9o avec yt-dlp (ou copier le fichier local)\par
+2.\tab Rogner la vid\'e9o sur la plage horaire sp\'e9cifi\'e9e avec ffmpeg (sortie\u160?: preview.mp4)\par
+
+\pard\sa200\sl276\slmult1
+\b Mode YouTube -> Audio Only (4 \'e9tapes)\u160?:\b0\par
+\pard\fi-360\li720\sa100
+0.\tab Valider les entr\'e9es et les chemins des outils\par
+1.\tab T\'e9l\'e9charger la vid\'e9o avec yt-dlp (ou copier le fichier local)\par
+2.\tab Rogner la vid\'e9o sur la plage horaire sp\'e9cifi\'e9e avec ffmpeg\par
+3.\tab Extraire l\'92audio en MP3 haute qualit\'e9 (sortie\u160?: yt_audio.mp3)\par
+
+\pard\sa200\sl276\slmult1
+\fs24\b\cf2 Conseils\b0\cf0\fs20\par
+\pard\fi-360\li720\sa100
+\bullet\tab Pour une qualit\'e9 de sous-titres optimale, utilisez le mod\'e8le \b ggml-large-v3\b0 . Pour des r\'e9sultats rapides sur de courts fichiers audio (ex. messages vocaux), utilisez \b ggml-tiny\b0  ou \b ggml-base\b0 .\par
+\bullet\tab Si la transcription semble bloqu\'e9e, consultez l\'92onglet Journal pour une sortie d\'e9taill\'e9e.\par
+\bullet\tab Utilisez \b Reprendre\b0  pour continuer une t\'e2che interrompue sans re-t\'e9l\'e9charger ni re-d\'e9couper.\par
+\bullet\tab Le champ \b Initial Prompt\b0  est puissant \endash  utilisez-le pour fournir l\'92orthographe de noms, des termes techniques ou un contexte qui aide le mod\'e8le \'e0 produire de meilleurs r\'e9sultats.\par
+\bullet\tab Lors de la fermeture de l\'92application, vous serez invit\'e9 \'e0 nettoyer les dossiers de travail cr\'e9\'e9s au cours de la session en cours.\par
+\bullet\tab R\'e9glez \b Langue de sortie\b0  sur \b en\b0  pour traduire directement un audio en langue \'e9trang\'e8re en sous-titres anglais.\par
+\bullet\tab Utilisez le mode \b YouTube -> Full Video\b0  lorsque vous avez juste besoin du fichier vid\'e9o sans sous-titres.\par
+\bullet\tab Utilisez le mode \b YouTube -> Audio Only\b0  pour obtenir un fichier audio MP3 haute qualit\'e9 depuis une vid\'e9o YouTube ou un fichier vid\'e9o local.\par
+\bullet\tab Pour la traduction en direct, un GPU compatible CUDA avec au moins 4\u160?Go de VRAM est recommand\'e9. Le mod\'e8le faster-whisper utilise ~1,5\u160?Go et le mod\'e8le de traduction NLLB utilise ~2,6\u160?Go.\par
+\bullet\tab Le fichier d\'92aide se charge automatiquement dans la langue de l\'92interface s\'e9lectionn\'e9e si disponible, sinon il utilise l\'92anglais par d\'e9faut.\par
+
+\pard\sa200\sl276\slmult1
+\fs24\b\cf2 Outils externes requis\b0\cf0\fs20\par
+Cette application n\'e9cessite les outils suivants install\'e9s et configur\'e9s dans l\'92onglet Chemins et outils\u160?:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b whisper-cli\b0  \endash  Moteur de reconnaissance vocale (whisper.cpp) \endash  requis pour la transcription par lot\par
+\bullet\tab\b yt-dlp\b0  \endash  T\'e9l\'e9chargeur YouTube (requis pour tous les modes bas\'e9s sur YouTube)\par
+\bullet\tab\b ffmpeg\b0  \endash  Traitement audio/vid\'e9o (requis pour tous les modes)\par
+\bullet\tab\b ffprobe\b0  \endash  Analyse m\'e9dia, inclus avec ffmpeg (requis pour les modes de transcription)\par
+\bullet\tab\b Subtitle Edit\b0  (optionnel) \endash  Pour la relecture et l\'92\'e9dition des fichiers de sous-titres g\'e9n\'e9r\'e9s\par
+
+\pard\sa200\sl276\slmult1
+\b D\'e9pendances g\'e9r\'e9es automatiquement\b0\par
+Les composants suivants sont t\'e9l\'e9charg\'e9s automatiquement lors de la premi\'e8re utilisation et ne n\'e9cessitent pas de configuration manuelle\u160?:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Python (embarqu\'e9)\b0  \endash  Un environnement d\'92ex\'e9cution Python portable utilis\'e9 par les serveurs de transcription et de traduction en direct.\par
+\bullet\tab\b Mod\'e8le faster-whisper\b0  \endash  Le mod\'e8le de reconnaissance vocale faster-whisper large-v3 (~3\u160?Go), t\'e9l\'e9charg\'e9 au premier d\'e9marrage de la traduction en direct.\par
+\bullet\tab\b Mod\'e8le NLLB-200\b0  \endash  Le mod\'e8le de traduction Meta NLLB-200 1.3B (~2,6\u160?Go), t\'e9l\'e9charg\'e9 lorsqu\'92un client web s\'e9lectionne une langue de traduction pour la premi\'e8re fois.\par
+
+\pard\sa200\sl276\slmult1
+\par
+}

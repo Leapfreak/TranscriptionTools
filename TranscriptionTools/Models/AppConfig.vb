@@ -17,8 +17,6 @@ Namespace Models
 
         Public Property PathModelAudio As String = ".\ggml-large-v3.bin"
 
-        Public Property PathStream As String = ".\whisper\whisper-stream.exe"
-
         Public Property PathSubtitleEdit As String = ".\SubtitleEdit\SubtitleEdit.exe"
 
         Public Property PathOutputRoot As String = "."
@@ -71,7 +69,7 @@ Namespace Models
 
         Public Property Processors As Integer = 1
 
-        Public Property BeamSize As Integer = 5
+        Public Property BeamSize As Integer = 7
 
         Public Property BestOf As Integer = 5
 
@@ -99,8 +97,6 @@ Namespace Models
 
         Public Property PrintColours As Boolean = False
 
-        Public Property PrintRealtime As Boolean = False
-
         Public Property Diarize As Boolean = False
 
         Public Property Tinydiarize As Boolean = False
@@ -109,19 +105,11 @@ Namespace Models
 
         Public Property MaxSegmentLength As Integer = 0
 
-        Public Property MaxTokens As Integer = 0
-
         Public Property AudioContext As Integer = 0
 
         Public Property InitialPrompt As String = ""
 
-        Public Property Hotwords As String = ""
-
-        Public Property TranslateToEnglish As Boolean = False
-
         Public Property VadThreshold As Single = 0.8F
-
-        Public Property FreqThreshold As Single = 100.0F
 
         ' --- Subtitle Server ---
 
@@ -140,9 +128,9 @@ Namespace Models
         Public Property LiveServerPort As Integer = 5091
         Public Property PathFasterWhisperModel As String = ".\faster-whisper-large-v3"
         Public Property LiveComputeType As String = "int8_float16"
-        Public Property LiveVadSilenceMs As Integer = 600
+        Public Property LiveVadSilenceMs As Integer = 800
         Public Property LiveMaxSegmentSec As Integer = 30
-        Public Property LiveInterimIntervalMs As Integer = 1000
+        Public Property LiveInterimIntervalMs As Integer = 1500
 
         ' --- Translation (NLLB-200) ---
 
