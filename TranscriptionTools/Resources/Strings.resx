@@ -129,6 +129,10 @@
   <data name="Msg_NewVersionAvailable"><value>A new version is available:</value></data>
   <data name="Msg_DownloadUpdate"><value>Would you like to visit the download page?</value></data>
   <data name="Msg_UpdateAvailable"><value>Update Available</value></data>
+  <data name="Msg_LiveDepsMissing"><value>Live transcription dependencies are not installed.
+
+Please run the dependency check from the Settings tab to download all required components.</value></data>
+  <data name="Msg_DepsMissing"><value>Dependencies Missing</value></data>
 
   <!-- Tooltips -->
   <data name="Tip_Url"><value>Enter a YouTube URL or path to a local video/audio file</value></data>

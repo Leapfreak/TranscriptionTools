@@ -170,6 +170,10 @@
   <data name="Msg_NewVersionAvailable"><value>Eine neue Version ist verf&#252;gbar:</value></data>
   <data name="Msg_DownloadUpdate"><value>M&#246;chten Sie die Download-Seite besuchen?</value></data>
   <data name="Msg_UpdateAvailable"><value>Update verf&#252;gbar</value></data>
+  <data name="Msg_LiveDepsMissing"><value>Die Abh&#228;ngigkeiten f&#252;r die Live-Transkription sind nicht installiert.
+
+F&#252;hren Sie die Abh&#228;ngigkeitspr&#252;fung auf der Registerkarte Einstellungen aus, um alle erforderlichen Komponenten herunterzuladen.</value></data>
+  <data name="Msg_DepsMissing"><value>Fehlende Abh&#228;ngigkeiten</value></data>
   <data name="Tab_LiveOutput"><value>Live-Ausgabe</value></data>
   <data name="Tab_LiveLog"><value>Protokoll</value></data>
   <data name="Btn_LiveSaveLog"><value>Protokoll Speichern...</value></data>

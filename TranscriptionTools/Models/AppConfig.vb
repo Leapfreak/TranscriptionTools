@@ -69,7 +69,7 @@ Namespace Models
 
         Public Property Processors As Integer = 1
 
-        Public Property BeamSize As Integer = 7
+        Public Property BeamSize As Integer = 5
 
         Public Property BestOf As Integer = 5
 
@@ -101,15 +101,25 @@ Namespace Models
 
         Public Property Tinydiarize As Boolean = False
 
+        Public Property PrintRealtime As Boolean = False
+
         Public Property NoTimestamps As Boolean = False
 
         Public Property MaxSegmentLength As Integer = 0
+
+        Public Property MaxTokens As Integer = 0
 
         Public Property AudioContext As Integer = 0
 
         Public Property InitialPrompt As String = ""
 
-        Public Property VadThreshold As Single = 0.8F
+        Public Property Hotwords As String = ""
+
+        Public Property TranslateToEnglish As Boolean = False
+
+        Public Property VadThreshold As Single = 0.6F
+
+        Public Property FreqThreshold As Integer = 100
 
         ' --- Subtitle Server ---
 
@@ -120,17 +130,17 @@ Namespace Models
         Public Property SubtitleFgColor As String = "#FFFFFF"
 
         Public Property SubtitleFontFamily As String = "Segoe UI"
-        Public Property SubtitleFontSize As Single = 12
-        Public Property SubtitleFontBold As Boolean = False
+        Public Property SubtitleFontSize As Single = 14
+        Public Property SubtitleFontBold As Boolean = True
 
         ' --- Live Server (faster-whisper + VAD) ---
 
         Public Property LiveServerPort As Integer = 5091
         Public Property PathFasterWhisperModel As String = ".\faster-whisper-large-v3"
         Public Property LiveComputeType As String = "int8_float16"
-        Public Property LiveVadSilenceMs As Integer = 800
+        Public Property LiveVadSilenceMs As Integer = 600
         Public Property LiveMaxSegmentSec As Integer = 30
-        Public Property LiveInterimIntervalMs As Integer = 1500
+        Public Property LiveInterimIntervalMs As Integer = 1000
 
         ' --- Translation (NLLB-200) ---
 

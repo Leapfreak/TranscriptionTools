@@ -170,6 +170,10 @@
   <data name="Msg_NewVersionAvailable"><value>Hi ha una nova versi&#243; disponible:</value></data>
   <data name="Msg_DownloadUpdate"><value>Voleu visitar la p&#224;gina de desc&#224;rrega?</value></data>
   <data name="Msg_UpdateAvailable"><value>Actualitzaci&#243; disponible</value></data>
+  <data name="Msg_LiveDepsMissing"><value>Les depend&#232;ncies de transcripci&#243; en directe no estan instal&#183;lades.
+
+Executeu la verificaci&#243; de depend&#232;ncies des de la pestanya Configuraci&#243; per descarregar tots els components necessaris.</value></data>
+  <data name="Msg_DepsMissing"><value>Depend&#232;ncies faltants</value></data>
   <data name="Tab_LiveOutput"><value>Sortida en Directe</value></data>
   <data name="Tab_LiveLog"><value>Registre</value></data>
   <data name="Btn_LiveSaveLog"><value>Desar Registre...</value></data>

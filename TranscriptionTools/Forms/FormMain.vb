@@ -1403,9 +1403,8 @@ del ""%~f0""
             End If
 
             MessageBox.Show(
-                "Live transcription dependencies are not installed." & vbCrLf & vbCrLf &
-                "Please run the dependency check from the Settings tab to download all required components.",
-                "Dependencies Missing",
+                GetString("Msg_LiveDepsMissing"),
+                GetString("Msg_DepsMissing"),
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Warning)
             Return

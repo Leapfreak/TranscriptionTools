@@ -170,6 +170,10 @@
   <data name="Msg_NewVersionAvailable"><value>Uma nova vers&#227;o est&#225; dispon&#237;vel:</value></data>
   <data name="Msg_DownloadUpdate"><value>Deseja visitar a p&#225;gina de download?</value></data>
   <data name="Msg_UpdateAvailable"><value>Atualiza&#231;&#227;o dispon&#237;vel</value></data>
+  <data name="Msg_LiveDepsMissing"><value>As depend&#234;ncias de transcri&#231;&#227;o ao vivo n&#227;o est&#227;o instaladas.
+
+Execute a verifica&#231;&#227;o de depend&#234;ncias na guia Configura&#231;&#245;es para baixar todos os componentes necess&#225;rios.</value></data>
+  <data name="Msg_DepsMissing"><value>Depend&#234;ncias ausentes</value></data>
   <data name="Tab_LiveOutput"><value>Saída ao Vivo</value></data>
   <data name="Tab_LiveLog"><value>Registo</value></data>
   <data name="Btn_LiveSaveLog"><value>Salvar Registo...</value></data>
