@@ -24,77 +24,27 @@ jobs:
       - name: Publish
         run: dotnet publish TranscriptionTools/TranscriptionTools.vbproj -c Release -o TranscriptionTools/bin/Publish
 
-      - name: Restore whisper binaries cache
-        id: whisper-cache
-        uses: actions/cache/restore@v4
-        with:
-          path: whisper-bin
-          key: whisper-v1.8.4-cuda12.4-v3
-          restore-keys: |
-            whisper-v1.8.4-cuda12.4-v2-
-
-      - name: Check cache contents
-        id: cache-check
+      - name: Download whisper.cpp CUDA binaries
         shell: pwsh
         run: |
-          if (Test-Path "whisper-bin/whisper-cli.exe") {
-            echo "has_binaries=true" >> $env:GITHUB_OUTPUT
-            Write-Host "Cache hit - whisper binaries found"
-          } else {
-            echo "has_binaries=false" >> $env:GITHUB_OUTPUT
-            Write-Host "Cache miss - need to build"
-          }
-
-      - name: Install CUDA Toolkit
-        if: steps.cache-check.outputs.has_binaries != 'true'
-        run: |
-          $url = "https://developer.download.nvidia.com/compute/cuda/12.4.0/network_installers/cuda_12.4.0_windows_network.exe"
-          Invoke-WebRequest -Uri $url -OutFile "cuda_installer.exe"
-          Start-Process -FilePath "cuda_installer.exe" -ArgumentList "-s nvcc_12.4 cudart_12.4 cublas_12.4 cublas_dev_12.4 visual_studio_integration_12.4" -Wait -NoNewWindow
-          Remove-Item "cuda_installer.exe" -Force
-          $cudaPath = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4"
-          echo "CUDA_PATH=$cudaPath" >> $env:GITHUB_ENV
-          echo "$cudaPath\bin" >> $env:GITHUB_PATH
-
-      - name: Clone whisper.cpp
-        if: steps.cache-check.outputs.has_binaries != 'true'
-        run: |
-          git clone --depth 1 --branch v1.8.4 https://github.com/ggml-org/whisper.cpp.git whisper-src
-
-      - name: Build whisper.cpp with CUDA
-        if: steps.cache-check.outputs.has_binaries != 'true'
-        run: |
-          $cudaPath = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4"
-          $env:CUDA_PATH = $cudaPath
-          $env:CudaToolkitDir = $cudaPath
-          cd whisper-src
-          mkdir build
-          cd build
-          cmake .. -G "Visual Studio 17 2022" -A x64 `
-            -DGGML_CUDA=ON `
-            -DCMAKE_BUILD_TYPE=Release `
-            -DCUDAToolkit_ROOT="$cudaPath" `
-            -DCMAKE_CUDA_COMPILER="$cudaPath\bin\nvcc.exe"
-          cmake --build . --config Release
-
-      - name: Collect whisper binaries
-        if: steps.cache-check.outputs.has_binaries != 'true'
-        run: |
+          gh release download v1.8.4 -R ggml-org/whisper.cpp -p "whisper-cublas-12.4.0-bin-x64.zip" -D .
+          Expand-Archive -Path "whisper-cublas-12.4.0-bin-x64.zip" -DestinationPath "whisper-extract"
           New-Item -ItemType Directory -Force -Path "whisper-bin"
-          $binDir = "whisper-src/build/bin/Release"
-          Copy-Item "$binDir/whisper-cli.exe" "whisper-bin/"
-          Copy-Item "$binDir/whisper.dll" "whisper-bin/"
-          Copy-Item "$binDir/ggml.dll" "whisper-bin/"
-          Copy-Item "$binDir/ggml-base.dll" "whisper-bin/"
-          Copy-Item "$binDir/ggml-cpu.dll" "whisper-bin/"
-          Copy-Item "$binDir/ggml-cuda.dll" "whisper-bin/"
-          # Bundle CUDA runtime DLLs so users don't need CUDA toolkit installed
-          $cudaBin = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4\bin"
-          Copy-Item "$cudaBin/cublas64_12.dll" "whisper-bin/"
-          Copy-Item "$cudaBin/cublasLt64_12.dll" "whisper-bin/"
-          Copy-Item "$cudaBin/cudart64_12.dll" "whisper-bin/"
+          # Copy only the files we need
+          $src = "whisper-extract/Release"
+          Copy-Item "$src/whisper-cli.exe" "whisper-bin/"
+          Copy-Item "$src/whisper.dll" "whisper-bin/"
+          Copy-Item "$src/ggml.dll" "whisper-bin/"
+          Copy-Item "$src/ggml-base.dll" "whisper-bin/"
+          Copy-Item "$src/ggml-cpu.dll" "whisper-bin/"
+          Copy-Item "$src/ggml-cuda.dll" "whisper-bin/"
+          Copy-Item "$src/cublas64_12.dll" "whisper-bin/"
+          Copy-Item "$src/cublasLt64_12.dll" "whisper-bin/"
+          Copy-Item "$src/cudart64_12.dll" "whisper-bin/"
           Write-Host "Whisper binaries:"
           Get-ChildItem "whisper-bin"
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Write component versions
         shell: pwsh
