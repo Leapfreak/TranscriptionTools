@@ -4,63 +4,99 @@
 \viewkind4\uc1
 
 \pard\sa200\sl276\slmult1
-\f0\fs36\b\cf2 Transcription Tools \endash  Gu\'eda de l\'27usuari\b0\cf0\fs20\par
+\f0\fs36\b\cf2 Transcription Tools \endash  Guia d\rquote usuari\b0\cf0\fs20\par
 
-\fs24\b Visi\'f3 general\b0\fs20\par
-Transcription Tools \'e9s una aplicaci\'f3 d\'27escriptori per a Windows que genera fitxers de subt\'edtols a partir de fonts d\'27\'e0udio i v\'eddeo. Proporciona una interf\'edcie gr\'e0fica per al motor de reconeixement de veu whisper.cpp i admet quatre modes de processament per lots a m\'e9s d\'27un mode de transcripci\'f3 en directe en temps real amb traducci\'f3 opcional basada en IA.\par
+\fs24\b Descripci\'f3 general\b0\fs20\par
+Transcription Tools \'e9s una aplicaci\'f3 d\rquote escriptori per a Windows que genera fitxers de subt\'edtols a partir de fonts d\rquote \'e0udio i v\'eddeo. Utilitza el motor de reconeixement de veu whisper.cpp per al processament per lots i faster-whisper amb Silero VAD per a la transcripci\'f3 en temps real, amb traducci\'f3 opcional mitjan\'e7ant IA via NLLB-200.\par
+
+L\rquote aplicaci\'f3 t\'e9 sis pestanyes: \b Traducci\'f3 en directe\b0 , \b Servidor de subt\'edtols\b0 , \b Principal / Feina\b0 , \b Rutes i eines\b0 , \b Configuraci\'f3\b0  i \b Ajuda\b0 .\par
+
+\fs24\b\cf2 Pestanya Traducci\'f3 en directe\b0\cf0\fs20\par
+La pestanya Traducci\'f3 en directe ofereix transcripci\'f3 de veu a text en temps real des del micr\'f2fon o d\rquote un altre dispositiu d\rquote entrada d\rquote \'e0udio. Utilitza faster-whisper amb Silero VAD (detecci\'f3 d\rquote activitat de veu) per detectar pauses naturals en la parla i segmentar l\rquote \'e0udio en enunciats complets, produint transcripcions m\'e9s netes i precises que el processament per finestres fixes.\par
+
+\b Controls\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Dispositiu d\rquote \'e0udio\b0  \endash  Seleccioneu el dispositiu d\rquote entrada d\rquote \'e0udio. Els dispositius es detecten mitjan\'e7ant la biblioteca Python sounddevice. Feu clic a \b Actualitza\b0  per tornar a escanejar si connecteu un dispositiu nou.\par
+\bullet\tab\b Idioma d\rquote entrada\b0  \endash  L\rquote idioma que es parla. Establiu-lo a \b auto\b0  per a la detecci\'f3 autom\'e0tica o seleccioneu un idioma espec\'edfic per obtenir una millor precisi\'f3.\par
+\bullet\tab\b Inicia\b0  \endash  Comenci la transcripci\'f3 en directe. En el primer \'fas, l\rquote aplicaci\'f3 descarrega les depend\'e8ncies necessàries (entorn d\rquote execuci\'f3 de Python, model de faster-whisper, paquets de Python) si no estan instal\'b7lades.\par
+\bullet\tab\b Atura\b0  \endash  Atura la sessi\'f3 de transcripci\'f3 en directe. El model faster-whisper roman carregat a la mem\'f2ria perqu\'e8 el proper inici sigui r\'e0pid.\par
+
+\pard\sa200\sl276\slmult1
+\b Subpestanyes\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Sortida en directe\b0  \endash  Una vista web integrada que mostra la mateixa p\'e0gina de subt\'edtols que el Servidor de subt\'edtols. Mostra el text de transcripci\'f3 en directe amb el mateix estil i funcionalitats que el client web. Un bot\'f3 \b Desa la transcripci\'f3\b0  a la part inferior desa la transcripci\'f3 completa en un fitxer de text.\par
+\bullet\tab\b Registre\b0  \endash  Un registre de text despl\'e7able que mostra l\rquote activitat de transcripci\'f3 amb codificaci\'f3 de colors. El text en curs es mostra en blanc i es perfecciona contínuament mentre parleu. El text confirmat (finalitzat) apareix en verd. Els missatges d\rquote estat apareixen en groc i la informaci\'f3 del sistema en gris. Utilitzeu \b Desa el registre\b0  i \b Esborra el registre\b0  per gestionar el registre.\par
+
+\pard\sa200\sl276\slmult1
+\b Traducci\'f3 en temps real\b0\par
+Quan el Servidor de subt\'edtols est\'e0 en funcionament, els clients web connectats poden seleccionar un idioma de traducci\'f3 des del desplegable de la p\'e0gina web. L\rquote aplicaci\'f3 utilitza un servidor de traducci\'f3 NLLB-200 per traduir el text transcrit al moment. Cada client pot triar el seu propi idioma de manera independent. S\rquote admeten m\'e9s de 200 idiomes. Els clients que no seleccionen un idioma de traducci\'f3 reben la transcripci\'f3 original.\par
+
+\fs24\b\cf2 Pestanya Servidor de subt\'edtols\b0\cf0\fs20\par
+El Servidor de subt\'edtols ofereix una superposici\'f3 de subt\'edtols en directe basada en web que es pot visualitzar en qualsevol dispositiu (tel\'e8fon, tauleta, segon monitor) connectat a la mateixa xarxa. Serveix una p\'e0gina web que mostra el text de transcripci\'f3 en directe via WebSocket. El servidor funciona en HTTP i tamb\'e9 inicia un escoltador HTTPS al port seg\'fcent (p. ex. 5081) per admetre la funci\'f3 de bloqueig de pantalla en dispositius m\'f2bils.\par
+
+\b Configuraci\'f3 del servidor\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Port\b0  \endash  El port HTTP en qu\'e8 escolta el servidor (per defecte: 5080). HTTPS est\'e0 disponible autom\'e0ticament al port+1.\par
+\bullet\tab\b Inicia / Atura / Reinicia el servidor\b0  \endash  Controla el servidor de subt\'edtols.\par
+\bullet\tab\b Simula\b0  \endash  Envia text de mostra per provar la visualitzaci\'f3 sense una font d\rquote \'e0udio en directe.\par
+\bullet\tab\b Atura la sim.\b0  \endash  Atura la simulaci\'f3.\par
+\bullet\tab\b Color de fons / Color del text\b0  \endash  Personalitzeu els colors de visualitzaci\'f3 dels subt\'edtols. Feu clic al quadre de color per obrir un selector de colors.\par
+\bullet\tab\b Lletra\b0  \endash  Trieu la fam\'edlia de lletra per als subt\'edtols que es mostren a la p\'e0gina web.\par
+\bullet\tab\b Mida\b0  \endash  Establiu la mida de lletra dels subt\'edtols.\par
+\bullet\tab\b Negreta\b0  \endash  Alterna el text en negreta per als subt\'edtols.\par
+\bullet\tab\b Configura la traducci\'f3\b0  \endash  Descarrega i instal\'b7la el model de traducci\'f3 NLLB-200 i les depend\'e8ncies (~3,5 GB). Aix\'f2 \'e9s necessari per a la funci\'f3 de traducci\'f3 en temps real. Un cop instal\'b7lat, la traducci\'f3 est\'e0 disponible autom\'e0ticament.\par
+
+\pard\sa200\sl276\slmult1
+\b Informaci\'f3 de connexi\'f3\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab Mostra l\rquote estat del servidor, la URL i el nombre de clients connectats.\par
+\bullet\tab\b Copia la URL\b0  \endash  Copia la URL del servidor al porta-retalls perqu\'e8 la pugueu compartir amb altres dispositius.\par
+
+\pard\sa200\sl276\slmult1
+\b Registre del servidor\b0\par
+Sota la informaci\'f3 de connexi\'f3, una \'e0rea de registre mostra els esdeveniments del servidor, incloent-hi connexions de clients, desconnexions i sol\'b7licituds de traducci\'f3.\par
+
+\b Funcionalitats de la p\'e0gina web\b0\par
+La p\'e0gina web de subt\'edtols inclou una barra d\rquote eines a la cantonada superior dreta amb els controls seg\'fcents:\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Control remot\b0  (icona d\rquote engranatge) \endash  Obre un tauler d\rquote administraci\'f3 per iniciar, aturar, reiniciar o simular remotament la transcripci\'f3 en directe sense tornar a l\rquote aplicaci\'f3 d\rquote escriptori.\par
+\bullet\tab\b Configuraci\'f3\b0  (icona Aa) \endash  Ajusteu la mida de lletra, la fam\'edlia de lletra, la negreta, el color del text, la selecci\'f3 de veu i la velocitat per a la lectura en veu alta, la direcci\'f3 de despl\'e7ament i les opcions de visualitzaci\'f3 d\rquote etiquetes. Les prefer\'e8ncies es desen localment al navegador.\par
+\bullet\tab\b Traducci\'f3\b0  \endash  Seleccioneu un idioma de traducci\'f3. Cada client pot triar de manera independent. Seleccioneu \ldblquote Original\rdblquote  per rebre el text sense traduir.\par
+\bullet\tab\b Etiquetes\b0  \endash  Trieu quina informaci\'f3 mostrar abans de cada l\'ednia de subt\'edtol: Desactivat, Idioma, Hora o tots dos.\par
+\bullet\tab\b Llegeix en veu alta\b0  (icona d\rquote altaveu) \endash  Activa o desactiva la s\'edntesi de veu. Cada nova l\'ednia de subt\'edtol es llegeix en veu alta mitjan\'e7ant la s\'edntesi de veu del navegador.\par
+\bullet\tab\b Mant\'e9 la pantalla activa\b0  (icona de llum) \endash  Evita que la pantalla del tel\'e8fon o la tauleta s\rquote enfosqueixi. Requereix HTTPS (el port segur). En el primer \'fas, una superposici\'f3 guiada explica com acceptar el certificat autofirmat (configuraci\'f3 \'fanica).\par
+\bullet\tab\b Desa la transcripci\'f3\b0  \endash  Descarrega la transcripci\'f3 actual com a fitxer de text.\par
+
+\pard\sa200\sl276\slmult1
+\b Localitzaci\'f3 de la p\'e0gina web\b0\par
+La interf\'edcie web detecta autom\'e0ticament l\rquote idioma del navegador i mostra totes les etiquetes, botons i missatges en l\rquote idioma corresponent. Admesos: angl\'e8s, espanyol, franc\'e8s, alemany, catal\'e0, portugu\'e8s, japon\'e8s i xin\'e8s.\par
+
+\fs24\b\cf2 Pestanya Principal / Feina\b0\cf0\fs20\par
+La pestanya Principal / Feina gestiona el processament per lots de fitxers d\rquote \'e0udio i v\'eddeo. Admet quatre modes:\par
 
 \b Modes de processament per lots\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b YouTube -> Subtitles\b0  \endash  Descarrega un v\'eddeo de YouTube (o utilitza un fitxer de v\'eddeo local), opcionalment retalla\'27l a un interval de temps i genera subt\'edtols.\par
-\bullet\tab\b Audio File -> Subtitles\b0  \endash  Transcriu directament qualsevol fitxer d\'27\'e0udio (OGG, MP3, WAV, FLAC, M4A, etc.) en subt\'edtols.\par
-\bullet\tab\b YouTube -> Full Video\b0  \endash  Descarrega un v\'eddeo de YouTube (o copia un v\'eddeo local) i retalla\'27l, sense transcripci\'f3.\par
-\bullet\tab\b YouTube -> Audio Only\b0  \endash  Descarrega un v\'eddeo de YouTube (o copia un v\'eddeo local), retalla\'27l i extreu l\'27\'e0udio a un fitxer MP3 d\'27alta qualitat, sense transcripci\'f3.\par
+\bullet\tab\b YouTube -> Subt\'edtols\b0  \endash  Descarrega un v\'eddeo de YouTube (o seleccioneu un fitxer de v\'eddeo local), retalleu-lo opcionalment a un interval de temps i genereu subt\'edtols.\par
+\bullet\tab\b Fitxer d\rquote \'e0udio -> Subt\'edtols\b0  \endash  Transcriu qualsevol fitxer d\rquote \'e0udio (OGG, MP3, WAV, FLAC, M4A, etc.) en subt\'edtols.\par
+\bullet\tab\b YouTube -> V\'eddeo complet\b0  \endash  Descarrega o copia un v\'eddeo i retalla\rquote l, sense transcripci\'f3.\par
+\bullet\tab\b YouTube -> Nom\'e9s \'e0udio\b0  \endash  Descarrega o copia un v\'eddeo, retalla\rquote l i extreu l\rquote \'e0udio a un fitxer MP3 d\rquote alta qualitat.\par
 
 \pard\sa200\sl276\slmult1
-\b Mode en directe\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab\b Live Translation\b0  \endash  Reconeixement de veu en temps real des d\'27un micr\'f2fon o dispositiu d\'27entrada d\'27\'e0udio, utilitzant faster-whisper amb Silero VAD (detecci\'f3 d\'27activitat de veu). El text es segmenta en pauses naturals de la parla per obtenir frases netes i completes. Admet traducci\'f3 en temps real opcional a m\'e9s de 200 idiomes via NLLB.\par
-
-\pard\sa200\sl276\slmult1
-\fs24\b\cf2 Pestanya principal / Feina\b0\cf0\fs20\par
-
 \b Selector de mode\b0\par
-Utilitza el men\'fa desplegable de la part superior per canviar entre modes. El mode predeterminat \'e9s \b YouTube -> Subtitles\b0 . La interf\'edcie s\'27adapta per mostrar nom\'e9s els controls rellevants per al mode seleccionat. Els controls d\'27interval de temps i el bot\'f3 de reprendre nom\'e9s es mostren per als modes basats en YouTube. Les caselles de verificaci\'f3 del format de sortida nom\'e9s es mostren per als modes que produeixen subt\'edtols (YouTube -> Subtitles i Audio File -> Subtitles).\par
+Utilitzeu el desplegable a la part superior per canviar entre modes. La interf\'edcie s\rquote adapta per mostrar nom\'e9s els controls rellevants per al mode seleccionat.\par
 
-\b Mode YouTube -> Subtitles\b0\par
+\b Controls d\rquote entrada\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b URL / Fitxer\b0  \endash  Introdueix una URL de YouTube o fes clic a Navega per seleccionar un fitxer de v\'eddeo local.\par
-\bullet\tab\b Idioma d\'27entrada\b0  \endash  L\'27idioma parlat a l\'27\'e0udio. Configura\'27l a \b auto\b0  perqu\'e8 el motor el detecti autom\'e0ticament, o selecciona un idioma espec\'edfic per obtenir millor precisi\'f3.\par
-\bullet\tab\b Idioma de sortida\b0  \endash  L\'27idioma dels subt\'edtols generats. Configura\'27l a \b auto\b0  per mantenir el mateix idioma que l\'27entrada. Configura\'27l a \b en\b0  (angl\'e8s) per traduir l\'27\'e0udio no angl\'e8s a subt\'edtols en angl\'e8s. Whisper nom\'e9s pot traduir \i cap a\i0  l\'27angl\'e8s.\par
-\bullet\tab\b Model\b0  \endash  Tria quin model de whisper s\'27utilitza. Els models m\'e9s grans (p. ex. ggml-large-v3.bin) s\'f3n m\'e9s precisos per\'f2 m\'e9s lents. Els models m\'e9s petits (p. ex. ggml-tiny.bin, ggml-base.bin) s\'f3n m\'e9s r\'e0pids per\'f2 menys precisos.\par
-\bullet\tab\b Hora d\'27inici / Hora de fi\b0  \endash  Especifica opcionalment un interval de temps (HH:MM:SS) per retallar el v\'eddeo abans de transcriure\'27l. Deixa-ho a 00:00:00 per processar tot el v\'eddeo.\par
-\bullet\tab\b Directori de sortida\b0  \endash  On es desaran tots els fitxers de treball i el fitxer de subt\'edtols final. Per defecte es crea una carpeta amb marca de temps sota el directori de sortida arrel.\par
-\bullet\tab\b Reprendre\b0  \endash  Si una feina anterior va ser interrompuda, fes clic a Reprendre per seleccionar la carpeta de sortida i continuar des d\'27on es va deixar. Els fragments ja completats s\'27ometen autom\'e0ticament.\par
-
-\pard\sa200\sl276\slmult1
-\b Mode Audio File -> Subtitles\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab\b Fitxer d\'27\'e0udio\b0  \endash  Fes clic a Navega per seleccionar un fitxer d\'27\'e0udio. Els formats admesos inclouen OGG, MP3, WAV, FLAC, M4A, WMA, AAC, OPUS i altres.\par
-\bullet\tab\b Directori de sortida\b0  \endash  Igual que el mode YouTube. El fitxer SRT de sortida porta el nom del fitxer d\'27entrada.\par
-\bullet\tab Aquest mode recorda el seu propi model predeterminat per separat, de manera que pots utilitzar un model gran per a v\'eddeos de YouTube i un model m\'e9s petit i r\'e0pid per a transcripcions r\'e0pides d\'27\'e0udio.\par
-
-\pard\sa200\sl276\slmult1
-\b Mode YouTube -> Full Video\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab Descarrega i retalla un v\'eddeo sense realitzar cap transcripci\'f3.\par
-\bullet\tab El fitxer de sortida \'e9s \b preview.mp4\b0  al directori de sortida.\par
-\bullet\tab Nom\'e9s cal yt-dlp i ffmpeg.\par
-
-\pard\sa200\sl276\slmult1
-\b Mode YouTube -> Audio Only\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab Descarrega un v\'eddeo, el retalla i extreu l\'27\'e0udio a un fitxer MP3 d\'27alta qualitat (\b yt_audio.mp3\b0 ) sense realitzar cap transcripci\'f3.\par
-\bullet\tab L\'27\'e0udio s\'27extreu amb la m\'e0xima qualitat VBR.\par
-\bullet\tab Nom\'e9s cal yt-dlp i ffmpeg.\par
+\bullet\tab\b URL / Fitxer\b0  \endash  Introduïu una URL de YouTube o feu clic a Navega per seleccionar un fitxer de v\'eddeo o \'e0udio local.\par
+\bullet\tab\b Idioma d\rquote entrada\b0  \endash  L\rquote idioma parlat a l\rquote \'e0udio. Establiu-lo a \b auto\b0  per a la detecci\'f3 autom\'e0tica o seleccioneu un idioma espec\'edfic per obtenir una millor precisi\'f3.\par
+\bullet\tab\b Idioma de sortida\b0  \endash  L\rquote idioma dels subt\'edtols generats. Establiu-lo a \b auto\b0  per mantenir el mateix idioma que l\rquote entrada. Establiu-lo a \b en\b0  per traduir a l\rquote angl\'e8s (Whisper nom\'e9s pot traduir \i a\i0  l\rquote angl\'e8s).\par
+\bullet\tab\b Model\b0  \endash  Trieu quin model de whisper utilitzar. Els models m\'e9s grans s\'f3n m\'e9s precisos per\'f2 m\'e9s lents.\par
+\bullet\tab\b Hora d\rquote inici / Hora de fi\b0  \endash  Especifiqueu opcionalment un interval de temps (HH:MM:SS) per retallar el v\'eddeo abans de transcriure\rquote l.\par
+\bullet\tab\b Directori de sortida\b0  \endash  On es desaran tots els fitxers de treball i la sortida final.\par
 
 \pard\sa200\sl276\slmult1
 \b Formats de sortida\b0\par
-Disponible quan s\'27utilitza el mode YouTube -> Subtitles o Audio File -> Subtitles. Selecciona els formats a generar:\par
+Disponible per als modes de subt\'edtols. Seleccioneu els formats que voleu generar:\par
 \pard\fi-360\li720\sa100
 \bullet\tab\b SRT\b0  \endash  Format de subt\'edtols SubRip (el m\'e9s com\'fa, activat per defecte)\par
 \bullet\tab\b VTT\b0  \endash  Format WebVTT (per a \'fas web)\par
@@ -72,243 +108,122 @@ Disponible quan s\'27utilitza el mode YouTube -> Subtitles o Audio File -> Subti
 \pard\sa200\sl276\slmult1
 \b Progr\'e9s\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab La barra de progr\'e9s superior mostra el progr\'e9s general del proc\'e9s en tots els passos.\par
-\bullet\tab Una segona barra de progr\'e9s apareix durant la transcripci\'f3 i mostra el progr\'e9s a nivell de fragment.\par
-\bullet\tab\b Inicia\b0  \endash  Comenc\'e7a el processament. La pestanya de registre es mostra autom\'e0ticament.\par
+\bullet\tab La barra de progr\'e9s superior mostra el progr\'e9s general de la canonada. Apareix una segona barra durant la transcripci\'f3 per al progr\'e9s a nivell de fragment.\par
+\bullet\tab\b Inicia\b0  \endash  Comenci el processament.\par
+\bullet\tab\b Repr\'e8n\b0  \endash  Continua una feina interrompuda. Seleccioneu la carpeta de sortida i els fragments ja completats s\rquote ometen autom\'e0ticament.\par
 \bullet\tab\b Cancel\'b7la\b0  \endash  Atura la feina actual.\par
-\bullet\tab\b Obre la carpeta de sortida\b0  \endash  Obre el directori de sortida a l\'27Explorador de Windows (disponible despr\'e9s de la finalitzaci\'f3).\par
-\bullet\tab\b Subtitle Edit\b0  \endash  Obre el fitxer SRT generat directament a Subtitle Edit per revisar-lo (disponible despr\'e9s de la finalitzaci\'f3, nom\'e9s en modes de subt\'edtols).\par
-\bullet\tab\b Obre preview.srt\b0  \endash  Obre el fitxer SRT generat amb la teva aplicaci\'f3 predeterminada (disponible despr\'e9s de la finalitzaci\'f3, nom\'e9s en modes de subt\'edtols).\par
+\bullet\tab\b Obre la carpeta de sortida\b0  \endash  Obre el directori de sortida a l\rquote Explorador de Windows.\par
+\bullet\tab\b Subtitle Edit\b0  \endash  Obre el fitxer SRT generat a Subtitle Edit per revisar-lo.\par
+\bullet\tab\b Obre preview.srt\b0  \endash  Obre el fitxer SRT amb la vostra aplicaci\'f3 per defecte.\par
 
 \pard\sa200\sl276\slmult1
-\fs24\b\cf2 Pestanya de traducci\'f3 en directe\b0\cf0\fs20\par
-La pestanya de traducci\'f3 en directe proporciona transcripci\'f3 de veu a text en temps real des del micr\'f2fon o d\'27un altre dispositiu d\'27entrada d\'27\'e0udio. Utilitza faster-whisper amb Silero VAD (detecci\'f3 d\'27activitat de veu) per detectar pauses naturals de la parla i segmentar l\'27\'e0udio en enunciats complets. Aix\'f2 produeix transcripcions m\'e9s netes i precises que la divisi\'f3 en finestres fixes.\par
+\b Registre\b0\par
+Una \'e0rea de registre a la part inferior de la pestanya mostra la sortida en temps real de la canonada de processament. Cada entrada t\'e9 marca de temps i codificaci\'f3 de colors: verd per a \'e8xit, negre per a informaci\'f3, gris per a sortida de depuraci\'f3 i vermell per a errors. El registre es despl\'e7a autom\'e0ticament per mostrar la sortida m\'e9s recent. Utilitzeu \b Esborra el registre\b0  per restablir i \b Copia al porta-retalls\b0  per copiar el registre complet.\par
 
-El text transcrit apareix en dues subpestanyes:\par
+\fs24\b\cf2 Pestanya Rutes i eines\b0\cf0\fs20\par
+Configureu les rutes de fitxers a les eines i models externs:\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Live Output\b0  \endash  Una vista basada en web (igual que la p\'e0gina del servidor de subt\'edtols) integrada directament a l\'27aplicaci\'f3.\par
-\bullet\tab\b Registre\b0  \endash  Un registre de text desple\'e7able que mostra la sortida de la transcripci\'f3 amb codificaci\'f3 de colors. El text en curs es va refinant continu\'efament mentre parles. Els missatges d\'27estat apareixen en groc i la informaci\'f3 del sistema en gris.\par
-
-\pard\sa200\sl276\slmult1
-\b Controls\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab\b Dispositiu d\'27\'e0udio\b0  \endash  Selecciona el dispositiu d\'27entrada d\'27\'e0udio. Els dispositius es detecten mitjan\'e7ant la biblioteca Python sounddevice en iniciar. Fes clic a \b Actualitza\b0  per tornar a escanejar si connectes un nou dispositiu.\par
-\bullet\tab\b Idioma d\'27entrada\b0  \endash  L\'27idioma que es parla. Configura\'27l a \b auto\b0  per a la detecci\'f3 autom\'e0tica, o selecciona un idioma espec\'edfic per obtenir millor precisi\'f3.\par
-\bullet\tab\b Inicia\b0  \endash  Comenc\'e7a la transcripci\'f3 en directe. En el primer \'fas, l\'27aplicaci\'f3 descarregar\'e0 el model de faster-whisper (~3 GB) i instal\'b7lar\'e0 les depend\'e8ncies de Python si encara no estan presents.\par
-\bullet\tab\b Atura\b0  \endash  Atura la sessi\'f3 de transcripci\'f3 en directe.\par
-\bullet\tab\b Desa\b0  \endash  Desa la transcripci\'f3 completa en un fitxer de text.\par
-\bullet\tab\b Esborra\b0  \endash  Esborra la visualitzaci\'f3 de sortida.\par
-
-\pard\sa200\sl276\slmult1
-\b Traducci\'f3 en temps real\b0\par
-Quan el servidor de subt\'edtols est\'e0 en funcionament, els clients web connectats poden seleccionar un idioma de traducci\'f3 des del men\'fa desplegable de la p\'e0gina web. L\'27aplicaci\'f3 inicia autom\'e0ticament un servidor de traducci\'f3 NLLB-200 (en el primer \'fas, aix\'f2 descarrega ~3,5 GB de depend\'e8ncies incloent el model d\'27IA). El text transcrit es tradueix en temps real i s\'27envia a cada client en l\'27idioma triat. S\'27admeten m\'e9s de 200 idiomes. Els clients que no seleccionen un idioma de traducci\'f3 reben la transcripci\'f3 original.\par
-
-\pard\sa200\sl276\slmult1
-\fs24\b\cf2 Pestanya del servidor de subt\'edtols\b0\cf0\fs20\par
-El servidor de subt\'edtols proporciona una superposici\'f3 de subtitulaci\'f3 en directe basada en web que es pot visualitzar en qualsevol dispositiu (tel\'e8fon, tauleta, segon monitor) connectat a la mateixa xarxa. Quan el servidor est\'e0 en funcionament, serveix una p\'e0gina web que mostra el text de transcripci\'f3 en directe mitjan\'e7ant WebSocket. El servidor funciona en HTTP i tamb\'e9 inicia un escoltador HTTPS al port seg\'fcent (p. ex. 5081) per admetre la funci\'f3 de bloqueig de pantalla desperta. Les noves l\'ednies de subt\'edtols es ressalten breument en groc abans de passar al color de text triat.\par
-
-\b Configuraci\'f3 del servidor\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab\b Port\b0  \endash  El port HTTP en qu\'e8 escolta el servidor (per defecte: 5080). Un port HTTPS tamb\'e9 s\'27obre autom\'e0ticament a port+1 (per defecte: 5081) amb un certificat autofirmat.\par
-\bullet\tab\b Inicia / Atura / Reinicia el servidor\b0  \endash  Controla el servidor de subt\'edtols.\par
-\bullet\tab\b Simula\b0  \endash  Envia text d\'27exemple (Joan 3:16-18) per provar la visualitzaci\'f3 sense una font d\'27\'e0udio en directe.\par
-\bullet\tab\b Atura la simulaci\'f3\b0  \endash  Atura la simulaci\'f3.\par
-\bullet\tab\b Color de fons / Color del text\b0  \endash  Personalitza els colors de la visualitzaci\'f3 de subt\'edtols. Aquests colors s\'27apliquen tant a la p\'e0gina web com al quadre de text de sortida en directe. Fes clic al quadrat de color per obrir un di\'e0leg de selecci\'f3 de color. Els colors es desen a la configuraci\'f3.\par
-
-\pard\sa200\sl276\slmult1
-\b Informaci\'f3 de connexi\'f3\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab Mostra l\'27estat del servidor, la URL i el nombre de clients connectats.\par
-\bullet\tab\b Copia la URL\b0  \endash  Copia la URL del servidor al portapapers perqu\'e8 la puguis compartir amb altres dispositius.\par
-
-\pard\sa200\sl276\slmult1
-\b Barra d\'27eines de la p\'e0gina web\b0\par
-La p\'e0gina web de subt\'edtols inclou una barra d\'27eines a la cantonada superior dreta amb els seg\'fcents controls:\par
-\pard\fi-360\li720\sa100
-\bullet\tab\b Control remot\b0  (icona d\'27engranatge) \endash  Obre un tauler d\'27administraci\'f3 per Iniciar, Aturar, Reiniciar o Simular remotament la transcripci\'f3 en directe sense tornar a l\'27aplicaci\'f3 d\'27escriptori. El tauler consulta l\'27estat del servidor cada 3 segons.\par
-\bullet\tab\b Configuraci\'f3\b0  (Aa) \endash  Obre un tauler de configuraci\'f3 per ajustar la mida de la lletra, la fam\'edlia de fonts, la negreta i el color del text. Tamb\'e9 inclou la selecci\'f3 de veu i la velocitat per a la funci\'f3 de lectura en veu alta, la direcci\'f3 de despla\'e7ament i les opcions de visualitzaci\'f3 d\'27etiquetes. Totes les prefer\'e8ncies es desen localment al navegador.\par
-\bullet\tab\b Traducci\'f3\b0  \endash  Un men\'fa desplegable per seleccionar un idioma de traducci\'f3. Quan es selecciona un idioma, el client rep el text tradu\'eft per IA en aquell idioma en comptes de la transcripci\'f3 original. Selecciona \ldblquote Original\rdblquote  per rebre el text sense traduir.\par
-\bullet\tab\b Etiquetes\b0  \endash  Tria quina informaci\'f3 mostrar abans de cada l\'ednia de subt\'edtols: Desactivat, Idioma (mostra el codi d\'27idioma detectat o tradu\'eft), Hora (mostra la marca de temps), o tots dos.\par
-\bullet\tab\b Llegeix en veu alta\b0  (icona d\'27altaveu) \endash  Activa o desactiva la s\'edntesi de veu. Quan est\'e0 activada, cada nova l\'ednia de subt\'edtols confirmada es llegeix en veu alta mitjan\'e7ant la s\'edntesi de parla del navegador. La veu i la velocitat es poden configurar al tauler de configuraci\'f3.\par
-\bullet\tab\b Mantenir la pantalla activa\b0  (icona de llum) \endash  Evita que la pantalla del tel\'e8fon o la tauleta s\'27enfosqueixi o es bloquegi. Utilitza l\'27API Wake Lock del navegador, que requereix una connexi\'f3 segura (HTTPS). En el primer \'fas des de HTTP, una superposici\'f3 guiada explica com acceptar l\'27advertiment del certificat autofirmat al navegador (configuraci\'f3 d\'27una sola vegada). Un cop acceptat, la pantalla roman activa mentre la p\'e0gina estigui oberta.\par
-\bullet\tab\b Desa la transcripci\'f3\b0  \endash  Descarrega la transcripci\'f3 actual com a fitxer de text.\par
-
-\pard\sa200\sl276\slmult1
-\b Localitzaci\'f3\b0\par
-La interf\'edcie de la p\'e0gina web detecta autom\'e0ticament l\'27idioma del navegador i mostra totes les etiquetes, botons i missatges en l\'27idioma corresponent. Idiomes admesos: angl\'e8s, espanyol, franc\'e8s, alemany, catal\'e0, portugu\'e8s, japon\'e8s i xin\'e8s. Si l\'27idioma del navegador no \'e9s compatible, s\'27utilitza l\'27angl\'e8s com a alternativa.\par
-
-\fs24\b\cf2 Pestanya de par\'e0metres de Whisper\b0\cf0\fs20\par
-Configuraci\'f3 avan\'e7ada per al motor de reconeixement de veu whisper-cli. Aquests par\'e0metres s\'27apliquen nom\'e9s als modes de processament per lots (no a la traducci\'f3 en directe). La majoria d\'27usuaris poden deixar-los als valors predeterminats.\par
-
-\b Idioma i model\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab\b Idioma\b0  \endash  Reflecteix la configuraci\'f3 de l\'27idioma d\'27entrada de la pestanya principal.\par
-\bullet\tab\b Fils d\'27execuci\'f3\b0  \endash  Nombre de fils de CPU per al processament (per defecte: 4).\par
-\bullet\tab\b Processadors\b0  \endash  Nombre de processadors en paral\'b7lel (per defecte: 1).\par
-
-\pard\sa200\sl276\slmult1
-\b Cerca de feix / Mostreig\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab\b Mida del feix\b0  \endash  Amplada de la cerca de feix (per defecte: 5). Els valors m\'e9s alts poden millorar la precisi\'f3 per\'f2 s\'f3n m\'e9s lents.\par
-\bullet\tab\b Best Of\b0  \endash  Nombre de candidats a considerar (per defecte: 5).\par
-\bullet\tab\b Temperatura\b0  \endash  Temperatura de mostreig (per defecte: 0,0). Els valors m\'e9s alts augmenten l\'27aleatorietat.\par
-\bullet\tab\b Increment de temperatura\b0  \endash  Increment de temperatura en cas de fallada (per defecte: 0,2).\par
-
-\pard\sa200\sl276\slmult1
-\b Qualitat / Filtratge\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab\b Context m\'e0xim\b0  \endash  M\'e0xim de tokens de context (0 = usar predeterminat).\par
-\bullet\tab\b Llindar de paraula\b0  \endash  Llindar de confian\'e7a a nivell de paraula (per defecte: 0,01).\par
-\bullet\tab\b Llindar d\'27entropia\b0  \endash  Llindar d\'27entropia per al filtratge de qualitat (per defecte: 2,4).\par
-\bullet\tab\b Llindar de probabilitat logar\'edtmica\b0  \endash  Llindar de probabilitat logar\'edtmica (per defecte: -1,0).\par
-\bullet\tab\b Llindar de no-veu\b0  \endash  Llindar per detectar segments sense veu (per defecte: 0,6).\par
-
-\pard\sa200\sl276\slmult1
-\b Control de segments\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab\b Longitud m\'e0xima de segment\b0  \endash  M\'e0xim de car\'e0cters per segment de subt\'edtol (0 = il\'b7limitat).\par
-\bullet\tab\b M\'e0xim de tokens\b0  \endash  M\'e0xim de tokens per segment (0 = il\'b7limitat).\par
-\bullet\tab\b Context d\'27\'e0udio\b0  \endash  Mida del context d\'27\'e0udio (0 = usar predeterminat).\par
-
-\pard\sa200\sl276\slmult1
-\b Prompting\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab\b Initial Prompt\b0  \endash  Text d\'27indicaci\'f3 per guiar la transcripci\'f3. \'datil per proporcionar context, l\'27ortografia de noms o vocabulari espec\'edfic del domini.\par
-\bullet\tab\b Hotwords\b0  \endash  Llista de paraules separades per comes per impulsar el reconeixement.\par
-
-\pard\sa200\sl276\slmult1
-\b Indicadors\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab\b Split on Word\b0  \endash  Divideix els segments als l\'edmits de paraula (activat per defecte).\par
-\bullet\tab\b No GPU\b0  \endash  For\'e7a el processament nom\'e9s amb CPU.\par
-\bullet\tab\b Flash Attention\b0  \endash  Activa l\'27atenci\'f3 r\'e0pida per a una infer\'e8ncia GPU m\'e9s r\'e0pida.\par
-\bullet\tab\b Print Progress\b0  \endash  Mostra el percentatge de progr\'e9s a la sortida de whisper.\par
-\bullet\tab\b Print Colours\b0  \endash  Codifica la sortida per colors seg\'fans el nivell de confian\'e7a.\par
-\bullet\tab\b Print Realtime\b0  \endash  Imprimeix la sortida en temps real a mesura que es genera.\par
-\bullet\tab\b Diarize\b0  \endash  Activa la diaritzaci\'f3 de parlants (identifica diferents parlants).\par
-\bullet\tab\b Tinydiarize\b0  \endash  Utilitza la detecci\'f3 lleugera de canvi de parlant.\par
-\bullet\tab\b No Timestamps\b0  \endash  Suprimeix la sortida de marques de temps.\par
-
-\pard\sa200\sl276\slmult1
-\b VAD (Detecci\'f3 d\'27activitat de veu)\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab\b Llindar VAD\b0  \endash  Sensibilitat per detectar veu (per defecte: 0,6).\par
-\bullet\tab\b Llindar de freq\'fc\'e8ncia\b0  \endash  Filtre de freq\'fc\'e8ncia de pas alt en Hz (per defecte: 100).\par
-
-\pard\sa200\sl276\slmult1
-Fes clic a \b Restaura els valors predeterminats\b0  per restablir tots els par\'e0metres de whisper als seus valors per defecte.\par
-
-\fs24\b\cf2 Pestanya de rutes i eines\b0\cf0\fs20\par
-Configura les rutes de fitxers per a les eines i models externs:\par
-\pard\fi-360\li720\sa100
-\bullet\tab\b whisper-cli.exe\b0  \endash  El motor de reconeixement de veu whisper (usat pels modes de transcripci\'f3 per lots).\par
+\bullet\tab\b whisper-cli.exe\b0  \endash  El motor de reconeixement de veu whisper (utilitzat pels modes de transcripci\'f3 per lots).\par
 \bullet\tab\b yt-dlp.exe\b0  \endash  Descarregador de v\'eddeos de YouTube.\par
-\bullet\tab\b ffmpeg.exe\b0  \endash  Eina de processament d\'27\'e0udio/v\'eddeo (retallat, conversi\'f3, divisi\'f3 en fragments).\par
-\bullet\tab\b ffprobe.exe\b0  \endash  Eina d\'27an\'e0lisi d\'27\'e0udio/v\'eddeo (detecci\'f3 de duraci\'f3).\par
-\bullet\tab\b Model de YouTube (.bin)\b0  \endash  El fitxer de model de whisper usat per al mode YouTube -> Subtitles.\par
-\bullet\tab\b Model de fitxer d\'27\'e0udio (.bin)\b0  \endash  El fitxer de model de whisper usat per al mode Audio File -> Subtitles.\par
-\bullet\tab\b Directori de sortida arrel predeterminat\b0  \endash  Directori base on es creen les carpetes de sortida amb marca de temps.\par
-\bullet\tab\b Cadena de format de yt-dlp\b0  \endash  Prefer\'e8ncia de format de desc\'e0rrega per a yt-dlp (per defecte: millor v\'eddeo MP4 + \'e0udio M4A).\par
+\bullet\tab\b ffmpeg.exe\b0  \endash  Eina de processament d\rquote \'e0udio/v\'eddeo (retallat, conversi\'f3, fragmentaci\'f3).\par
+\bullet\tab\b ffprobe.exe\b0  \endash  Eina d\rquote an\'e0lisi d\rquote \'e0udio/v\'eddeo (detecci\'f3 de durada).\par
+\bullet\tab\b Model de YouTube (.bin)\b0  \endash  El fitxer de model de whisper utilitzat per al mode YouTube -> Subt\'edtols.\par
+\bullet\tab\b Model de fitxer d\rquote \'e0udio (.bin)\b0  \endash  El fitxer de model de whisper utilitzat per al mode Fitxer d\rquote \'e0udio -> Subt\'edtols. Es pot configurar amb un model diferent (p. ex., m\'e9s petit i m\'e9s r\'e0pid).\par
+\bullet\tab\b Model faster-whisper (carpeta)\b0  \endash  El directori del model faster-whisper utilitzat per la Traducci\'f3 en directe (per defecte: faster-whisper-large-v3).\par
+\bullet\tab\b Model de traducci\'f3 NLLB (carpeta)\b0  \endash  El directori del model de traducci\'f3 NLLB-200 (per defecte: nllb-model).\par
+\bullet\tab\b Arrel de sortida per defecte\b0  \endash  Directori base on es creen les carpetes de sortida amb marca de temps.\par
+\bullet\tab\b Cadena de format yt-dlp\b0  \endash  Prefer\'e8ncia de format de desc\'e0rrega per a yt-dlp (per defecte: millor v\'eddeo MP4 + \'e0udio M4A).\par
 
 \pard\sa200\sl276\slmult1
-Fes clic a \b Verifica totes les rutes\b0  per comprovar que totes les eines i fitxers configurats existeixen. Utilitza l\'27enlla\'e7 \b Descarrega models de whisper\b0  per obtenir fitxers de model.\par
+Feu clic a \b Verifica totes les rutes\b0  per comprovar que totes les eines i fitxers configurats existeixen. Utilitzeu l\rquote enlla\'e7 \b Descarrega models de whisper\b0  per obtenir fitxers de model del repositori de Hugging Face.\par
 
-\fs24\b\cf2 Pestanya de registre\b0\cf0\fs20\par
-Mostra la sortida en temps real del proc\'e9s de processament. Cada entrada del registre t\'e9 una marca de temps i est\'e0 codificada per colors:\par
+\fs24\b\cf2 Pestanya Configuraci\'f3\b0\cf0\fs20\par
 \pard\fi-360\li720\sa100
-\bullet\tab\cf5\b Verd fosc\b0\cf0  \endash  Missatges d\'27\'e8xit i passos completats.\par
-\bullet\tab\cf1\b Negre\b0\cf0  \endash  Informaci\'f3 general.\par
-\bullet\tab\cf3\b Gris\b0\cf0  \endash  Sortida detallada/de depuraci\'f3 (l\'ednies de comandes, codis de sortida, sortida de ffprobe).\par
-\bullet\tab\b Vermell\b0  \endash  Errors i advertiments.\par
+\bullet\tab\b Idioma de la interf\'edcie\b0  \endash  Canvieu l\rquote idioma de la interf\'edcie. Disponibles: angl\'e8s, espanyol, franc\'e8s, alemany, catal\'e0, portugu\'e8s, xin\'e8s simplificat, japon\'e8s.\par
+\bullet\tab\b Tema\b0  \endash  Trieu el tema del sistema, clar o fosc.\par
+\bullet\tab\b Restableix tota la configuraci\'f3\b0  \endash  Restaura tota la configuraci\'f3 als valors de f\'e0brica.\par
+\bullet\tab\b Comprova actualitzacions d\rquote eines\b0  \endash  Comproveu si hi ha versions m\'e9s noves de yt-dlp, ffmpeg o altres eines disponibles i descarregueu-les.\par
 
 \pard\sa200\sl276\slmult1
-El registre es despla\'e7a autom\'e0ticament per mostrar la darrera sortida. Si desplaces cap amunt per revisar entrades anteriors, el despla\'e7ament autom\'e0tic es pausa. Es reprendre quan tornis a despla\'e7ar fins al final.\par
-Utilitza \b Esborra el registre\b0  per restablir el registre i \b Copia al portapapers\b0  per copiar tot el text del registre.\par
-
-\fs24\b\cf2 Pestanya de configuraci\'f3\b0\cf0\fs20\par
+\fs24\b\cf2 Configuraci\'f3 inicial\b0\cf0\fs20\par
+En el primer inici, l\rquote aplicaci\'f3 comprova les eines i depend\'e8ncies necessàries. Si en falta alguna, se us demana que les descarregueu autom\'e0ticament. Aix\'f2 inclou:\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Idioma de la interf\'edcie\b0  \endash  Canvia l\'27idioma de la interf\'edcie. Disponible: angl\'e8s, espanyol, franc\'e8s, alemany, catal\'e0, portugu\'e8s, xin\'e8s simplificat, japon\'e8s.\par
-\bullet\tab\b Feines de transcripci\'f3 en paral\'b7lel\b0  \endash  Nombre de fragments d\'27\'e0udio a transcriure simult\'e0niament (per defecte: 4). Els valors m\'e9s alts utilitzen m\'e9s RAM i CPU per\'f2 acaben m\'e9s r\'e0pid.\par
-\bullet\tab\b Mida del fragment (segons)\b0  \endash  Duraci\'f3 de cada fragment d\'27\'e0udio (per defecte: 300 = 5 minuts). L\'27\'e0udio llarg es divideix en fragments per al processament en paral\'b7lel.\par
-\bullet\tab\b Interval de consulta (ms)\b0  \endash  Amb quina freq\'fc\'e8ncia es comprova si els fragments de transcripci\'f3 han finalitzat (per defecte: 2000 ms).\par
-\bullet\tab\b Temps d\'27espera del fragment (min)\b0  \endash  Temps m\'e0xim d\'27espera perqu\'e8 un fragment individual acabi (per defecte: 60 minuts).\par
-\bullet\tab\b Conserva els fitxers de fragments\b0  \endash  Conserva els fitxers WAV i SRT de fragments intermedis despr\'e9s del processament.\par
-\bullet\tab\b Conserva preview.mp4 retallat\b0  \endash  Conserva el fitxer de v\'eddeo retallat. Si no est\'e0 marcat, preview.mp4 s\'27elimina despr\'e9s de l\'27extracci\'f3 d\'27\'e0udio o de la finalitzaci\'f3.\par
-\bullet\tab\b Omet la desc\'e0rrega si el fitxer existeix\b0  \endash  Omet el pas de desc\'e0rrega de yt-dlp si el fitxer de v\'eddeo ja existeix a la carpeta de sortida.\par
-\bullet\tab\b Tema\b0  \endash  Tria el tema del sistema, clar o fosc.\par
+\bullet\tab Eines b\'e0siques: whisper-cli, yt-dlp, ffmpeg, ffprobe i el fitxer de model de whisper.\par
+\bullet\tab Entorn d\rquote execuci\'f3 de Python: Una instal\'b7laci\'f3 portable de Python utilitzada pels servidors de transcripci\'f3 en directe i de traducci\'f3.\par
+\bullet\tab Paquets de Python: Biblioteques necessàries per a faster-whisper i NLLB (instal\'b7lades via pip).\par
+\bullet\tab Model faster-whisper: El model de reconeixement de veu per a la Traducci\'f3 en directe (~3 GB).\par
+\bullet\tab Model NLLB-200: El model de traducci\'f3 (~2,6 GB), descarregat quan es configura la traducci\'f3 per primera vegada.\par
 
 \pard\sa200\sl276\slmult1
-Fes clic a \b Restableix tota la configuraci\'f3\b0  per restaurar tota la configuraci\'f3 als valors de f\'e0brica.\par
+Totes les depend\'e8ncies estan autocontingudes dins de la carpeta de l\rquote aplicaci\'f3 i no afecten la instal\'b7laci\'f3 de Python del sistema.\par
 
-\fs24\b\cf2 Proc\'e9s de processament\b0\cf0\fs20\par
+\fs24\b\cf2 Canonada de processament\b0\cf0\fs20\par
 
-\b Mode YouTube -> Subtitles (8 passos):\b0\par
+\b YouTube -> Subt\'edtols (8 passos):\b0\par
 \pard\fi-360\li720\sa100
-0.\tab Valida les entrades i les rutes de les eines\par
-1.\tab Descarrega el v\'eddeo amb yt-dlp (o copia el fitxer local)\par
-2.\tab Retalla el v\'eddeo a l\'27interval de temps especificat amb ffmpeg\par
-3.\tab Extreu l\'27\'e0udio al format WAV (16 kHz mono) per a whisper\par
-4.\tab Detecta la duraci\'f3 de l\'27\'e0udio amb ffprobe\par
-5.\tab Divideix l\'27\'e0udio en fragments per al processament en paral\'b7lel\par
-6.\tab Transcriu tots els fragments en lots en paral\'b7lel amb whisper-cli\par
-7.\tab Combina els fitxers SRT dels fragments en el fitxer de subt\'edtols final (preview.srt) amb les marques de temps corregides\par
+0.\tab Validar les entrades i les rutes de les eines\par
+1.\tab Descarregar el v\'eddeo amb yt-dlp (o copiar el fitxer local)\par
+2.\tab Retallar el v\'eddeo a l\rquote interval de temps especificat amb ffmpeg\par
+3.\tab Extreure l\rquote \'e0udio al format WAV (16kHz mono)\par
+4.\tab Detectar la durada de l\rquote \'e0udio amb ffprobe\par
+5.\tab Dividir l\rquote \'e0udio en fragments per al processament en paral\'b7lel\par
+6.\tab Transcriure tots els fragments en paral\'b7lel amb whisper-cli\par
+7.\tab Combinar els fitxers SRT dels fragments en el fitxer de subt\'edtols final amb les marques de temps corregides\par
 
 \pard\sa200\sl276\slmult1
-\b Mode Audio File -> Subtitles (6 passos):\b0\par
+\b Fitxer d\rquote \'e0udio -> Subt\'edtols (6 passos):\b0\par
 \pard\fi-360\li720\sa100
-0.\tab Valida les entrades i les rutes de les eines\par
-1.\tab Converteix l\'27\'e0udio al format WAV (16 kHz mono) per a whisper\par
-2.\tab Detecta la duraci\'f3 de l\'27\'e0udio\par
-3.\tab Divideix l\'27\'e0udio en fragments\par
-4.\tab Transcriu tots els fragments en lots en paral\'b7lel\par
-5.\tab Combina en el fitxer SRT final (amb el nom del fitxer d\'27entrada)\par
+0.\tab Validar les entrades i les rutes de les eines\par
+1.\tab Convertir l\rquote \'e0udio al format WAV (16kHz mono)\par
+2.\tab Detectar la durada de l\rquote \'e0udio\par
+3.\tab Dividir l\rquote \'e0udio en fragments\par
+4.\tab Transcriure tots els fragments en paral\'b7lel\par
+5.\tab Combinar en el fitxer SRT final\par
 
 \pard\sa200\sl276\slmult1
-\b Mode YouTube -> Full Video (3 passos):\b0\par
+\b YouTube -> V\'eddeo complet (3 passos):\b0\par
 \pard\fi-360\li720\sa100
-0.\tab Valida les entrades i les rutes de les eines\par
-1.\tab Descarrega el v\'eddeo amb yt-dlp (o copia el fitxer local)\par
-2.\tab Retalla el v\'eddeo a l\'27interval de temps especificat amb ffmpeg (sortida: preview.mp4)\par
+0.\tab Validar les entrades i les rutes de les eines\par
+1.\tab Descarregar el v\'eddeo (o copiar el fitxer local)\par
+2.\tab Retallar el v\'eddeo (sortida: preview.mp4)\par
 
 \pard\sa200\sl276\slmult1
-\b Mode YouTube -> Audio Only (4 passos):\b0\par
+\b YouTube -> Nom\'e9s \'e0udio (4 passos):\b0\par
 \pard\fi-360\li720\sa100
-0.\tab Valida les entrades i les rutes de les eines\par
-1.\tab Descarrega el v\'eddeo amb yt-dlp (o copia el fitxer local)\par
-2.\tab Retalla el v\'eddeo a l\'27interval de temps especificat amb ffmpeg\par
-3.\tab Extreu l\'27\'e0udio a MP3 d\'27alta qualitat (sortida: yt_audio.mp3)\par
+0.\tab Validar les entrades i les rutes de les eines\par
+1.\tab Descarregar el v\'eddeo (o copiar el fitxer local)\par
+2.\tab Retallar el v\'eddeo\par
+3.\tab Extreure l\rquote \'e0udio a MP3 (sortida: yt_audio.mp3)\par
 
 \pard\sa200\sl276\slmult1
 \fs24\b\cf2 Consells\b0\cf0\fs20\par
 \pard\fi-360\li720\sa100
-\bullet\tab Per obtenir la millor qualitat de subt\'edtols, utilitza el model \b ggml-large-v3\b0 . Per obtenir resultats r\'e0pids amb \'e0udio curt (p. ex. missatges de veu), utilitza \b ggml-tiny\b0  o \b ggml-base\b0 .\par
-\bullet\tab Si la transcripci\'f3 sembla bloquejada, comprova la pestanya de registre per obtenir la sortida detallada.\par
-\bullet\tab Utilitza \b Reprendre\b0  per continuar una feina interrompuda sense tornar a descarregar ni a dividir en fragments.\par
-\bullet\tab El camp \b Initial Prompt\b0  \'e9s molt \'fatil \endash  utilitza\'27l per proporcionar l\'27ortografia de noms, termes t\'e8cnics o context que ajudi el model a produir millors resultats.\par
-\bullet\tab En sortir de l\'27aplicaci\'f3, se\'27t demanar\'e0 que netegis les carpetes de treball creades durant la sessi\'f3 actual.\par
-\bullet\tab Configura \b Output Language\b0  a \b en\b0  per traduir l\'27\'e0udio en idiomes estrangers directament a subt\'edtols en angl\'e8s.\par
-\bullet\tab Utilitza el mode \b YouTube -> Full Video\b0  quan nom\'e9s necessitis el fitxer de v\'eddeo sense subt\'edtols.\par
-\bullet\tab Utilitza el mode \b YouTube -> Audio Only\b0  per obtenir un fitxer d\'27\'e0udio MP3 d\'27alta qualitat a partir d\'27un v\'eddeo de YouTube o d\'27un fitxer de v\'eddeo local.\par
-\bullet\tab Per a la traducci\'f3 en directe, es recomana una GPU compatible amb CUDA amb almenys 4 GB de VRAM. El model de faster-whisper utilitza ~1,5 GB i el model de traducci\'f3 NLLB utilitza ~2,6 GB.\par
-\bullet\tab El fitxer d\'27ajuda es carrega autom\'e0ticament en l\'27idioma de la interf\'edcie seleccionat si est\'e0 disponible; en cas contrari, utilitza l\'27angl\'e8s com a alternativa.\par
+\bullet\tab Per obtenir la millor qualitat de subt\'edtols, utilitzeu el model \b ggml-large-v3\b0 . Per obtenir resultats r\'e0pids en \'e0udios curts, utilitzeu \b ggml-tiny\b0  o \b ggml-base\b0 .\par
+\bullet\tab Utilitzeu \b Repr\'e8n\b0  per continuar una feina interrompuda sense tornar a descarregar ni tornar a processar els fragments completats.\par
+\bullet\tab Establiu \b Idioma de sortida\b0  a \b en\b0  per traduir \'e0udio en un idioma estranger directament a subt\'edtols en angl\'e8s.\par
+\bullet\tab Per a la Traducci\'f3 en directe, es recomana una GPU compatible amb CUDA amb almenys 4 GB de VRAM. El model faster-whisper utilitza ~1,5 GB i el model de traducci\'f3 NLLB utilitza ~2,6 GB.\par
+\bullet\tab La p\'e0gina de subt\'edtols web funciona en qualsevol dispositiu amb un navegador a la mateixa xarxa. Compartiu la URL que es mostra a la secci\'f3 d\rquote Informaci\'f3 de connexi\'f3.\par
+\bullet\tab Per mantenir la pantalla del tel\'e8fon activa mentre veieu subt\'edtols, utilitzeu el bot\'f3 Mant\'e9 la pantalla activa de la p\'e0gina web (requereix HTTPS).\par
+\bullet\tab El fitxer d\rquote ajuda es carrega autom\'e0ticament en l\rquote idioma de la interf\'edcie seleccionat, si est\'e0 disponible.\par
 
 \pard\sa200\sl276\slmult1
-\fs24\b\cf2 Eines externes necess\'e0ries\b0\cf0\fs20\par
-Aquesta aplicaci\'f3 requereix les seg\'fcents eines instal\'b7lades i configurades a la pestanya de rutes i eines:\par
+\fs24\b\cf2 Eines externes necessàries\b0\cf0\fs20\par
+Les eines seg\'fcents s\'f3n necessàries i es poden descarregar autom\'e0ticament des de la pestanya Configuraci\'f3:\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b whisper-cli\b0  \endash  Motor de reconeixement de veu (whisper.cpp) \endash  necessari per a la transcripci\'f3 per lots\par
-\bullet\tab\b yt-dlp\b0  \endash  Descarregador de YouTube (necessari per a tots els modes basats en YouTube)\par
-\bullet\tab\b ffmpeg\b0  \endash  Processament d\'27\'e0udio/v\'eddeo (necessari per a tots els modes)\par
-\bullet\tab\b ffprobe\b0  \endash  An\'e0lisi multim\'e8dia, incl\'f2s amb ffmpeg (necessari per als modes de transcripci\'f3)\par
+\bullet\tab\b whisper-cli\b0  \endash  Motor de reconeixement de veu (whisper.cpp) per a la transcripci\'f3 per lots\par
+\bullet\tab\b yt-dlp\b0  \endash  Descarregador de YouTube (necessari per als modes basats en YouTube)\par
+\bullet\tab\b ffmpeg\b0  \endash  Processament d\rquote \'e0udio/v\'eddeo (necessari per a tots els modes)\par
+\bullet\tab\b ffprobe\b0  \endash  An\'e0lisi multim\'e8dia, incl\'f2s amb ffmpeg\par
 \bullet\tab\b Subtitle Edit\b0  (opcional) \endash  Per revisar i editar els fitxers de subt\'edtols generats\par
 
 \pard\sa200\sl276\slmult1
 \b Depend\'e8ncies gestionades autom\'e0ticament\b0\par
-Els seg\'fcents components es descarreguen autom\'e0ticament en el primer \'fas i no requereixen configuraci\'f3 manual:\par
+Les seg\'fcents es descarreguen autom\'e0ticament en el primer \'fas:\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Python (incrustat)\b0  \endash  Un temps d\'27execuci\'f3 de Python portable usat pels servidors de transcripci\'f3 i traducci\'f3 en directe.\par
-\bullet\tab\b Model de faster-whisper\b0  \endash  El model de reconeixement de veu faster-whisper large-v3 (~3 GB), descarregat en el primer inici de traducci\'f3 en directe.\par
-\bullet\tab\b Model NLLB-200\b0  \endash  El model de traducci\'f3 Meta NLLB-200 1.3B (~2,6 GB), descarregat quan un client web selecciona per primera vegada un idioma de traducci\'f3.\par
+\bullet\tab\b Python (incrustat)\b0  \endash  Un entorn d\rquote execuci\'f3 portable de Python utilitzat pels servidors de transcripci\'f3 en directe i de traducci\'f3.\par
+\bullet\tab\b Model faster-whisper\b0  \endash  El model de reconeixement de veu faster-whisper large-v3 (~3 GB).\par
+\bullet\tab\b Model NLLB-200\b0  \endash  El model de traducci\'f3 Meta NLLB-200 1.3B (~2,6 GB).\par
+\bullet\tab\b Paquets de Python\b0  \endash  faster-whisper, sounddevice, ctranslate2, sentencepiece, FastAPI, uvicorn i altres biblioteques.\par
 
 \pard\sa200\sl276\slmult1
 \par

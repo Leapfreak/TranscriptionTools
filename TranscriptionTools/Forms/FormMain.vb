@@ -1989,198 +1989,9 @@ del ""%~f0""
             End Sub, Nothing, TimeSpan.FromMinutes(minutes), Timeout.InfiniteTimeSpan)
     End Sub
 
-    Private Async Sub btnSetupTranslation_Click(sender As Object, e As EventArgs) Handles btnSetupTranslation.Click
-        Await SetupTranslationDepsAsync()
+    Private Sub btnSetupTranslation_Click(sender As Object, e As EventArgs) Handles btnSetupTranslation.Click
+        CheckDependenciesAsync(manualCheck:=True)
     End Sub
-
-    Private Async Function SetupTranslationDepsAsync() As Task
-        Dim toolsDir = AppDomain.CurrentDomain.BaseDirectory
-        Dim mgr As New Models.DependencyManager(_config, toolsDir)
-
-        Dim deps = Await mgr.CheckTranslationDepsAsync()
-
-        If deps.pythonOk AndAlso deps.depsOk AndAlso deps.modelOk Then
-            MessageBox.Show("Translation dependencies are already installed.", "Translation Setup",
-                            MessageBoxButtons.OK, MessageBoxIcon.Information)
-            Return
-        End If
-
-        btnSetupTranslation.Enabled = False
-
-        Dim progressForm As New Form() With {
-            .Text = "Setting Up Translation",
-            .Size = New Drawing.Size(500, 180),
-            .StartPosition = FormStartPosition.CenterParent,
-            .FormBorderStyle = FormBorderStyle.FixedDialog,
-            .MaximizeBox = False,
-            .MinimizeBox = False
-        }
-        Dim lblStatus As New Label() With {
-            .Text = "Preparing...",
-            .Location = New Drawing.Point(15, 15),
-            .Size = New Drawing.Size(450, 20)
-        }
-        Dim pbDownload As New ProgressBar() With {
-            .Location = New Drawing.Point(15, 45),
-            .Size = New Drawing.Size(450, 25),
-            .Style = ProgressBarStyle.Continuous
-        }
-        Dim lblProgress As New Label() With {
-            .Text = "",
-            .Location = New Drawing.Point(15, 78),
-            .Size = New Drawing.Size(450, 20)
-        }
-        progressForm.Controls.AddRange({lblStatus, pbDownload, lblProgress})
-        progressForm.Show(Me)
-
-        Dim progress As New Progress(Of (downloaded As Long, total As Long))(
-            Sub(p)
-                If p.total > 0 Then
-                    Dim pct = CInt(p.downloaded * 100 \ p.total)
-                    pbDownload.Value = Math.Min(pct, 100)
-                    Dim dlMB = (p.downloaded / 1048576.0).ToString("F1")
-                    Dim totalMB = (p.total / 1048576.0).ToString("F1")
-                    lblProgress.Text = $"{dlMB} MB / {totalMB} MB"
-                Else
-                    Dim dlMB = (p.downloaded / 1048576.0).ToString("F1")
-                    lblProgress.Text = $"{dlMB} MB downloaded"
-                End If
-            End Sub)
-
-        Try
-            ' Step 1: Python embed
-            If Not deps.pythonOk Then
-                lblStatus.Text = "Step 1/3: Downloading Python embeddable package..."
-                pbDownload.Value = 0
-                lblProgress.Text = ""
-                Await mgr.DownloadPythonEmbedAsync(progress)
-            End If
-
-            ' Step 2: pip dependencies
-            If Not deps.depsOk Then
-                lblStatus.Text = "Step 2/3: Installing Python packages (this may take a few minutes)..."
-                pbDownload.Value = 0
-                pbDownload.Style = ProgressBarStyle.Marquee
-                lblProgress.Text = "Installing ctranslate2, sentencepiece, fastapi, uvicorn..."
-                Await Task.Run(Function() mgr.InstallPythonDepsAsync(Nothing))
-                pbDownload.Style = ProgressBarStyle.Continuous
-                pbDownload.Value = 100
-            End If
-
-            ' Step 3: NLLB model
-            If Not deps.modelOk Then
-                lblStatus.Text = "Step 3/3: Downloading NLLB translation model..."
-                pbDownload.Value = 0
-                lblProgress.Text = ""
-                Await mgr.DownloadNllbModelAsync(progress)
-            End If
-
-            lblStatus.Text = "Translation setup complete!"
-            pbDownload.Value = 100
-            lblProgress.Text = ""
-            Await Task.Delay(1000)
-
-            ' Start translation service if clients are waiting
-            Dim targets = _subtitleServer?.GetActiveTranslationLanguages()
-            If targets IsNot Nothing AndAlso targets.Count > 0 Then
-                StartTranslationService()
-            End If
-
-        Catch ex As Exception
-            MessageBox.Show($"Translation setup failed: {ex.Message}", "Setup Error",
-                            MessageBoxButtons.OK, MessageBoxIcon.Error)
-            AppendServerLog($"Translation setup error: {ex.Message}")
-        Finally
-            progressForm.Close()
-            progressForm.Dispose()
-            UpdateTranslationButton()
-        End Try
-    End Function
-
-    Private Async Function SetupLiveDepsAsync(mgr As Models.DependencyManager,
-                                               deps As (pythonOk As Boolean, depsOk As Boolean, modelOk As Boolean)) As Task
-        Dim progressForm As New Form() With {
-            .Text = "Setting Up Live Transcription",
-            .Size = New Drawing.Size(500, 180),
-            .StartPosition = FormStartPosition.CenterParent,
-            .FormBorderStyle = FormBorderStyle.FixedDialog,
-            .MaximizeBox = False,
-            .MinimizeBox = False
-        }
-        Dim lblStatus As New Label() With {
-            .Text = "Preparing...",
-            .Location = New Drawing.Point(15, 15),
-            .Size = New Drawing.Size(450, 20)
-        }
-        Dim pbDownload As New ProgressBar() With {
-            .Location = New Drawing.Point(15, 45),
-            .Size = New Drawing.Size(450, 25),
-            .Style = ProgressBarStyle.Continuous
-        }
-        Dim lblProgress As New Label() With {
-            .Text = "",
-            .Location = New Drawing.Point(15, 78),
-            .Size = New Drawing.Size(450, 20)
-        }
-        progressForm.Controls.AddRange({lblStatus, pbDownload, lblProgress})
-        progressForm.Show(Me)
-
-        Dim progress As New Progress(Of (downloaded As Long, total As Long))(
-            Sub(p)
-                If p.total > 0 Then
-                    Dim pct = CInt(p.downloaded * 100 \ p.total)
-                    pbDownload.Value = Math.Min(pct, 100)
-                    Dim dlMB = (p.downloaded / 1048576.0).ToString("F1")
-                    Dim totalMB = (p.total / 1048576.0).ToString("F1")
-                    lblProgress.Text = $"{dlMB} MB / {totalMB} MB"
-                Else
-                    Dim dlMB = (p.downloaded / 1048576.0).ToString("F1")
-                    lblProgress.Text = $"{dlMB} MB downloaded"
-                End If
-            End Sub)
-
-        Try
-            ' Step 1: Python embed
-            If Not deps.pythonOk Then
-                lblStatus.Text = "Step 1/3: Downloading Python embeddable package..."
-                pbDownload.Value = 0
-                lblProgress.Text = ""
-                Await mgr.DownloadPythonEmbedAsync(progress)
-            End If
-
-            ' Step 2: pip dependencies
-            If Not deps.depsOk Then
-                lblStatus.Text = "Step 2/3: Installing Python packages (faster-whisper, sounddevice)..."
-                pbDownload.Value = 0
-                pbDownload.Style = ProgressBarStyle.Marquee
-                lblProgress.Text = "This may take a few minutes..."
-                Await Task.Run(Function() mgr.InstallPythonDepsAsync(Nothing))
-                pbDownload.Style = ProgressBarStyle.Continuous
-                pbDownload.Value = 100
-            End If
-
-            ' Step 3: faster-whisper model
-            If Not deps.modelOk Then
-                lblStatus.Text = "Step 3/3: Downloading faster-whisper large-v3 model (~3 GB)..."
-                pbDownload.Value = 0
-                lblProgress.Text = ""
-                Await mgr.DownloadFasterWhisperModelAsync(progress)
-            End If
-
-            lblStatus.Text = "Live transcription setup complete!"
-            pbDownload.Value = 100
-            lblProgress.Text = ""
-            Await Task.Delay(1000)
-
-        Catch ex As Exception
-            MessageBox.Show($"Live setup failed: {ex.Message}", "Setup Error",
-                            MessageBoxButtons.OK, MessageBoxIcon.Error)
-            AppendServerLog($"Live setup error: {ex.Message}")
-        Finally
-            progressForm.Close()
-            progressForm.Dispose()
-        End Try
-    End Function
 
     Private Async Sub UpdateTranslationButtonAsync()
         Dim deps = Await Task.Run(Function() TranslationService.CheckDependenciesInstalled())
@@ -2196,7 +2007,7 @@ del ""%~f0""
             btnSetupTranslation.Text = "Translation Ready"
             btnSetupTranslation.Enabled = True
         Else
-            btnSetupTranslation.Text = "Setup Translation (~3.5GB)"
+            btnSetupTranslation.Text = GetString("Btn_CheckToolUpdates")
             btnSetupTranslation.Enabled = True
         End If
     End Sub
@@ -2525,6 +2336,24 @@ del ""%~f0""
         End If
     End Sub
 
+    Private Sub KillOrphanedPythonProcesses()
+        Try
+            Dim pythonDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "python-embed").ToLowerInvariant()
+            For Each proc In Process.GetProcessesByName("python")
+                Try
+                    Dim exePath = proc.MainModule?.FileName
+                    If exePath IsNot Nothing AndAlso exePath.ToLowerInvariant().StartsWith(pythonDir) Then
+                        proc.Kill(True)
+                        proc.WaitForExit(3000)
+                    End If
+                Catch
+                    ' Access denied or already exited — ignore
+                End Try
+            Next
+        Catch
+        End Try
+    End Sub
+
     Private Sub FormMain_FormClosing(sender As Object, e As FormClosingEventArgs) Handles MyBase.FormClosing
         ' Always save settings
         SaveUiToConfig()
@@ -2544,6 +2373,9 @@ del ""%~f0""
         _subtitleServer?.Stop()
         trayIcon.Visible = False
         trayIcon.Dispose()
+
+        ' Kill any orphaned python-embed processes that survived graceful shutdown
+        KillOrphanedPythonProcesses()
 
         ' Offer to clean up today's working folders
         Try

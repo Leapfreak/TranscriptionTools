@@ -7,113 +7,44 @@
 \f0\fs36\b\cf2 Transcription Tools \endash  Guia do Usu\'e1rio\b0\cf0\fs20\par
 
 \fs24\b Vis\'e3o Geral\b0\fs20\par
-Transcription Tools \'e9 um aplicativo desktop Windows que gera arquivos de legenda a partir de fontes de \'e1udio e v\'eddeo. Ele fornece uma interface gr\'e1fica para o motor de reconhecimento de fala whisper.cpp e suporta quatro modos de processamento em lote, al\'e9m de um modo de transcri\'e7\'e3o ao vivo em tempo real com tradu\'e7\'e3o opcional por IA.\par
+O Transcription Tools \'e9 um aplicativo de desktop para Windows que gera arquivos de legenda a partir de fontes de \'e1udio e v\'eddeo. Ele utiliza o mecanismo de reconhecimento de voz whisper.cpp para processamento em lote e o faster-whisper com Silero VAD para transcri\'e7\'e3o ao vivo em tempo real, com tradu\'e7\'e3o opcional por intelig\'eancia artificial via NLLB-200.\par
 
-\b Modos de Processamento em Lote\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab\b YouTube -> Subtitles\b0  \endash  Baixe um v\'eddeo do YouTube (ou use um arquivo de v\'eddeo local), opcionalmente corte para um intervalo de tempo e gere legendas.\par
-\bullet\tab\b Audio File -> Subtitles\b0  \endash  Transcreva diretamente qualquer arquivo de \'e1udio (OGG, MP3, WAV, FLAC, M4A, etc.) em legendas.\par
-\bullet\tab\b YouTube -> Full Video\b0  \endash  Baixe um v\'eddeo do YouTube (ou copie um v\'eddeo local) e corte-o, sem transcri\'e7\'e3o.\par
-\bullet\tab\b YouTube -> Audio Only\b0  \endash  Baixe um v\'eddeo do YouTube (ou copie um v\'eddeo local), corte-o e extraia o \'e1udio para um arquivo MP3 de alta qualidade, sem transcri\'e7\'e3o.\par
+O aplicativo possui seis abas: \b Tradu\'e7\'e3o ao Vivo\b0 , \b Servidor de Legendas\b0 , \b Principal / Tarefa\b0 , \b Caminhos e Ferramentas\b0 , \b Configura\'e7\'f5es\b0  e \b Ajuda\b0 .\par
 
-\pard\sa200\sl276\slmult1
-\b Modo Ao Vivo\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab\b Tradu\'e7\'e3o Ao Vivo\b0  \endash  Reconhecimento de fala em tempo real a partir de um microfone ou dispositivo de entrada de \'e1udio usando faster-whisper com Silero VAD (Detec\'e7\'e3o de Atividade de Voz). O texto \'e9 segmentado em pausas naturais de fala para frases limpas e completas. Suporta tradu\'e7\'e3o em tempo real para mais de 200 idiomas via NLLB.\par
+\fs24\b\cf2 Aba Tradu\'e7\'e3o ao Vivo\b0\cf0\fs20\par
+A aba Tradu\'e7\'e3o ao Vivo fornece transcri\'e7\'e3o de voz para texto em tempo real a partir do microfone ou de outro dispositivo de entrada de \'e1udio. Ela utiliza o faster-whisper com Silero VAD (Detec\'e7\'e3o de Atividade de Voz) para detectar pausas naturais na fala e segmentar o \'e1udio em enunciados completos, produzindo transcri\'e7\'f5es mais limpas e precisas do que o fatiamento por janela fixa.\par
 
-\pard\sa200\sl276\slmult1
-\fs24\b\cf2 Aba Principal / Trabalho\b0\cf0\fs20\par
-
-\b Seletor de Modo\b0\par
-Use o menu suspenso no topo para alternar entre os modos. O modo padr\'e3o \'e9 \b YouTube -> Subtitles\b0 . A interface se adapta para exibir apenas os controles relevantes ao modo selecionado. Os controles de intervalo de tempo e o bot\'e3o Retomar s\'e3o exibidos apenas nos modos baseados no YouTube. As caixas de sele\'e7\'e3o de formato de sa\'edda s\'e3o exibidas apenas nos modos que produzem legendas (YouTube -> Subtitles e Audio File -> Subtitles).\par
-
-\b Modo YouTube -> Subtitles\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab\b URL / Arquivo\b0  \endash  Insira uma URL do YouTube ou clique em Procurar para selecionar um arquivo de v\'eddeo local.\par
-\bullet\tab\b Idioma de Entrada\b0  \endash  O idioma falado no \'e1udio. Defina como \b auto\b0  para que o motor detecte automaticamente, ou selecione um idioma espec\'edfico para maior precis\'e3o.\par
-\bullet\tab\b Idioma de Sa\'edda\b0  \endash  O idioma das legendas geradas. Defina como \b auto\b0  para manter o mesmo idioma da entrada. Defina como \b en\b0  (ingl\'eas) para traduzir \'e1udio em outro idioma para legendas em ingl\'eas. O Whisper s\'f3 pode traduzir \i para\i0  o ingl\'eas.\par
-\bullet\tab\b Modelo\b0  \endash  Escolha qual modelo whisper usar. Modelos maiores (ex.: ggml-large-v3.bin) s\'e3o mais precisos, por\'e9m mais lentos. Modelos menores (ex.: ggml-tiny.bin, ggml-base.bin) s\'e3o mais r\'e1pidos, por\'e9m menos precisos.\par
-\bullet\tab\b Hora de In\'edcio / Hora de T\'e9rmino\b0  \endash  Opcionalmente, especifique um intervalo de tempo (HH:MM:SS) para cortar o v\'eddeo antes de transcrever. Deixe em 00:00:00 para processar o v\'eddeo inteiro.\par
-\bullet\tab\b Diret\'f3rio de Sa\'edda\b0  \endash  Local onde todos os arquivos de trabalho e o arquivo de legenda final ser\'e3o salvos. Padr\'e3o: uma pasta com data e hora sob o diret\'f3rio raiz de sa\'edda.\par
-\bullet\tab\b Retomar\b0  \endash  Se um trabalho anterior foi interrompido, clique em Retomar para selecionar a pasta de sa\'edda e continuar de onde parou. Os fragmentos j\'e1 conclu\'eddos s\'e3o ignorados automaticamente.\par
-
-\pard\sa200\sl276\slmult1
-\b Modo Audio File -> Subtitles\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab\b Arquivo de \'c1udio\b0  \endash  Clique em Procurar \'c1udio para selecionar um arquivo de \'e1udio. Os formatos suportados incluem OGG, MP3, WAV, FLAC, M4A, WMA, AAC, OPUS e outros.\par
-\bullet\tab\b Diret\'f3rio de Sa\'edda\b0  \endash  Igual ao modo YouTube. O arquivo SRT de sa\'edda recebe o nome do arquivo de entrada.\par
-\bullet\tab Este modo lembra seu pr\'f3prio modelo padr\'e3o separadamente, para que voc\'ea possa usar um modelo grande para v\'eddeos do YouTube e um modelo menor e mais r\'e1pido para transcri\'e7\'f5es de \'e1udio r\'e1pidas.\par
-
-\pard\sa200\sl276\slmult1
-\b Modo YouTube -> Full Video\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab Baixa e corta um v\'eddeo sem realizar nenhuma transcri\'e7\'e3o.\par
-\bullet\tab O arquivo de sa\'edda \'e9 \b preview.mp4\b0  no diret\'f3rio de sa\'edda.\par
-\bullet\tab Apenas yt-dlp e ffmpeg s\'e3o necess\'e1rios.\par
-
-\pard\sa200\sl276\slmult1
-\b Modo YouTube -> Audio Only\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab Baixa um v\'eddeo, corta-o e extrai o \'e1udio para um arquivo MP3 de alta qualidade (\b yt_audio.mp3\b0 ) sem realizar nenhuma transcri\'e7\'e3o.\par
-\bullet\tab O \'e1udio \'e9 extra\'eddo com a qualidade VBR m\'e1xima.\par
-\bullet\tab Apenas yt-dlp e ffmpeg s\'e3o necess\'e1rios.\par
-
-\pard\sa200\sl276\slmult1
-\b Formatos de Sa\'edda\b0\par
-Dispon\'edvel ao usar os modos YouTube -> Subtitles ou Audio File -> Subtitles. Selecione quais formatos gerar:\par
-\pard\fi-360\li720\sa100
-\bullet\tab\b SRT\b0  \endash  Formato de legenda SubRip (mais comum, habilitado por padr\'e3o)\par
-\bullet\tab\b VTT\b0  \endash  Formato WebVTT (para uso na web)\par
-\bullet\tab\b TXT\b0  \endash  Transcri\'e7\'e3o em texto simples\par
-\bullet\tab\b JSON\b0  \endash  Sa\'edda JSON estruturada\par
-\bullet\tab\b CSV\b0  \endash  Valores separados por v\'edrgula\par
-\bullet\tab\b LRC\b0  \endash  Formato de letras de m\'fasica\par
-
-\pard\sa200\sl276\slmult1
-\b Progresso\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab A barra de progresso superior mostra o progresso geral do pipeline em todas as etapas.\par
-\bullet\tab Uma segunda barra de progresso aparece durante a transcri\'e7\'e3o e mostra o progresso por fragmento.\par
-\bullet\tab\b Iniciar\b0  \endash  Come\'e7ar o processamento. A aba Log \'e9 exibida automaticamente.\par
-\bullet\tab\b Cancelar\b0  \endash  Parar o trabalho atual.\par
-\bullet\tab\b Abrir Pasta de Sa\'edda\b0  \endash  Abre o diret\'f3rio de sa\'edda no Windows Explorer (dispon\'edvel ap\'f3s a conclus\'e3o).\par
-\bullet\tab\b Subtitle Edit\b0  \endash  Abre o arquivo SRT gerado diretamente no Subtitle Edit para revis\'e3o (dispon\'edvel ap\'f3s a conclus\'e3o, apenas modos de legenda).\par
-\bullet\tab\b Abrir preview.srt\b0  \endash  Abre o arquivo SRT gerado com seu aplicativo padr\'e3o (dispon\'edvel ap\'f3s a conclus\'e3o, apenas modos de legenda).\par
-
-\pard\sa200\sl276\slmult1
-\fs24\b\cf2 Aba Tradu\'e7\'e3o Ao Vivo\b0\cf0\fs20\par
-A aba Tradu\'e7\'e3o Ao Vivo fornece transcri\'e7\'e3o de fala em tempo real a partir do microfone ou outro dispositivo de entrada de \'e1udio. Ela usa faster-whisper com Silero VAD (Detec\'e7\'e3o de Atividade de Voz) para detectar pausas naturais de fala e segmentar o \'e1udio em enunciados completos. Isso produz transcri\'e7\'f5es mais limpas e precisas do que o corte em janelas fixas.\par
-
-O texto transcrito aparece em duas sub-abas:\par
-\pard\fi-360\li720\sa100
-\bullet\tab\b Sa\'edda Ao Vivo\b0  \endash  Uma vis\'e3o baseada na web (igual \'e0 p\'e1gina do servidor de legendas) incorporada diretamente no aplicativo.\par
-\bullet\tab\b Log\b0  \endash  Um log de texto com rolagem mostrando a sa\'edda da transcri\'e7\'e3o com codifica\'e7\'e3o por cores. O texto em andamento \'e9 continuamente refinado conforme voc\'ea fala. Mensagens de status aparecem em amarelo e informa\'e7\'f5es do sistema em cinza.\par
-
-\pard\sa200\sl276\slmult1
 \b Controles\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Dispositivo de \'c1udio\b0  \endash  Selecione seu dispositivo de entrada de \'e1udio. Os dispositivos s\'e3o detectados pela biblioteca Python sounddevice na inicializa\'e7\'e3o. Clique em \b Atualizar\b0  para rever erificar se voc\'ea conectar um novo dispositivo.\par
+\bullet\tab\b Dispositivo de \'c1udio\b0  \endash  Selecione o dispositivo de entrada de \'e1udio. Os dispositivos s\'e3o detectados pela biblioteca Python sounddevice. Clique em \b Atualizar\b0  para redigitalizar caso conecte um novo dispositivo.\par
 \bullet\tab\b Idioma de Entrada\b0  \endash  O idioma que est\'e1 sendo falado. Defina como \b auto\b0  para detec\'e7\'e3o autom\'e1tica, ou selecione um idioma espec\'edfico para maior precis\'e3o.\par
-\bullet\tab\b Iniciar\b0  \endash  Iniciar a transcri\'e7\'e3o ao vivo. No primeiro uso, o aplicativo baixar\'e1 o modelo faster-whisper (~3 GB) e instalar\'e1 as depend\'eancias Python, se ainda n\'e3o estiverem presentes.\par
-\bullet\tab\b Parar\b0  \endash  Parar a sess\'e3o de transcri\'e7\'e3o ao vivo.\par
-\bullet\tab\b Salvar\b0  \endash  Salvar a transcri\'e7\'e3o completa em um arquivo de texto.\par
-\bullet\tab\b Limpar\b0  \endash  Limpar a exibi\'e7\'e3o de sa\'edda.\par
+\bullet\tab\b Iniciar\b0  \endash  Inicia a transcri\'e7\'e3o ao vivo. No primeiro uso, o aplicativo baixa as depend\'eancias necess\'e1rias (ambiente Python, modelo faster-whisper, pacotes Python) caso ainda n\'e3o estejam instaladas.\par
+\bullet\tab\b Parar\b0  \endash  Encerra a sess\'e3o de transcri\'e7\'e3o ao vivo. O modelo faster-whisper permanece carregado na mem\'f3ria para que a pr\'f3xima inicializa\'e7\'e3o seja r\'e1pida.\par
+
+\pard\sa200\sl276\slmult1
+\b Sub-abas\b0\par
+\pard\fi-360\li720\sa100
+\bullet\tab\b Sa\'edda ao Vivo\b0  \endash  Uma visualiza\'e7\'e3o web embutida que exibe a mesma p\'e1gina de legendas do Servidor de Legendas. Mostra o texto de transcri\'e7\'e3o ao vivo com o mesmo estilo e recursos do cliente web. Um bot\'e3o \b Salvar Transcri\'e7\'e3o\b0  na parte inferior salva a transcri\'e7\'e3o completa em um arquivo de texto.\par
+\bullet\tab\b Log\b0  \endash  Um log de texto com rolagem que mostra a atividade de transcri\'e7\'e3o com c\'f3digos de cores. O texto em andamento \'e9 exibido em branco e continuamente refinado conforme voc\'ea fala. O texto confirmado (finalizado) aparece em verde. Mensagens de status aparecem em amarelo e informa\'e7\'f5es do sistema em cinza. Use \b Salvar Log\b0  e \b Limpar Log\b0  para gerenciar o log.\par
 
 \pard\sa200\sl276\slmult1
 \b Tradu\'e7\'e3o em Tempo Real\b0\par
-Quando o Servidor de Legendas est\'e1 em execu\'e7\'e3o, os clientes web conectados podem selecionar um idioma de tradu\'e7\'e3o no menu suspenso da p\'e1gina web. O aplicativo inicia automaticamente um servidor de tradu\'e7\'e3o NLLB-200 (no primeiro uso, isso baixa ~3,5 GB de depend\'eancias, incluindo o modelo de IA). O texto transcrito \'e9 traduzido em tempo real e enviado a cada cliente no idioma escolhido. Mais de 200 idiomas s\'e3o suportados. Clientes que n\'e3o selecionarem um idioma de tradu\'e7\'e3o recebem a transcri\'e7\'e3o original.\par
+Quando o Servidor de Legendas est\'e1 em execu\'e7\'e3o, os clientes web conectados podem selecionar um idioma de tradu\'e7\'e3o no menu suspenso da p\'e1gina web. O aplicativo usa um servidor de tradu\'e7\'e3o NLLB-200 para traduzir o texto transcrito em tempo real. Cada cliente pode escolher seu pr\'f3prio idioma de forma independente. S\'e3o suportados mais de 200 idiomas. Clientes que n\'e3o selecionam um idioma de tradu\'e7\'e3o recebem a transcri\'e7\'e3o original.\par
 
-\pard\sa200\sl276\slmult1
 \fs24\b\cf2 Aba Servidor de Legendas\b0\cf0\fs20\par
-O Servidor de Legendas fornece uma sobreposi\'e7\'e3o de legenda ao vivo baseada na web que pode ser visualizada em qualquer dispositivo (celular, tablet, segundo monitor) conectado \'e0 mesma rede. Quando o servidor est\'e1 em execu\'e7\'e3o, ele serve uma p\'e1gina web que exibe o texto de transcri\'e7\'e3o ao vivo via WebSocket. O servidor roda em HTTP e tamb\'e9m inicia um listener HTTPS na pr\'f3xima porta (ex.: 5081) para suportar o recurso de bloqueio de tela ativa. Novas linhas de legenda s\'e3o brevemente destacadas em amarelo antes de esmaecer para a cor de texto escolhida.\par
+O Servidor de Legendas fornece uma sobreposi\'e7\'e3o de legendas ao vivo baseada na web que pode ser visualizada em qualquer dispositivo (celular, tablet, segundo monitor) conectado \'e0 mesma rede. Ele serve uma p\'e1gina web que exibe o texto de transcri\'e7\'e3o ao vivo via WebSocket. O servidor funciona em HTTP e tamb\'e9m inicia um ouvinte HTTPS na porta seguinte (ex.: 5081) para suportar o recurso de manter a tela ativa em dispositivos m\'f3veis.\par
 
 \b Configura\'e7\'f5es do Servidor\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Porta\b0  \endash  A porta HTTP em que o servidor escuta (padr\'e3o: 5080). Uma porta HTTPS tamb\'e9m \'e9 aberta automaticamente na porta+1 (padr\'e3o: 5081) usando um certificado autoassinado.\par
-\bullet\tab\b Iniciar / Parar / Reiniciar Servidor\b0  \endash  Controlar o servidor de legendas.\par
-\bullet\tab\b Simular\b0  \endash  Enviar texto de exemplo (Jo\'e3o 3:16-18) para testar a exibi\'e7\'e3o sem uma fonte de \'e1udio ao vivo.\par
-\bullet\tab\b Parar Sim\b0  \endash  Parar a simula\'e7\'e3o.\par
-\bullet\tab\b Cor de Fundo / Cor do Texto\b0  \endash  Personalizar as cores de exibi\'e7\'e3o das legendas. Essas cores se aplicam tanto \'e0 p\'e1gina web quanto \'e0 caixa de texto de sa\'edda ao vivo. Clique na amostra de cor para abrir um di\'e1logo de sele\'e7\'e3o de cores. As cores s\'e3o salvas na configura\'e7\'e3o.\par
+\bullet\tab\b Porta\b0  \endash  A porta HTTP em que o servidor escuta (padr\'e3o: 5080). O HTTPS fica automaticamente dispon\'edvel na porta+1.\par
+\bullet\tab\b Iniciar / Parar / Reiniciar Servidor\b0  \endash  Controla o servidor de legendas.\par
+\bullet\tab\b Simular\b0  \endash  Envia texto de exemplo para testar a exibi\'e7\'e3o sem uma fonte de \'e1udio ao vivo.\par
+\bullet\tab\b Parar Simula\'e7\'e3o\b0  \endash  Encerra a simula\'e7\'e3o.\par
+\bullet\tab\b Cor do Plano de Fundo / Cor do Texto\b0  \endash  Personaliza as cores de exibi\'e7\'e3o das legendas. Clique na amostra de cor para abrir um seletor de cores.\par
+\bullet\tab\b Fonte\b0  \endash  Escolhe a fam\'edlia de fontes para as legendas exibidas na p\'e1gina web.\par
+\bullet\tab\b Tamanho\b0  \endash  Define o tamanho da fonte para as legendas.\par
+\bullet\tab\b Negrito\b0  \endash  Ativa ou desativa o texto em negrito nas legendas.\par
+\bullet\tab\b Configurar Tradu\'e7\'e3o\b0  \endash  Baixa e instala o modelo de tradu\'e7\'e3o NLLB-200 e as depend\'eancias (~3,5 GB). Isso \'e9 necess\'e1rio para o recurso de tradu\'e7\'e3o em tempo real. Uma vez instalado, a tradu\'e7\'e3o fica dispon\'edvel automaticamente.\par
 
 \pard\sa200\sl276\slmult1
 \b Informa\'e7\'f5es de Conex\'e3o\b0\par
@@ -122,193 +53,177 @@ O Servidor de Legendas fornece uma sobreposi\'e7\'e3o de legenda ao vivo baseada
 \bullet\tab\b Copiar URL\b0  \endash  Copia a URL do servidor para a \'e1rea de transfer\'eancia para que voc\'ea possa compartilh\'e1-la com outros dispositivos.\par
 
 \pard\sa200\sl276\slmult1
-\b Barra de Ferramentas da P\'e1gina Web\b0\par
+\b Log do Servidor\b0\par
+Abaixo das informa\'e7\'f5es de conex\'e3o, uma \'e1rea de log exibe eventos do servidor, incluindo conex\'f5es de clientes, desconex\'f5es e solicita\'e7\'f5es de tradu\'e7\'e3o.\par
+
+\b Recursos da P\'e1gina Web\b0\par
 A p\'e1gina web de legendas inclui uma barra de ferramentas no canto superior direito com os seguintes controles:\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Controle Remoto\b0  (\'edcone de engrenagem) \endash  Abre um painel de administra\'e7\'e3o para Iniciar, Parar, Reiniciar ou Simular a transcri\'e7\'e3o ao vivo remotamente, sem retornar ao aplicativo desktop. O painel verifica o status do servidor a cada 3 segundos.\par
-\bullet\tab\b Configura\'e7\'f5es\b0  (Aa) \endash  Abre um painel de configura\'e7\'f5es para ajustar o tamanho da fonte, fam\'edlia da fonte, negrito e cor do texto. Tamb\'e9m inclui sele\'e7\'e3o de voz e velocidade para o recurso de leitura em voz alta, dire\'e7\'e3o de rolagem e op\'e7\'f5es de exibi\'e7\'e3o de tags. Todas as prefer\'eancias s\'e3o salvas localmente no navegador.\par
-\bullet\tab\b Tradu\'e7\'e3o\b0  \endash  Um menu suspenso para selecionar um idioma de tradu\'e7\'e3o. Quando um idioma \'e9 selecionado, o cliente recebe o texto traduzido por IA nesse idioma em vez da transcri\'e7\'e3o original. Selecione \ldblquote Original\rdblquote  para receber o texto n\'e3o traduzido.\par
-\bullet\tab\b Tags\b0  \endash  Escolha quais informa\'e7\'f5es exibir antes de cada linha de legenda: Desativado, Idioma (exibe o c\'f3digo do idioma detectado ou traduzido), Hora (exibe o carimbo de data/hora) ou ambos.\par
-\bullet\tab\b Ler em Voz Alta\b0  (\'edcone de alto-falante) \endash  Ativa/desativa a convers\'e3o de texto em fala. Quando habilitado, cada nova linha de legenda confirmada \'e9 lida em voz alta usando a s\'edntese de fala do navegador. A voz e a velocidade podem ser configuradas no painel de Configura\'e7\'f5es.\par
-\bullet\tab\b Manter Tela Ativa\b0  (\'edcone de luz) \endash  Impede que a tela do celular ou tablet escure\'e7a ou bloqueie. Isso usa a API Wake Lock do navegador, que requer uma conex\'e3o segura (HTTPS). No primeiro uso via HTTP, uma sobreposi\'e7\'e3o guiada explica como aceitar o aviso de certificado autoassinado no seu navegador (configura\'e7\'e3o \'fanica). Ap\'f3s aceitar, a tela permanece ativa enquanto a p\'e1gina estiver aberta.\par
-\bullet\tab\b Salvar Transcri\'e7\'e3o\b0  \endash  Baixar a transcri\'e7\'e3o atual como um arquivo de texto.\par
+\bullet\tab\b Controle Remoto\b0  (\'edcone de engrenagem) \endash  Abre um painel de administra\'e7\'e3o para Iniciar, Parar, Reiniciar ou Simular a transcri\'e7\'e3o ao vivo remotamente, sem retornar ao aplicativo de desktop.\par
+\bullet\tab\b Configura\'e7\'f5es\b0  (\'edcone Aa) \endash  Ajusta tamanho de fonte, fam\'edlia de fontes, negrito, cor do texto, sele\'e7\'e3o de voz e velocidade para leitura em voz alta, dire\'e7\'e3o de rolagem e op\'e7\'f5es de exibi\'e7\'e3o de etiquetas. As prefer\'eancias s\'e3o salvas localmente no navegador.\par
+\bullet\tab\b Tradu\'e7\'e3o\b0  \endash  Seleciona um idioma de tradu\'e7\'e3o. Cada cliente pode escolher de forma independente. Selecione \ldblquote Original\rdblquote  para receber o texto sem tradu\'e7\'e3o.\par
+\bullet\tab\b Etiquetas\b0  \endash  Escolha quais informa\'e7\'f5es exibir antes de cada linha de legenda: Nenhuma, Idioma, Hora ou ambas.\par
+\bullet\tab\b Ler em Voz Alta\b0  (\'edcone de alto-falante) \endash  Ativa ou desativa a leitura em voz alta. Cada nova linha de legenda \'e9 lida em voz alta usando a s\'edntese de voz do navegador.\par
+\bullet\tab\b Manter Tela Ativa\b0  (\'edcone de luz) \endash  Impede que a tela do celular ou tablet seja desligada. Requer HTTPS (porta segura). No primeiro uso, uma sobreposi\'e7\'e3o guiada explica como aceitar o certificado autoassinado (configura\'e7\'e3o \'fanica).\par
+\bullet\tab\b Salvar Transcri\'e7\'e3o\b0  \endash  Baixa a transcri\'e7\'e3o atual como um arquivo de texto.\par
 
 \pard\sa200\sl276\slmult1
-\b Localiza\'e7\'e3o\b0\par
-A interface da p\'e1gina web detecta automaticamente o idioma do navegador e exibe todos os r\'f3tulos, bot\'f5es e mensagens no idioma correspondente. Idiomas suportados: ingl\'eas, espanhol, franc\'eas, alem\'e3o, catal\'e3o, portugu\'eas, japon\'eas e chin\'eas. Se o idioma do navegador n\'e3o for suportado, o ingl\'eas \'e9 usado como alternativa.\par
+\b Localiza\'e7\'e3o da P\'e1gina Web\b0\par
+A interface web detecta automaticamente o idioma do navegador e exibe todos os r\'f3tulos, bot\'f5es e mensagens no idioma correspondente. Suportados: ingl\'eas, espanhol, franc\'eas, alem\'e3o, catal\'e3o, portugu\'eas, japon\'eas e chin\'eas.\par
 
-\fs24\b\cf2 Aba Par\'e2metros do Whisper\b0\cf0\fs20\par
-Configura\'e7\'f5es avan\'e7adas para o motor de reconhecimento de fala whisper-cli. Esses par\'e2metros se aplicam apenas aos modos de processamento em lote (n\'e3o \'e0 Tradu\'e7\'e3o Ao Vivo). A maioria dos usu\'e1rios pode manter os valores padr\'e3o.\par
+\fs24\b\cf2 Aba Principal / Tarefa\b0\cf0\fs20\par
+A aba Principal / Tarefa gerencia o processamento em lote de arquivos de \'e1udio e v\'eddeo. Ela suporta quatro modos:\par
 
-\b Idioma e Modelo\b0\par
+\b Modos de Processamento em Lote\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Idioma\b0  \endash  Espelha a configura\'e7\'e3o de Idioma de Entrada da aba Principal.\par
-\bullet\tab\b Threads\b0  \endash  N\'famero de threads de CPU para processamento (padr\'e3o: 4).\par
-\bullet\tab\b Processadores\b0  \endash  N\'famero de processadores paralelos (padr\'e3o: 1).\par
+\bullet\tab\b YouTube -> Subtitles\b0  \endash  Baixa um v\'eddeo do YouTube (ou seleciona um arquivo de v\'eddeo local), recorta opcionalmente para um intervalo de tempo e gera legendas.\par
+\bullet\tab\b Audio File -> Subtitles\b0  \endash  Transcreve qualquer arquivo de \'e1udio (OGG, MP3, WAV, FLAC, M4A, etc.) em legendas.\par
+\bullet\tab\b YouTube -> Full Video\b0  \endash  Baixa ou copia um v\'eddeo e o recorta, sem transcri\'e7\'e3o.\par
+\bullet\tab\b YouTube -> Audio Only\b0  \endash  Baixa ou copia um v\'eddeo, recorta e extrai o \'e1udio para um arquivo MP3 de alta qualidade.\par
 
 \pard\sa200\sl276\slmult1
-\b Beam Search / Amostragem\b0\par
+\b Seletor de Modo\b0\par
+Use o menu suspenso no topo para alternar entre os modos. A interface se adapta para mostrar apenas os controles relevantes para o modo selecionado.\par
+
+\b Controles de Entrada\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Tamanho do Beam\b0  \endash  Largura da busca em feixe (padr\'e3o: 5). Valores maiores podem melhorar a precis\'e3o, por\'e9m s\'e3o mais lentos.\par
-\bullet\tab\b Best Of\b0  \endash  N\'famero de candidatos a considerar (padr\'e3o: 5).\par
-\bullet\tab\b Temperatura\b0  \endash  Temperatura de amostragem (padr\'e3o: 0,0). Valores maiores aumentam a aleatoriedade.\par
-\bullet\tab\b Incremento de Temperatura\b0  \endash  Incremento de temperatura no fallback (padr\'e3o: 0,2).\par
+\bullet\tab\b URL / Arquivo\b0  \endash  Insira uma URL do YouTube ou clique em Procurar para selecionar um arquivo de v\'eddeo ou \'e1udio local.\par
+\bullet\tab\b Idioma de Entrada\b0  \endash  O idioma falado no \'e1udio. Defina como \b auto\b0  para detec\'e7\'e3o autom\'e1tica, ou selecione um idioma espec\'edfico para maior precis\'e3o.\par
+\bullet\tab\b Idioma de Sa\'edda\b0  \endash  O idioma das legendas geradas. Defina como \b auto\b0  para manter o mesmo idioma da entrada. Defina como \b en\b0  para traduzir para o ingl\'eas (o Whisper s\'f3 pode traduzir \i para\i0  o ingl\'eas).\par
+\bullet\tab\b Modelo\b0  \endash  Escolha qual modelo whisper usar. Modelos maiores s\'e3o mais precisos, por\'e9m mais lentos.\par
+\bullet\tab\b Hora de In\'edcio / Hora de T\'e9rmino\b0  \endash  Opcionalmente, especifique um intervalo de tempo (HH:MM:SS) para recortar o v\'eddeo antes de transcrever.\par
+\bullet\tab\b Diret\'f3rio de Sa\'edda\b0  \endash  Local onde todos os arquivos de trabalho e a sa\'edda final ser\'e3o salvos.\par
 
 \pard\sa200\sl276\slmult1
-\b Qualidade / Filtragem\b0\par
+\b Formatos de Sa\'edda\b0\par
+Dispon\'edvel para os modos de legenda. Selecione os formatos a gerar:\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Contexto M\'e1ximo\b0  \endash  Tokens de contexto m\'e1ximo (0 = usar padr\'e3o).\par
-\bullet\tab\b Limiar de Palavra\b0  \endash  Limiar de confian\'e7a em n\'edvel de palavra (padr\'e3o: 0,01).\par
-\bullet\tab\b Limiar de Entropia\b0  \endash  Limiar de entropia para filtragem de qualidade (padr\'e3o: 2,4).\par
-\bullet\tab\b Limiar de Log Prob\b0  \endash  Limiar de probabilidade logar\'edtmica (padr\'e3o: -1,0).\par
-\bullet\tab\b Limiar Sem Fala\b0  \endash  Limiar para detec\'e7\'e3o de segmentos sem fala (padr\'e3o: 0,6).\par
+\bullet\tab\b SRT\b0  \endash  Formato de legenda SubRip (o mais comum, ativado por padr\'e3o)\par
+\bullet\tab\b VTT\b0  \endash  Formato WebVTT (para uso na web)\par
+\bullet\tab\b TXT\b0  \endash  Transcri\'e7\'e3o em texto simples\par
+\bullet\tab\b JSON\b0  \endash  Sa\'edda JSON estruturada\par
+\bullet\tab\b CSV\b0  \endash  Valores separados por v\'edrgula\par
+\bullet\tab\b LRC\b0  \endash  Formato de letras musicais\par
 
 \pard\sa200\sl276\slmult1
-\b Controle de Segmento\b0\par
+\b Progresso\b0\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Comprimento M\'e1ximo do Segmento\b0  \endash  N\'famero m\'e1ximo de caracteres por segmento de legenda (0 = ilimitado).\par
-\bullet\tab\b M\'e1ximo de Tokens\b0  \endash  N\'famero m\'e1ximo de tokens por segmento (0 = ilimitado).\par
-\bullet\tab\b Contexto de \'c1udio\b0  \endash  Tamanho do contexto de \'e1udio (0 = usar padr\'e3o).\par
+\bullet\tab A barra de progresso superior mostra o progresso geral do pipeline. Uma segunda barra aparece durante a transcri\'e7\'e3o para o progresso em n\'edvel de fragmento.\par
+\bullet\tab\b Iniciar\b0  \endash  Inicia o processamento.\par
+\bullet\tab\b Retomar\b0  \endash  Continua uma tarefa interrompida. Selecione a pasta de sa\'edda e os fragmentos j\'e1 conclu\'eddos s\'e3o automaticamente ignorados.\par
+\bullet\tab\b Cancelar\b0  \endash  Interrompe a tarefa atual.\par
+\bullet\tab\b Abrir Pasta de Sa\'edda\b0  \endash  Abre o diret\'f3rio de sa\'edda no Windows Explorer.\par
+\bullet\tab\b Subtitle Edit\b0  \endash  Abre o arquivo SRT gerado no Subtitle Edit para revis\'e3o.\par
+\bullet\tab\b Abrir preview.srt\b0  \endash  Abre o arquivo SRT com o aplicativo padr\'e3o.\par
 
 \pard\sa200\sl276\slmult1
-\b Prompt\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab\b Prompt Inicial\b0  \endash  Prompt de texto para guiar a transcri\'e7\'e3o. \'datil para fornecer contexto, grafia de nomes ou vocabul\'e1rio espec\'edfico do dom\'ednio.\par
-\bullet\tab\b Hotwords\b0  \endash  Lista de palavras separadas por v\'edrgula para impulsionar o reconhecimento.\par
-
-\pard\sa200\sl276\slmult1
-\b Op\'e7\'f5es\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab\b Dividir por Palavra\b0  \endash  Dividir segmentos nos limites de palavras (habilitado por padr\'e3o).\par
-\bullet\tab\b Sem GPU\b0  \endash  For\'e7ar processamento apenas por CPU.\par
-\bullet\tab\b Flash Attention\b0  \endash  Habilitar flash attention para infer\'eancia GPU mais r\'e1pida.\par
-\bullet\tab\b Exibir Progresso\b0  \endash  Mostrar percentual de progresso na sa\'edda do whisper.\par
-\bullet\tab\b Exibir Cores\b0  \endash  Colorir a sa\'edda por n\'edvel de confian\'e7a.\par
-\bullet\tab\b Exibir em Tempo Real\b0  \endash  Imprimir a sa\'edda em tempo real conforme \'e9 gerada.\par
-\bullet\tab\b Diarizar\b0  \endash  Habilitar diariza\'e7\'e3o de locutores (identificar diferentes falantes).\par
-\bullet\tab\b Tinydiarize\b0  \endash  Usar detec\'e7\'e3o leve de troca de locutor.\par
-\bullet\tab\b Sem Timestamps\b0  \endash  Suprimir a sa\'edda de timestamps.\par
-
-\pard\sa200\sl276\slmult1
-\b VAD (Detec\'e7\'e3o de Atividade de Voz)\b0\par
-\pard\fi-360\li720\sa100
-\bullet\tab\b Limiar VAD\b0  \endash  Sensibilidade para detectar fala (padr\'e3o: 0,6).\par
-\bullet\tab\b Limiar de Frequ\'eancia\b0  \endash  Filtro de frequ\'eancia passa-alta em Hz (padr\'e3o: 100).\par
-
-\pard\sa200\sl276\slmult1
-Clique em \b Restaurar Padr\'f5es\b0  para redefinir todos os par\'e2metros do whisper para seus valores padr\'e3o.\par
+\b Log\b0\par
+Uma \'e1rea de log na parte inferior da aba exibe a sa\'edda em tempo real do pipeline de processamento. Cada entrada possui carimbo de hora e c\'f3digo de cores: verde para sucesso, preto para informa\'e7\'e3o, cinza para sa\'edda de depura\'e7\'e3o e vermelho para erros. O log rola automaticamente para mostrar a sa\'edda mais recente. Use \b Limpar Log\b0  para redefinir e \b Copiar para \'c1rea de Transfer\'eancia\b0  para copiar o log completo.\par
 
 \fs24\b\cf2 Aba Caminhos e Ferramentas\b0\cf0\fs20\par
 Configure os caminhos de arquivo para ferramentas e modelos externos:\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b whisper-cli.exe\b0  \endash  O motor de reconhecimento de fala whisper (usado pelos modos de transcri\'e7\'e3o em lote).\par
+\bullet\tab\b whisper-cli.exe\b0  \endash  O mecanismo de reconhecimento de voz whisper (usado pelos modos de transcri\'e7\'e3o em lote).\par
 \bullet\tab\b yt-dlp.exe\b0  \endash  Baixador de v\'eddeos do YouTube.\par
-\bullet\tab\b ffmpeg.exe\b0  \endash  Ferramenta de processamento de \'e1udio/v\'eddeo (corte, convers\'e3o, fragmenta\'e7\'e3o).\par
+\bullet\tab\b ffmpeg.exe\b0  \endash  Ferramenta de processamento de \'e1udio/v\'eddeo (recorte, convers\'e3o, fragmenta\'e7\'e3o).\par
 \bullet\tab\b ffprobe.exe\b0  \endash  Ferramenta de an\'e1lise de \'e1udio/v\'eddeo (detec\'e7\'e3o de dura\'e7\'e3o).\par
-\bullet\tab\b Modelo YouTube (.bin)\b0  \endash  O arquivo de modelo whisper usado para o modo YouTube -> Subtitles.\par
-\bullet\tab\b Modelo de Arquivo de \'c1udio (.bin)\b0  \endash  O arquivo de modelo whisper usado para o modo Audio File -> Subtitles.\par
-\bullet\tab\b Diret\'f3rio Ra\'edz de Sa\'edda Padr\'e3o\b0  \endash  Diret\'f3rio base onde as pastas de sa\'edda com data e hora s\'e3o criadas.\par
-\bullet\tab\b String de Formato yt-dlp\b0  \endash  Prefer\'eancia de formato de download para yt-dlp (padr\'e3o: melhor v\'eddeo MP4 + \'e1udio M4A).\par
+\bullet\tab\b Modelo YouTube (.bin)\b0  \endash  O arquivo de modelo whisper usado no modo YouTube -> Subtitles.\par
+\bullet\tab\b Modelo de Arquivo de \'c1udio (.bin)\b0  \endash  O arquivo de modelo whisper usado no modo Audio File -> Subtitles. Pode ser definido para um modelo diferente (ex.: menor, mais r\'e1pido).\par
+\bullet\tab\b Modelo faster-whisper (pasta)\b0  \endash  O diret\'f3rio do modelo faster-whisper usado pela Tradu\'e7\'e3o ao Vivo (padr\'e3o: faster-whisper-large-v3).\par
+\bullet\tab\b Modelo de tradu\'e7\'e3o NLLB (pasta)\b0  \endash  O diret\'f3rio do modelo de tradu\'e7\'e3o NLLB-200 (padr\'e3o: nllb-model).\par
+\bullet\tab\b Diret\'f3rio de sa\'edda padr\'e3o\b0  \endash  Diret\'f3rio base onde as pastas de sa\'edda com data e hora s\'e3o criadas.\par
+\bullet\tab\b String de formato yt-dlp\b0  \endash  Prefer\'eancia de formato de download para o yt-dlp (padr\'e3o: melhor v\'eddeo MP4 + \'e1udio M4A).\par
 
 \pard\sa200\sl276\slmult1
-Clique em \b Verificar Todos os Caminhos\b0  para verificar se todas as ferramentas e arquivos configurados existem. Use o link \b Baixar modelos whisper\b0  para obter os arquivos de modelo.\par
-
-\fs24\b\cf2 Aba Log\b0\cf0\fs20\par
-Exibe a sa\'edda em tempo real do pipeline de processamento. Cada entrada do log possui um carimbo de hora e codifica\'e7\'e3o por cores:\par
-\pard\fi-360\li720\sa100
-\bullet\tab\cf5\b Verde Escuro\b0\cf0  \endash  Mensagens de sucesso e etapas conclu\'eddas.\par
-\bullet\tab\cf1\b Preto\b0\cf0  \endash  Informa\'e7\'f5es gerais.\par
-\bullet\tab\cf3\b Cinza\b0\cf0  \endash  Sa\'edda detalhada/depura\'e7\'e3o (linhas de comando, c\'f3digos de sa\'edda, sa\'edda do ffprobe).\par
-\bullet\tab\b Vermelho\b0  \endash  Erros e avisos.\par
-
-\pard\sa200\sl276\slmult1
-O log rola automaticamente para mostrar a sa\'edda mais recente. Se voc\'ea rolar para cima para revisar entradas anteriores, a rolagem autom\'e1tica \'e9 pausada. Ela \'e9 retomada quando voc\'ea rola de volta para o fim.\par
-Use \b Limpar Log\b0  para redefinir o log e \b Copiar para a \'c1rea de Transfer\'eancia\b0  para copiar todo o texto do log.\par
+Clique em \b Verificar Todos os Caminhos\b0  para verificar se todas as ferramentas e arquivos configurados existem. Use o link \b Baixar modelos whisper\b0  para obter arquivos de modelo do reposit\'f3rio Hugging Face.\par
 
 \fs24\b\cf2 Aba Configura\'e7\'f5es\b0\cf0\fs20\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Idioma da Interface\b0  \endash  Alterar o idioma da interface. Dispon\'edvel: ingl\'eas, espanhol, franc\'eas, alem\'e3o, catal\'e3o, portugu\'eas, chin\'eas simplificado, japon\'eas.\par
-\bullet\tab\b Trabalhos de Transcri\'e7\'e3o Paralelos\b0  \endash  N\'famero de fragmentos de \'e1udio a transcrever simultaneamente (padr\'e3o: 4). Valores maiores usam mais RAM e CPU, mas terminam mais r\'e1pido.\par
-\bullet\tab\b Tamanho do Fragmento (segundos)\b0  \endash  Dura\'e7\'e3o de cada fragmento de \'e1udio (padr\'e3o: 300 = 5 minutos). \'c1udios longos s\'e3o divididos em fragmentos para processamento paralelo.\par
-\bullet\tab\b Intervalo de Verifica\'e7\'e3o (ms)\b0  \endash  Com que frequ\'eancia verificar se os fragmentos de transcri\'e7\'e3o foram conclu\'eddos (padr\'e3o: 2000 ms).\par
-\bullet\tab\b Timeout do Fragmento (min)\b0  \endash  Tempo m\'e1ximo para aguardar a conclus\'e3o de um \'fanico fragmento (padr\'e3o: 60 minutos).\par
-\bullet\tab\b Manter Arquivos de Fragmento\b0  \endash  Reter os arquivos WAV e SRT intermedi\'e1rios dos fragmentos ap\'f3s o processamento.\par
-\bullet\tab\b Manter preview.mp4 Cortado\b0  \endash  Manter o arquivo de v\'eddeo cortado. Se desmarcado, preview.mp4 \'e9 exclu\'eddo ap\'f3s a extra\'e7\'e3o de \'e1udio ou conclus\'e3o.\par
-\bullet\tab\b Ignorar Download se o Arquivo Existir\b0  \endash  Ignorar a etapa de download do yt-dlp se o arquivo de v\'eddeo j\'e1 existir na pasta de sa\'edda.\par
-\bullet\tab\b Tema\b0  \endash  Escolher o tema Sistema, Claro ou Escuro.\par
+\bullet\tab\b Idioma da Interface\b0  \endash  Altera o idioma da interface. Dispon\'edveis: ingl\'eas, espanhol, franc\'eas, alem\'e3o, catal\'e3o, portugu\'eas, chin\'eas simplificado, japon\'eas.\par
+\bullet\tab\b Tema\b0  \endash  Escolha o tema Sistema, Claro ou Escuro.\par
+\bullet\tab\b Redefinir Todas as Configura\'e7\'f5es\b0  \endash  Restaura todas as configura\'e7\'f5es aos padr\'f5es de f\'e1brica.\par
+\bullet\tab\b Verificar Atualiza\'e7\'f5es de Ferramentas\b0  \endash  Verifica se vers\'f5es mais recentes do yt-dlp, ffmpeg ou outras ferramentas est\'e3o dispon\'edveis e as baixa.\par
 
 \pard\sa200\sl276\slmult1
-Clique em \b Redefinir Todas as Configura\'e7\'f5es\b0  para restaurar toda a configura\'e7\'e3o para os padr\'f5es de f\'e1brica.\par
+\fs24\b\cf2 Configura\'e7\'e3o Inicial\b0\cf0\fs20\par
+Na primeira execu\'e7\'e3o, o aplicativo verifica as ferramentas e depend\'eancias necess\'e1rias. Se alguma estiver faltando, voc\'ea \'e9 solicitado a baix\'e1-las automaticamente. Isso inclui:\par
+\pard\fi-360\li720\sa100
+\bullet\tab Ferramentas principais: whisper-cli, yt-dlp, ffmpeg, ffprobe e o arquivo de modelo whisper.\par
+\bullet\tab Ambiente Python: Uma instala\'e7\'e3o port\'e1til do Python usada pelos servidores de transcri\'e7\'e3o ao vivo e tradu\'e7\'e3o.\par
+\bullet\tab Pacotes Python: Bibliotecas necess\'e1rias para o faster-whisper e o NLLB (instaladas via pip).\par
+\bullet\tab Modelo faster-whisper: O modelo de reconhecimento de voz para Tradu\'e7\'e3o ao Vivo (~3 GB).\par
+\bullet\tab Modelo NLLB-200: O modelo de tradu\'e7\'e3o (~2,6 GB), baixado quando a tradu\'e7\'e3o \'e9 configurada pela primeira vez.\par
+
+\pard\sa200\sl276\slmult1
+Todas as depend\'eancias s\'e3o autocontidas dentro da pasta do aplicativo e n\'e3o afetam a instala\'e7\'e3o do Python no sistema.\par
 
 \fs24\b\cf2 Pipeline de Processamento\b0\cf0\fs20\par
 
-\b Modo YouTube -> Subtitles (8 etapas):\b0\par
+\b YouTube -> Subtitles (8 etapas):\b0\par
 \pard\fi-360\li720\sa100
-0.\tab Validar entradas e caminhos das ferramentas\par
+0.\tab Validar entradas e caminhos de ferramentas\par
 1.\tab Baixar v\'eddeo usando yt-dlp (ou copiar arquivo local)\par
-2.\tab Cortar v\'eddeo para o intervalo de tempo especificado usando ffmpeg\par
-3.\tab Extrair \'e1udio para formato WAV (16kHz mono) para o whisper\par
+2.\tab Recortar v\'eddeo para o intervalo de tempo especificado usando ffmpeg\par
+3.\tab Extrair \'e1udio para o formato WAV (16 kHz mono)\par
 4.\tab Detectar dura\'e7\'e3o do \'e1udio usando ffprobe\par
 5.\tab Dividir \'e1udio em fragmentos para processamento paralelo\par
-6.\tab Transcrever todos os fragmentos em lotes paralelos usando whisper-cli\par
-7.\tab Mesclar arquivos SRT dos fragmentos no arquivo de legenda final (preview.srt) com timestamps corrigidos\par
+6.\tab Transcrever todos os fragmentos em paralelo usando whisper-cli\par
+7.\tab Mesclar os arquivos SRT dos fragmentos no arquivo de legenda final com os carimbos de tempo corrigidos\par
 
 \pard\sa200\sl276\slmult1
-\b Modo Audio File -> Subtitles (6 etapas):\b0\par
+\b Audio File -> Subtitles (6 etapas):\b0\par
 \pard\fi-360\li720\sa100
-0.\tab Validar entradas e caminhos das ferramentas\par
-1.\tab Converter \'e1udio para formato WAV (16kHz mono) para o whisper\par
+0.\tab Validar entradas e caminhos de ferramentas\par
+1.\tab Converter \'e1udio para o formato WAV (16 kHz mono)\par
 2.\tab Detectar dura\'e7\'e3o do \'e1udio\par
 3.\tab Dividir \'e1udio em fragmentos\par
-4.\tab Transcrever todos os fragmentos em lotes paralelos\par
-5.\tab Mesclar no arquivo SRT final (nomeado ap\'f3s o arquivo de entrada)\par
+4.\tab Transcrever todos os fragmentos em paralelo\par
+5.\tab Mesclar no arquivo SRT final\par
 
 \pard\sa200\sl276\slmult1
-\b Modo YouTube -> Full Video (3 etapas):\b0\par
+\b YouTube -> Full Video (3 etapas):\b0\par
 \pard\fi-360\li720\sa100
-0.\tab Validar entradas e caminhos das ferramentas\par
-1.\tab Baixar v\'eddeo usando yt-dlp (ou copiar arquivo local)\par
-2.\tab Cortar v\'eddeo para o intervalo de tempo especificado usando ffmpeg (sa\'edda: preview.mp4)\par
+0.\tab Validar entradas e caminhos de ferramentas\par
+1.\tab Baixar v\'eddeo (ou copiar arquivo local)\par
+2.\tab Recortar v\'eddeo (sa\'edda: preview.mp4)\par
 
 \pard\sa200\sl276\slmult1
-\b Modo YouTube -> Audio Only (4 etapas):\b0\par
+\b YouTube -> Audio Only (4 etapas):\b0\par
 \pard\fi-360\li720\sa100
-0.\tab Validar entradas e caminhos das ferramentas\par
-1.\tab Baixar v\'eddeo usando yt-dlp (ou copiar arquivo local)\par
-2.\tab Cortar v\'eddeo para o intervalo de tempo especificado usando ffmpeg\par
-3.\tab Extrair \'e1udio para MP3 de alta qualidade (sa\'edda: yt_audio.mp3)\par
+0.\tab Validar entradas e caminhos de ferramentas\par
+1.\tab Baixar v\'eddeo (ou copiar arquivo local)\par
+2.\tab Recortar v\'eddeo\par
+3.\tab Extrair \'e1udio para MP3 (sa\'edda: yt_audio.mp3)\par
 
 \pard\sa200\sl276\slmult1
 \fs24\b\cf2 Dicas\b0\cf0\fs20\par
 \pard\fi-360\li720\sa100
-\bullet\tab Para melhor qualidade de legenda, use o modelo \b ggml-large-v3\b0 . Para resultados r\'e1pidos em \'e1udios curtos (ex.: mensagens de voz), use \b ggml-tiny\b0  ou \b ggml-base\b0 .\par
-\bullet\tab Se a transcri\'e7\'e3o parecer travada, verifique a aba Log para a sa\'edda detalhada.\par
-\bullet\tab Use \b Retomar\b0  para continuar um trabalho interrompido sem baixar novamente ou refragmentar.\par
-\bullet\tab O campo \b Prompt Inicial\b0  \'e9 poderoso \endash  use-o para fornecer a grafia de nomes, termos t\'e9cnicos ou contexto que ajuda o modelo a produzir melhores resultados.\par
-\bullet\tab Ao sair do aplicativo, ser\'e1 solicitado que voc\'ea limpe as pastas de trabalho criadas durante a sess\'e3o atual.\par
-\bullet\tab Defina \b Idioma de Sa\'edda\b0  como \b en\b0  para traduzir \'e1udio em idioma estrangeiro diretamente para legendas em ingl\'eas.\par
-\bullet\tab Use o modo \b YouTube -> Full Video\b0  quando precisar apenas do arquivo de v\'eddeo sem legendas.\par
-\bullet\tab Use o modo \b YouTube -> Audio Only\b0  para obter um arquivo de \'e1udio MP3 de alta qualidade de um v\'eddeo do YouTube ou arquivo de v\'eddeo local.\par
-\bullet\tab Para Tradu\'e7\'e3o Ao Vivo, recomenda-se uma GPU com suporte a CUDA e pelo menos 4 GB de VRAM. O modelo faster-whisper usa ~1,5 GB e o modelo de tradu\'e7\'e3o NLLB usa ~2,6 GB.\par
-\bullet\tab O arquivo de ajuda \'e9 carregado automaticamente no idioma da interface selecionado, se dispon\'edvel; caso contr\'e1rio, usa o ingl\'eas como alternativa.\par
+\bullet\tab Para melhor qualidade de legendas, use o modelo \b ggml-large-v3\b0 . Para resultados r\'e1pidos em \'e1udios curtos, use \b ggml-tiny\b0  ou \b ggml-base\b0 .\par
+\bullet\tab Use \b Retomar\b0  para continuar uma tarefa interrompida sem precisar baixar novamente ou reprocessar fragmentos j\'e1 conclu\'eddos.\par
+\bullet\tab Defina o \b Idioma de Sa\'edda\b0  como \b en\b0  para traduzir \'e1udio em idioma estrangeiro diretamente em legendas em ingl\'eas.\par
+\bullet\tab Para Tradu\'e7\'e3o ao Vivo, recomenda-se uma GPU com suporte a CUDA e pelo menos 4 GB de VRAM. O modelo faster-whisper usa ~1,5 GB e o modelo de tradu\'e7\'e3o NLLB usa ~2,6 GB.\par
+\bullet\tab A p\'e1gina web de legendas funciona em qualquer dispositivo com navegador na mesma rede. Compartilhe a URL exibida na se\'e7\'e3o de Informa\'e7\'f5es de Conex\'e3o.\par
+\bullet\tab Para manter a tela do celular ativa ao visualizar legendas, use o bot\'e3o Manter Tela Ativa na p\'e1gina web (requer HTTPS).\par
+\bullet\tab O arquivo de ajuda \'e9 carregado automaticamente no idioma da interface selecionado, se dispon\'edvel.\par
 
 \pard\sa200\sl276\slmult1
 \fs24\b\cf2 Ferramentas Externas Necess\'e1rias\b0\cf0\fs20\par
-Este aplicativo requer as seguintes ferramentas instaladas e configuradas na aba Caminhos e Ferramentas:\par
+As seguintes ferramentas s\'e3o necess\'e1rias e podem ser baixadas automaticamente pela aba Configura\'e7\'f5es:\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b whisper-cli\b0  \endash  Motor de reconhecimento de fala (whisper.cpp) \endash  necess\'e1rio para transcri\'e7\'e3o em lote\par
-\bullet\tab\b yt-dlp\b0  \endash  Baixador do YouTube (necess\'e1rio para todos os modos baseados no YouTube)\par
+\bullet\tab\b whisper-cli\b0  \endash  Mecanismo de reconhecimento de voz (whisper.cpp) para transcri\'e7\'e3o em lote\par
+\bullet\tab\b yt-dlp\b0  \endash  Baixador do YouTube (necess\'e1rio para os modos baseados no YouTube)\par
 \bullet\tab\b ffmpeg\b0  \endash  Processamento de \'e1udio/v\'eddeo (necess\'e1rio para todos os modos)\par
-\bullet\tab\b ffprobe\b0  \endash  An\'e1lise de m\'eddia, inclu\'eddo com ffmpeg (necess\'e1rio para modos de transcri\'e7\'e3o)\par
+\bullet\tab\b ffprobe\b0  \endash  An\'e1lise de m\'eddia, inclu\'eddo com o ffmpeg\par
 \bullet\tab\b Subtitle Edit\b0  (opcional) \endash  Para revisar e editar os arquivos de legenda gerados\par
 
 \pard\sa200\sl276\slmult1
 \b Depend\'eancias Gerenciadas Automaticamente\b0\par
-Os seguintes componentes s\'e3o baixados automaticamente no primeiro uso e n\'e3o requerem configura\'e7\'e3o manual:\par
+Os seguintes itens s\'e3o baixados automaticamente no primeiro uso:\par
 \pard\fi-360\li720\sa100
-\bullet\tab\b Python (incorporado)\b0  \endash  Um ambiente de execu\'e7\'e3o Python port\'e1til usado pelos servidores de transcri\'e7\'e3o ao vivo e tradu\'e7\'e3o.\par
-\bullet\tab\b Modelo faster-whisper\b0  \endash  O modelo de reconhecimento de fala faster-whisper large-v3 (~3 GB), baixado na primeira inicializa\'e7\'e3o da Tradu\'e7\'e3o Ao Vivo.\par
-\bullet\tab\b Modelo NLLB-200\b0  \endash  O modelo de tradu\'e7\'e3o Meta NLLB-200 1.3B (~2,6 GB), baixado quando um cliente web seleciona pela primeira vez um idioma de tradu\'e7\'e3o.\par
+\bullet\tab\b Python (embutido)\b0  \endash  Um ambiente Python port\'e1til usado pelos servidores de transcri\'e7\'e3o ao vivo e tradu\'e7\'e3o.\par
+\bullet\tab\b Modelo faster-whisper\b0  \endash  O modelo de reconhecimento de voz faster-whisper large-v3 (~3 GB).\par
+\bullet\tab\b Modelo NLLB-200\b0  \endash  O modelo de tradu\'e7\'e3o Meta NLLB-200 1.3B (~2,6 GB).\par
+\bullet\tab\b Pacotes Python\b0  \endash  faster-whisper, sounddevice, ctranslate2, sentencepiece, FastAPI, uvicorn e outras bibliotecas.\par
 
 \pard\sa200\sl276\slmult1
 \par
