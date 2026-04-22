@@ -69,7 +69,7 @@ Namespace Models
 
         Public Property Processors As Integer = 1
 
-        Public Property BeamSize As Integer = 5
+        Public Property BeamSize As Integer = 7
 
         Public Property BestOf As Integer = 5
 
@@ -138,9 +138,9 @@ Namespace Models
         Public Property LiveServerPort As Integer = 5091
         Public Property PathFasterWhisperModel As String = ".\faster-whisper-large-v3"
         Public Property LiveComputeType As String = "int8_float16"
-        Public Property LiveVadSilenceMs As Integer = 600
+        Public Property LiveVadSilenceMs As Integer = 800
         Public Property LiveMaxSegmentSec As Integer = 30
-        Public Property LiveInterimIntervalMs As Integer = 1000
+        Public Property LiveInterimIntervalMs As Integer = 1500
 
         ' --- Translation (NLLB-200) ---
 
