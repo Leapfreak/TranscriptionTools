@@ -99,7 +99,10 @@ Namespace Models
                 CheckFfmpegAsync(),
                 CheckModelAsync(),
                 CheckSubtitleEditAsync(),
-                CheckFasterWhisperModelAsync()
+                CheckPythonEmbedAsync(),
+                CheckPythonDepsStateAsync(),
+                CheckFasterWhisperModelAsync(),
+                CheckNllbModelAsync()
             }
             Await Task.WhenAll(tasks)
             Return tasks.Select(Function(t) t.Result).ToList()
@@ -377,6 +380,15 @@ Namespace Models
             Await RunProcessAsync(PythonExePath(), args, _toolsDir, 600000)
         End Function
 
+        Public Function CheckPythonDepsStateAsync() As Task(Of ToolState)
+            Dim state As New ToolState With {.Name = "Python Packages"}
+            If CheckPythonDepsInstalled() Then
+                state.Status = ToolStatus.UpToDate
+                state.InstalledVersion = "installed"
+            End If
+            Return Task.FromResult(state)
+        End Function
+
         Public Function CheckPythonDepsInstalled() As Boolean
             If Not File.Exists(PythonExePath()) Then Return False
             Try
@@ -560,6 +572,10 @@ Namespace Models
                     Await DownloadNllbModelAsync(progress)
                 Case "faster-whisper Model (large-v3)"
                     Await DownloadFasterWhisperModelAsync(progress)
+                Case "Python Embedded"
+                    Await DownloadPythonEmbedAsync(progress)
+                Case "Python Packages"
+                    Await Task.Run(Function() InstallPythonDepsAsync(Nothing))
             End Select
 
             ' Save the downloaded version

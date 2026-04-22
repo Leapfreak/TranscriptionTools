@@ -1391,7 +1391,7 @@ del ""%~f0""
     Private Async Sub btnLiveStart_Click(sender As Object, e As EventArgs) Handles btnLiveStart.Click
         SaveUiToConfig()
 
-        ' Check live dependencies (Python, packages, model) and offer to install
+        ' Check live dependencies (Python, packages, model)
         Dim toolsDir = AppDomain.CurrentDomain.BaseDirectory
         Dim mgr As New Models.DependencyManager(_config, toolsDir)
         Dim liveDeps = Await mgr.CheckLiveDepsAsync()
@@ -1402,27 +1402,13 @@ del ""%~f0""
                 Return
             End If
 
-            Dim result = MessageBox.Show(
-                "Live transcription requires additional setup:" & vbCrLf & vbCrLf &
-                If(Not liveDeps.pythonOk, "  - Python embeddable package" & vbCrLf, "") &
-                If(Not liveDeps.depsOk, "  - Python packages (faster-whisper, sounddevice)" & vbCrLf, "") &
-                If(Not liveDeps.modelOk, "  - faster-whisper large-v3 model (~3 GB)" & vbCrLf, "") &
-                vbCrLf & "Download and install now?",
-                "Live Setup Required",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question)
-
-            If result <> DialogResult.Yes Then Return
-
-            Await SetupLiveDepsAsync(mgr, liveDeps)
-
-            ' Re-check after setup
-            liveDeps = Await mgr.CheckLiveDepsAsync()
-            If Not liveDeps.pythonOk OrElse Not liveDeps.depsOk OrElse Not liveDeps.modelOk Then
-                MessageBox.Show("Setup incomplete. Please try again.", GetString("Msg_Error"),
-                                MessageBoxButtons.OK, MessageBoxIcon.Warning)
-                Return
-            End If
+            MessageBox.Show(
+                "Live transcription dependencies are not installed." & vbCrLf & vbCrLf &
+                "Please run the dependency check from the Settings tab to download all required components.",
+                "Dependencies Missing",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning)
+            Return
         End If
 
         ' Get device ID from combo selection
@@ -1950,20 +1936,7 @@ del ""%~f0""
         ' Check if deps are installed first
         Dim deps = TranslationService.CheckDependenciesInstalled()
         If Not deps.pythonOk OrElse Not deps.depsOk OrElse Not deps.modelOk Then
-            If _translationSetupPrompted Then Return
-            _translationSetupPrompted = True
-            Me.BeginInvoke(Async Sub()
-                               Dim result = MessageBox.Show(
-                                   "Translation requires downloading ~3.5GB of dependencies (Python, AI model, etc.)." & vbCrLf & vbCrLf &
-                                   "Download now?",
-                                   "Translation Setup Required",
-                                   MessageBoxButtons.YesNo, MessageBoxIcon.Question)
-                               If result = DialogResult.Yes Then
-                                   Await SetupTranslationDepsAsync()
-                               Else
-                                   AppendServerLog("Translation setup declined — clients will receive original text only.")
-                               End If
-                           End Sub)
+            AppendServerLog("Translation dependencies not installed. Run dependency check from Settings tab.")
             Return
         End If
         StartTranslationService()
