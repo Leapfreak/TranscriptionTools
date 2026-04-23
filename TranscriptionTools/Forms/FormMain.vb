@@ -440,6 +440,15 @@ del ""%~f0""
                 Await mgr.DownloadToolAsync(tool, progress)
             Next
 
+            ' Silently ensure Python + pip packages are installed (needed by live-server and nllb-server)
+            lblStatus.Text = "Installing Python runtime and packages..."
+            pbDownload.Value = 0
+            pbDownload.Style = ProgressBarStyle.Marquee
+            lblProgress.Text = "This may take a few minutes..."
+            Await mgr.EnsurePythonReadyAsync(Nothing)
+            pbDownload.Style = ProgressBarStyle.Continuous
+            pbDownload.Value = 100
+
             MessageBox.Show(GetString("Msg_DownloadComplete"), GetString("Msg_DownloadCompleteTitle"),
                             MessageBoxButtons.OK, MessageBoxIcon.Information)
 

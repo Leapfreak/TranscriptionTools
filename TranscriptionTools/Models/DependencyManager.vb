@@ -99,8 +99,6 @@ Namespace Models
                 CheckFfmpegAsync(),
                 CheckModelAsync(),
                 CheckSubtitleEditAsync(),
-                CheckPythonEmbedAsync(),
-                CheckPythonDepsStateAsync(),
                 CheckFasterWhisperModelAsync(),
                 CheckNllbModelAsync()
             }
@@ -556,9 +554,20 @@ Namespace Models
         '  Download a tool by name
         ' ──────────────────────────────────────────
 
-        Public Async Function DownloadToolAsync(state As ToolState, progress As IProgress(Of (downloaded As Long, total As Long))) As Task
-            If String.IsNullOrEmpty(state.DownloadUrl) Then Return
+        ''' <summary>
+        ''' Ensures Python embedded + all pip packages are installed.
+        ''' Called automatically after downloading tools — not shown as a separate item to the user.
+        ''' </summary>
+        Public Async Function EnsurePythonReadyAsync(progress As IProgress(Of (downloaded As Long, total As Long))) As Task
+            If Not File.Exists(PythonExePath()) Then
+                Await DownloadPythonEmbedAsync(progress)
+            End If
+            If Not CheckPythonDepsInstalled() Then
+                Await Task.Run(Function() InstallPythonDepsAsync(Nothing))
+            End If
+        End Function
 
+        Public Async Function DownloadToolAsync(state As ToolState, progress As IProgress(Of (downloaded As Long, total As Long))) As Task
             Select Case state.Name
                 Case "yt-dlp"
                     Await DownloadYtDlpAsync(state.DownloadUrl, progress)
@@ -572,10 +581,6 @@ Namespace Models
                     Await DownloadNllbModelAsync(progress)
                 Case "faster-whisper Model (large-v3)"
                     Await DownloadFasterWhisperModelAsync(progress)
-                Case "Python Embedded"
-                    Await DownloadPythonEmbedAsync(progress)
-                Case "Python Packages"
-                    Await Task.Run(Function() InstallPythonDepsAsync(Nothing))
             End Select
 
             ' Save the downloaded version
