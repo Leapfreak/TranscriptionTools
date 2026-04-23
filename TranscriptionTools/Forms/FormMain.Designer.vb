@@ -311,7 +311,7 @@ Partial Class FormMain
         Me.grpProgress.Text = "Progress"
         Me.grpProgress.Location = New Drawing.Point(8, y)
         Me.grpProgress.Size = New Drawing.Size(856, 160)
-        Me.grpProgress.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right Or AnchorStyles.Bottom
+        Me.grpProgress.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
 
         Me.lblStepStatus.Text = "Ready"
         Me.lblStepStatus.Location = New Drawing.Point(10, 22)
@@ -366,7 +366,7 @@ Partial Class FormMain
         Me.grpLog.Text = "Log"
         Me.grpLog.Location = New Drawing.Point(8, y)
         Me.grpLog.Size = New Drawing.Size(856, 250)
-        Me.grpLog.Anchor = AnchorStyles.Top Or AnchorStyles.Left Or AnchorStyles.Right
+        Me.grpLog.Anchor = AnchorStyles.Top Or AnchorStyles.Bottom Or AnchorStyles.Left Or AnchorStyles.Right
 
         Me.rtbLog.Dock = DockStyle.Fill
         Me.rtbLog.ReadOnly = True
