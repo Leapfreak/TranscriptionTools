@@ -2389,29 +2389,32 @@ del ""%~f0""
         ' Offer to clean up today's working folders
         Try
             Dim outputRoot = AppConfig.ResolvePath(_config.PathOutputRoot)
-            If String.IsNullOrWhiteSpace(outputRoot) OrElse Not Directory.Exists(outputRoot) Then Return
+            If Not String.IsNullOrWhiteSpace(outputRoot) AndAlso Directory.Exists(outputRoot) Then
+                Dim todayPrefix = DateTime.Now.ToString("yyyy-MM-dd")
+                Dim todayFolders = Directory.GetDirectories(outputRoot).
+                    Where(Function(d) Path.GetFileName(d).StartsWith(todayPrefix)).
+                    ToArray()
 
-            Dim todayPrefix = DateTime.Now.ToString("yyyy-MM-dd")
-            Dim todayFolders = Directory.GetDirectories(outputRoot).
-                Where(Function(d) Path.GetFileName(d).StartsWith(todayPrefix)).
-                ToArray()
+                If todayFolders.Length > 0 Then
+                    Dim folderNames = String.Join(Environment.NewLine, todayFolders.Select(Function(d) "  " & Path.GetFileName(d)))
+                    Dim msg = $"Delete {todayFolders.Length} working folder(s) from today?" & Environment.NewLine & Environment.NewLine & folderNames
+                    Dim result = MessageBox.Show(msg, GetString("Msg_CleanUp"), MessageBoxButtons.YesNo, MessageBoxIcon.Question)
 
-            If todayFolders.Length = 0 Then Return
-
-            Dim folderNames = String.Join(Environment.NewLine, todayFolders.Select(Function(d) "  " & Path.GetFileName(d)))
-            Dim msg = $"Delete {todayFolders.Length} working folder(s) from today?" & Environment.NewLine & Environment.NewLine & folderNames
-            Dim result = MessageBox.Show(msg, GetString("Msg_CleanUp"), MessageBoxButtons.YesNo, MessageBoxIcon.Question)
-
-            If result = DialogResult.Yes Then
-                For Each folder In todayFolders
-                    Try
-                        Directory.Delete(folder, True)
-                    Catch
-                    End Try
-                Next
+                    If result = DialogResult.Yes Then
+                        For Each folder In todayFolders
+                            Try
+                                Directory.Delete(folder, True)
+                            Catch
+                            End Try
+                        Next
+                    End If
+                End If
             End If
         Catch
         End Try
+
+        ' Force process exit to ensure no background tasks keep the process alive
+        Environment.Exit(0)
     End Sub
 
     Private Shared Function ColorToHex(c As Drawing.Color) As String
