@@ -584,6 +584,11 @@ del ""%~f0""
         nudSubtitleSize.Value = CDec(Math.Max(nudSubtitleSize.Minimum, Math.Min(nudSubtitleSize.Maximum, _config.SubtitleFontSize)))
         chkSubtitleBold.Checked = _config.SubtitleFontBold
         ApplyLiveOutputFont()
+
+        ' Live max segment slider
+        Dim segVal = Math.Max(trkMaxSegment.Minimum, Math.Min(trkMaxSegment.Maximum, _config.LiveMaxSegmentSec))
+        trkMaxSegment.Value = segVal
+        lblMaxSegmentValue.Text = $"{segVal}s"
     End Sub
 
     Private Sub SaveUiToConfig()
@@ -630,6 +635,9 @@ del ""%~f0""
         _config.SubtitleFontFamily = If(cboSubtitleFont.SelectedItem?.ToString(), "Segoe UI")
         _config.SubtitleFontSize = CSng(nudSubtitleSize.Value)
         _config.SubtitleFontBold = chkSubtitleBold.Checked
+
+        ' Live max segment
+        _config.LiveMaxSegmentSec = trkMaxSegment.Value
 
         ConfigManager.Save(_config)
     End Sub
@@ -1491,6 +1499,11 @@ del ""%~f0""
         btnLiveStop.Enabled = False
         grpLiveInput.Enabled = True
         UpdateLiveRunningStatus()
+    End Sub
+
+    Private Sub trkMaxSegment_Scroll(sender As Object, e As EventArgs) Handles trkMaxSegment.Scroll
+        lblMaxSegmentValue.Text = $"{trkMaxSegment.Value}s"
+        SaveUiToConfig()
     End Sub
 
     Private _isRemoteCommand As Boolean = False

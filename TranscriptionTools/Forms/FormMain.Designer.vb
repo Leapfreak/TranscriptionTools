@@ -144,6 +144,9 @@ Partial Class FormMain
         Me.btnLiveStop = New Button()
         Me.btnLiveSave = New Button()
         Me.btnLiveClear = New Button()
+        Me.lblMaxSegment = New Label()
+        Me.trkMaxSegment = New TrackBar()
+        Me.lblMaxSegmentValue = New Label()
         Me.tabLiveOutput = New TabControl()
         Me.tabPageLiveClients = New TabPage()
         Me.tabPageLiveLog = New TabPage()
@@ -540,7 +543,26 @@ Partial Class FormMain
         Me.btnLiveSaveLog.Text = "Save Log..."
         Me.btnLiveClear.Text = "Clear Log"
 
-        pnlLiveButtons.Controls.AddRange({Me.btnLiveStart, Me.btnLiveStop})
+        Me.lblMaxSegment.Text = "Max Segment:"
+        Me.lblMaxSegment.Location = New Drawing.Point(230, 7)
+        Me.lblMaxSegment.Size = New Drawing.Size(80, 18)
+        Me.lblMaxSegment.AutoSize = True
+
+        Me.trkMaxSegment.Minimum = 5
+        Me.trkMaxSegment.Maximum = 60
+        Me.trkMaxSegment.Value = 15
+        Me.trkMaxSegment.TickFrequency = 5
+        Me.trkMaxSegment.SmallChange = 5
+        Me.trkMaxSegment.LargeChange = 10
+        Me.trkMaxSegment.Location = New Drawing.Point(315, 0)
+        Me.trkMaxSegment.Size = New Drawing.Size(180, 30)
+
+        Me.lblMaxSegmentValue.Text = "15s"
+        Me.lblMaxSegmentValue.Location = New Drawing.Point(500, 7)
+        Me.lblMaxSegmentValue.Size = New Drawing.Size(30, 18)
+        Me.lblMaxSegmentValue.AutoSize = True
+
+        pnlLiveButtons.Controls.AddRange({Me.btnLiveStart, Me.btnLiveStop, Me.lblMaxSegment, Me.trkMaxSegment, Me.lblMaxSegmentValue})
 
         ' Output tab control
         Me.tabLiveOutput.Location = New Drawing.Point(8, 183)
@@ -953,6 +975,9 @@ Partial Class FormMain
     Friend WithEvents btnLiveSave As Button
     Friend WithEvents btnLiveClear As Button
     Friend WithEvents btnLiveSaveLog As Button
+    Friend WithEvents lblMaxSegment As Label
+    Friend WithEvents trkMaxSegment As TrackBar
+    Friend WithEvents lblMaxSegmentValue As Label
     Friend WithEvents tabLiveOutput As TabControl
     Friend WithEvents tabPageLiveClients As TabPage
     Friend WithEvents tabPageLiveLog As TabPage
