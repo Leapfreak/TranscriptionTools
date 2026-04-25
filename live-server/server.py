@@ -252,7 +252,7 @@ def capture_and_transcribe():
             blocksize=int(SAMPLE_RATE * 0.1),  # 100ms blocks
         )
         stream.start()
-        logger.debug(f"CAPTURE START device={device_index} lang={language} task={task} beam={beam_size} vad_silence={vad_min_silence_ms}ms max_seg={vad_max_segment_s}s interim={interim_interval_ms}ms")
+        logger.debug(f"CAPTURE START device={device_index} lang={language} task={task} beam={beam_size} vad_silence={cfg.get('vad_min_silence_ms', 300)}ms max_seg={cfg.get('vad_max_segment_s', 30)}s interim={interim_interval_ms}ms")
     except Exception as e:
         logger.error(f"Failed to open audio stream: {e}")
         capturing = False
