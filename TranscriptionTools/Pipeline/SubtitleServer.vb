@@ -513,6 +513,23 @@ Namespace Pipeline
             Return langs.ToList()
         End Function
 
+        ''' <summary>
+        ''' Send data to a single client without blocking. Returns False if the socket is closed.
+        ''' Timeout/send errors are logged but do NOT kill the connection.
+        ''' </summary>
+        Private Function TrySendToClient(ws As WebSocket, data As Byte()) As Boolean
+            If ws.State <> WebSocketState.Open Then Return False
+            Try
+                Task.Run(Async Function()
+                             Await ws.SendAsync(New ArraySegment(Of Byte)(data), WebSocketMessageType.Text, True, CancellationToken.None).ConfigureAwait(False)
+                         End Function).Wait(3000)
+                Return True
+            Catch
+                ' Timeout or send error — don't kill the client, just skip this message
+                Return ws.State = WebSocketState.Open
+            End Try
+        End Function
+
         Public Sub BroadcastUpdate(text As String)
             If Not _isRunning Then Return
             _currentLine = text
@@ -520,18 +537,12 @@ Namespace Pipeline
             ' Only send live updates to clients without a translation language —
             ' translation clients will see committed+translated text only
             Dim buffer = Encoding.UTF8.GetBytes(json)
-            Dim segment = New ArraySegment(Of Byte)(buffer)
             Dim deadKeys As New List(Of String)
 
             For Each kvp In _clients
                 Try
                     If Not String.IsNullOrEmpty(kvp.Value.Language) Then Continue For
-                    Dim ws = kvp.Value.WebSocket
-                    If ws.State = WebSocketState.Open Then
-                        ws.SendAsync(segment, WebSocketMessageType.Text, True, CancellationToken.None).Wait(2000)
-                    Else
-                        deadKeys.Add(kvp.Key)
-                    End If
+                    If Not TrySendToClient(kvp.Value.WebSocket, buffer) Then deadKeys.Add(kvp.Key)
                 Catch
                     deadKeys.Add(kvp.Key)
                 End Try
@@ -557,7 +568,6 @@ Namespace Pipeline
             Dim ts = entry.Timestamp.ToString("HH:mm:ss")
             Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(text)},""lang"":{EscapeJson(lang)},""time"":{EscapeJson(ts)},""id"":{commitId}}}"
             Dim buffer = Encoding.UTF8.GetBytes(json)
-            Dim segment = New ArraySegment(Of Byte)(buffer)
             Dim deadKeys As New List(Of String)
 
             For Each kvp In _clients
@@ -566,12 +576,7 @@ Namespace Pipeline
                         RaiseEvent LogMessage(Me,$"[SUBTITLE] COMMIT SKIP {kvp.Value.RemoteEndpoint} lang={kvp.Value.Language}")
                         Continue For
                     End If
-                    Dim ws = kvp.Value.WebSocket
-                    If ws.State = WebSocketState.Open Then
-                        ws.SendAsync(segment, WebSocketMessageType.Text, True, CancellationToken.None).Wait(2000)
-                    Else
-                        deadKeys.Add(kvp.Key)
-                    End If
+                    If Not TrySendToClient(kvp.Value.WebSocket, buffer) Then deadKeys.Add(kvp.Key)
                 Catch
                     deadKeys.Add(kvp.Key)
                 End Try
@@ -620,13 +625,11 @@ Namespace Pipeline
                         End If
                     End If
 
-                    Dim ws = kvp.Value.WebSocket
-                    If ws.State = WebSocketState.Open Then
-                        Dim langTag = ""
-                        If langTags IsNot Nothing Then langTags.TryGetValue(tag, langTag)
-                        Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(text)},""lang"":{EscapeJson(langTag)},""time"":{EscapeJson(ts)}}}"
-                        Dim buffer = Encoding.UTF8.GetBytes(json)
-                        ws.SendAsync(New ArraySegment(Of Byte)(buffer), WebSocketMessageType.Text, True, CancellationToken.None).Wait(2000)
+                    Dim langTag = ""
+                    If langTags IsNot Nothing Then langTags.TryGetValue(tag, langTag)
+                    Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(text)},""lang"":{EscapeJson(langTag)},""time"":{EscapeJson(ts)}}}"
+                    Dim buffer = Encoding.UTF8.GetBytes(json)
+                    If TrySendToClient(kvp.Value.WebSocket, buffer) Then
                         RaiseEvent LogMessage(Me, $"[SUBTITLE] SENT to {kvp.Value.RemoteEndpoint} lang={If(clientLang, "original")}")
                     Else
                         deadKeys.Add(kvp.Key)
@@ -666,11 +669,9 @@ Namespace Pipeline
                     Dim tagValue = ""
                     If langTags IsNot Nothing Then langTags.TryGetValue(lang, tagValue)
 
-                    Dim ws = kvp.Value.WebSocket
-                    If ws.State = WebSocketState.Open Then
-                        Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(translated)},""lang"":{EscapeJson(tagValue)},""time"":{EscapeJson(ts)}}}"
-                        Dim buffer = Encoding.UTF8.GetBytes(json)
-                        ws.SendAsync(New ArraySegment(Of Byte)(buffer), WebSocketMessageType.Text, True, CancellationToken.None).Wait(2000)
+                    Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(translated)},""lang"":{EscapeJson(tagValue)},""time"":{EscapeJson(ts)}}}"
+                    Dim buffer = Encoding.UTF8.GetBytes(json)
+                    If TrySendToClient(kvp.Value.WebSocket, buffer) Then
                         RaiseEvent LogMessage(Me,$"[SUBTITLE] SENT translation to {kvp.Value.RemoteEndpoint} lang={lang}")
                     Else
                         deadKeys.Add(kvp.Key)
@@ -711,17 +712,11 @@ Namespace Pipeline
 
         Private Sub BroadcastMessage(json As String)
             Dim buffer = Encoding.UTF8.GetBytes(json)
-            Dim segment = New ArraySegment(Of Byte)(buffer)
             Dim deadKeys As New List(Of String)
 
             For Each kvp In _clients
                 Try
-                    Dim ws = kvp.Value.WebSocket
-                    If ws.State = WebSocketState.Open Then
-                        ws.SendAsync(segment, WebSocketMessageType.Text, True, CancellationToken.None).Wait(2000)
-                    Else
-                        deadKeys.Add(kvp.Key)
-                    End If
+                    If Not TrySendToClient(kvp.Value.WebSocket, buffer) Then deadKeys.Add(kvp.Key)
                 Catch
                     deadKeys.Add(kvp.Key)
                 End Try
