@@ -528,7 +528,7 @@ Namespace Pipeline
                     If Not String.IsNullOrEmpty(kvp.Value.Language) Then Continue For
                     Dim ws = kvp.Value.WebSocket
                     If ws.State = WebSocketState.Open Then
-                        ws.SendAsync(segment, WebSocketMessageType.Text, True, CancellationToken.None).Wait(500)
+                        ws.SendAsync(segment, WebSocketMessageType.Text, True, CancellationToken.None).Wait(2000)
                     Else
                         deadKeys.Add(kvp.Key)
                     End If
@@ -568,7 +568,7 @@ Namespace Pipeline
                     End If
                     Dim ws = kvp.Value.WebSocket
                     If ws.State = WebSocketState.Open Then
-                        ws.SendAsync(segment, WebSocketMessageType.Text, True, CancellationToken.None).Wait(500)
+                        ws.SendAsync(segment, WebSocketMessageType.Text, True, CancellationToken.None).Wait(2000)
                     Else
                         deadKeys.Add(kvp.Key)
                     End If
@@ -626,7 +626,7 @@ Namespace Pipeline
                         If langTags IsNot Nothing Then langTags.TryGetValue(tag, langTag)
                         Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(text)},""lang"":{EscapeJson(langTag)},""time"":{EscapeJson(ts)}}}"
                         Dim buffer = Encoding.UTF8.GetBytes(json)
-                        ws.SendAsync(New ArraySegment(Of Byte)(buffer), WebSocketMessageType.Text, True, CancellationToken.None).Wait(500)
+                        ws.SendAsync(New ArraySegment(Of Byte)(buffer), WebSocketMessageType.Text, True, CancellationToken.None).Wait(2000)
                         RaiseEvent LogMessage(Me, $"[SUBTITLE] SENT to {kvp.Value.RemoteEndpoint} lang={If(clientLang, "original")}")
                     Else
                         deadKeys.Add(kvp.Key)
@@ -670,7 +670,7 @@ Namespace Pipeline
                     If ws.State = WebSocketState.Open Then
                         Dim json = $"{{""type"":""commit"",""text"":{EscapeJson(translated)},""lang"":{EscapeJson(tagValue)},""time"":{EscapeJson(ts)}}}"
                         Dim buffer = Encoding.UTF8.GetBytes(json)
-                        ws.SendAsync(New ArraySegment(Of Byte)(buffer), WebSocketMessageType.Text, True, CancellationToken.None).Wait(500)
+                        ws.SendAsync(New ArraySegment(Of Byte)(buffer), WebSocketMessageType.Text, True, CancellationToken.None).Wait(2000)
                         RaiseEvent LogMessage(Me,$"[SUBTITLE] SENT translation to {kvp.Value.RemoteEndpoint} lang={lang}")
                     Else
                         deadKeys.Add(kvp.Key)
@@ -718,7 +718,7 @@ Namespace Pipeline
                 Try
                     Dim ws = kvp.Value.WebSocket
                     If ws.State = WebSocketState.Open Then
-                        ws.SendAsync(segment, WebSocketMessageType.Text, True, CancellationToken.None).Wait(500)
+                        ws.SendAsync(segment, WebSocketMessageType.Text, True, CancellationToken.None).Wait(2000)
                     Else
                         deadKeys.Add(kvp.Key)
                     End If
@@ -802,7 +802,7 @@ Namespace Pipeline
         Private Async Sub HandleWebSocket(ctx As HttpListenerContext, ct As CancellationToken)
             Dim wsCtx As HttpListenerWebSocketContext = Nothing
             Try
-                wsCtx = Await ctx.AcceptWebSocketAsync(Nothing).ConfigureAwait(False)
+                wsCtx = Await ctx.AcceptWebSocketAsync(Nothing, TimeSpan.FromSeconds(30)).ConfigureAwait(False)
             Catch
                 ctx.Response.StatusCode = 500
                 ctx.Response.Close()

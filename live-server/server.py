@@ -223,8 +223,7 @@ def capture_and_transcribe():
     translate = cfg.get("translate", False)
     initial_prompt = cfg.get("initial_prompt", "")
     beam_size = cfg.get("beam_size", 5)
-    vad_min_silence_ms = cfg.get("vad_min_silence_ms", 300)
-    vad_max_segment_s = cfg.get("vad_max_segment_s", 30)
+    # These are read from current_config each iteration (live-adjustable via /config)
     interim_interval_ms = cfg.get("interim_interval_ms", 1000)
 
     # Audio buffer
@@ -266,6 +265,11 @@ def capture_and_transcribe():
 
     try:
         while not stop_event.is_set():
+            # Read live-adjustable config each iteration
+            vad_min_silence_ms = current_config.get("vad_min_silence_ms", 300)
+            vad_max_segment_s = current_config.get("vad_max_segment_s", 30)
+            interim_interval_ms = current_config.get("interim_interval_ms", 1000)
+
             # Sleep for the interim interval before checking
             time.sleep(interim_interval_ms / 1000.0)
 
@@ -523,6 +527,19 @@ async def stop_capture():
     capturing = False
     logger.debug("Capture stopped via /stop")
     return {"status": "stopped"}
+
+
+@app.post("/config")
+async def update_config(request: Request):
+    """Update live-adjustable config values without restarting capture."""
+    body = await request.json()
+    updated = []
+    for key in ("vad_min_silence_ms", "vad_max_segment_s", "interim_interval_ms"):
+        if key in body:
+            current_config[key] = body[key]
+            updated.append(key)
+    logger.debug(f"CONFIG UPDATE: {', '.join(f'{k}={current_config[k]}' for k in updated)}")
+    return {"status": "ok", "updated": updated}
 
 
 @app.post("/shutdown")

@@ -585,10 +585,14 @@ del ""%~f0""
         chkSubtitleBold.Checked = _config.SubtitleFontBold
         ApplyLiveOutputFont()
 
-        ' Live max segment slider
+        ' Live sliders
         Dim segVal = Math.Max(trkMaxSegment.Minimum, Math.Min(trkMaxSegment.Maximum, _config.LiveMaxSegmentSec))
         trkMaxSegment.Value = segVal
         lblMaxSegmentValue.Text = $"{segVal}s"
+
+        Dim silVal = Math.Max(trkVadSilence.Minimum, Math.Min(trkVadSilence.Maximum, _config.LiveVadSilenceMs))
+        trkVadSilence.Value = silVal
+        lblVadSilenceValue.Text = $"{silVal}ms"
     End Sub
 
     Private Sub SaveUiToConfig()
@@ -636,8 +640,9 @@ del ""%~f0""
         _config.SubtitleFontSize = CSng(nudSubtitleSize.Value)
         _config.SubtitleFontBold = chkSubtitleBold.Checked
 
-        ' Live max segment
+        ' Live sliders
         _config.LiveMaxSegmentSec = trkMaxSegment.Value
+        _config.LiveVadSilenceMs = trkVadSilence.Value
 
         ConfigManager.Save(_config)
     End Sub
@@ -1504,6 +1509,22 @@ del ""%~f0""
     Private Sub trkMaxSegment_Scroll(sender As Object, e As EventArgs) Handles trkMaxSegment.Scroll
         lblMaxSegmentValue.Text = $"{trkMaxSegment.Value}s"
         SaveUiToConfig()
+        PushLiveConfig()
+    End Sub
+
+    Private Sub trkVadSilence_Scroll(sender As Object, e As EventArgs) Handles trkVadSilence.Scroll
+        lblVadSilenceValue.Text = $"{trkVadSilence.Value}ms"
+        SaveUiToConfig()
+        PushLiveConfig()
+    End Sub
+
+    Private Sub PushLiveConfig()
+        If _liveRunner Is Nothing OrElse Not _liveRunner.IsRunning Then Return
+        Dim cfg As New Dictionary(Of String, Object) From {
+            {"vad_max_segment_s", trkMaxSegment.Value},
+            {"vad_min_silence_ms", trkVadSilence.Value}
+        }
+        _liveRunner.UpdateConfigAsync(cfg)
     End Sub
 
     Private _isRemoteCommand As Boolean = False

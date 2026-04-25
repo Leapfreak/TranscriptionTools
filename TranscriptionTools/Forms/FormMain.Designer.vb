@@ -147,6 +147,9 @@ Partial Class FormMain
         Me.lblMaxSegment = New Label()
         Me.trkMaxSegment = New TrackBar()
         Me.lblMaxSegmentValue = New Label()
+        Me.lblVadSilence = New Label()
+        Me.trkVadSilence = New TrackBar()
+        Me.lblVadSilenceValue = New Label()
         Me.tabLiveOutput = New TabControl()
         Me.tabPageLiveClients = New TabPage()
         Me.tabPageLiveLog = New TabPage()
@@ -562,7 +565,24 @@ Partial Class FormMain
         Me.lblMaxSegmentValue.Size = New Drawing.Size(30, 18)
         Me.lblMaxSegmentValue.AutoSize = True
 
-        pnlLiveButtons.Controls.AddRange({Me.btnLiveStart, Me.btnLiveStop, Me.lblMaxSegment, Me.trkMaxSegment, Me.lblMaxSegmentValue})
+        Me.lblVadSilence.Text = "VAD Silence:"
+        Me.lblVadSilence.Location = New Drawing.Point(540, 7)
+        Me.lblVadSilence.AutoSize = True
+
+        Me.trkVadSilence.Minimum = 200
+        Me.trkVadSilence.Maximum = 1500
+        Me.trkVadSilence.Value = 800
+        Me.trkVadSilence.TickFrequency = 100
+        Me.trkVadSilence.SmallChange = 100
+        Me.trkVadSilence.LargeChange = 200
+        Me.trkVadSilence.Location = New Drawing.Point(625, 0)
+        Me.trkVadSilence.Size = New Drawing.Size(150, 30)
+
+        Me.lblVadSilenceValue.Text = "800ms"
+        Me.lblVadSilenceValue.Location = New Drawing.Point(780, 7)
+        Me.lblVadSilenceValue.AutoSize = True
+
+        pnlLiveButtons.Controls.AddRange({Me.btnLiveStart, Me.btnLiveStop, Me.lblMaxSegment, Me.trkMaxSegment, Me.lblMaxSegmentValue, Me.lblVadSilence, Me.trkVadSilence, Me.lblVadSilenceValue})
 
         ' Output tab control
         Me.tabLiveOutput.Location = New Drawing.Point(8, 183)
@@ -978,6 +998,9 @@ Partial Class FormMain
     Friend WithEvents lblMaxSegment As Label
     Friend WithEvents trkMaxSegment As TrackBar
     Friend WithEvents lblMaxSegmentValue As Label
+    Friend WithEvents lblVadSilence As Label
+    Friend WithEvents trkVadSilence As TrackBar
+    Friend WithEvents lblVadSilenceValue As Label
     Friend WithEvents tabLiveOutput As TabControl
     Friend WithEvents tabPageLiveClients As TabPage
     Friend WithEvents tabPageLiveLog As TabPage

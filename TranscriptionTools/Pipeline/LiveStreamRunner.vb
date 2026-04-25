@@ -418,6 +418,16 @@ Namespace Pipeline
             _process = Nothing
         End Sub
 
+        Public Async Function UpdateConfigAsync(config As Dictionary(Of String, Object)) As Task
+            If Not _serverReady Then Return
+            Try
+                Dim json = Text.Json.JsonSerializer.Serialize(config)
+                Dim content As New StringContent(json, Encoding.UTF8, "application/json")
+                Await _httpClient.PostAsync($"http://127.0.0.1:{_port}/config", content)
+            Catch
+            End Try
+        End Function
+
         Public Function SaveTranscript(filePath As String) As Boolean
             Try
                 File.WriteAllText(filePath, _transcript.ToString(), Encoding.UTF8)
